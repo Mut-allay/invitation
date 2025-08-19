@@ -15,7 +15,7 @@ import {
 // Import actual page components
 import SalesPage from './SalesPage';
 import RepairsPage from './RepairsPage';
-const CustomersPage = () => <div className="p-6">Customer Management</div>;
+import CustomersPage from './CustomersPage';
 const InventoryPage = () => <div className="p-6">Inventory Management</div>;
 const InvoicesPage = () => <div className="p-6">Invoices & Payments</div>;
 const SettingsPage = () => <div className="p-6">Settings</div>;
