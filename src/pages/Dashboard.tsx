@@ -16,7 +16,7 @@ import {
 import SalesPage from './SalesPage';
 import RepairsPage from './RepairsPage';
 import CustomersPage from './CustomersPage';
-const InventoryPage = () => <div className="p-6">Inventory Management</div>;
+import InventoryPage from './InventoryPage';
 const InvoicesPage = () => <div className="p-6">Invoices & Payments</div>;
 const SettingsPage = () => <div className="p-6">Settings</div>;
 
