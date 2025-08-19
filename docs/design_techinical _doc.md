@@ -1,7 +1,7 @@
 Technical Design Document
 Cloud-Based, Multi-Tenant ERP for Zambian Car & Motorcycle Showrooms & Repair Shops
 Frontend: React + Vite | Backend: Firebase (Firestore, Auth, Cloud Functions, Storage)
-Version 1.0 – 18 August 2025
+Version 2.0 – 25 August 2025 (MVP Complete + Comprehensive Testing)
 ────────────────────────────────────────────────────────
 1. Introduction and System Overview
 1.1 Purpose
@@ -23,7 +23,7 @@ Out-of-Scope for Version 1.0:
     • Management: Product Managers, Engineering Managers, Project Managers.
     • Stakeholders: Key business stakeholders, investors, and representatives from Zambian regulatory bodies (ZRA, NAPSA).
 1.4 Technology Stack
-    • Frontend: React 18 (with Hooks), TypeScript, Vite (as the build tool), React Router v6, Redux Toolkit (with RTK Query), TailwindCSS (for utility-first styling), Headless UI (for accessible components).
+    • Frontend: React 18 (with Hooks), TypeScript, Vite (as the build tool), React Router v6, Redux Toolkit (with RTK Query), TailwindCSS (for utility-first styling), Headless UI (for accessible components), React Dropzone (for file uploads).
     • Backend (Firebase Ecosystem):
         ◦ Database: Cloud Firestore (in Native Mode).
         ◦ Authentication: Firebase Authentication (supporting Email/Password, Google, and Phone providers).
@@ -31,6 +31,10 @@ Out-of-Scope for Version 1.0:
         ◦ File Storage: Cloud Storage for Firebase.
         ◦ Hosting: Firebase Hosting with Global CDN.
         ◦ Automation: Firebase Extensions (e.g., Resize Images) and Cloud Scheduler for cron jobs.
+    • Testing & Quality:
+        ◦ Jest (test runner), React Testing Library (component testing), MSW (API mocking).
+        ◦ Husky (Git hooks), ESLint (linting), Prettier (formatting).
+        ◦ GitHub Actions (CI/CD with comprehensive quality gates).
     • DevOps: GitHub for version control, GitHub Actions for CI/CD pipelines deploying via the Firebase CLI.
     • Future Analytics: Phased integration with BigQuery (via Firebase Extensions) and Looker Studio for aggregated, anonymized cross-tenant analytics.
 2. System Architecture
@@ -224,7 +228,35 @@ setCustomUserClaims(uid, { tenantId, role, permissions: ['create_invoice', 'dele
         ◦ Errors: Sentry or a similar service will be integrated for real-time error tracking and reporting.
         ◦ Logging: Cloud Logging will capture all function logs. Sinks will be configured to stream critical logs to BigQuery for long-term analysis.
         ◦ Alerting: Firebase Alerts will be configured to trigger notifications (via PagerDuty or Slack) for critical events like high function error rates or uptime check failures.
-7. Future Enhancements
+7. Testing & Quality Assurance Strategy
+    • 7.1 Testing Philosophy:
+        ◦ **Quality Gates**: 80% minimum test coverage for all new code, 100% for critical business logic.
+        ◦ **Zero Tolerance**: No failing tests in CI/CD pipeline, pre-commit hooks prevent bad code.
+        ◦ **Testing Pyramid**: 70% Unit Tests, 20% Integration Tests, 10% E2E Tests.
+    • 7.2 Testing Infrastructure:
+        ◦ **Frontend Testing**: Jest + React Testing Library + MSW for API mocking.
+        ◦ **Backend Testing**: Jest for Cloud Functions with Firebase Emulators.
+        ◦ **Test Utilities**: Custom render functions with providers, mock data factories.
+        ◦ **Coverage Reporting**: HTML, LCOV, and Codecov integration.
+    • 7.3 Quality Gates:
+        ◦ **Pre-commit**: ESLint, TypeScript, unit tests, coverage thresholds.
+        ◦ **CI/CD Pipeline**: Quality checks, security scans, performance tests, build validation.
+        ◦ **Protected Branches**: main, staging require all checks to pass.
+    • 7.4 Test Organization:
+        ◦ **Component Tests**: `src/components/**/__tests__/ComponentName.test.tsx`
+        ◦ **Hook Tests**: `src/hooks/__tests__/hookName.test.ts`
+        ◦ **API Tests**: `src/store/api/__tests__/apiName.test.ts`
+        ◦ **Function Tests**: `functions/src/__tests__/functionName.test.ts`
+    • 7.5 Mocking Strategy:
+        ◦ **API Mocking**: MSW handlers for all endpoints with realistic test data.
+        ◦ **Firebase Mocking**: Jest mocks for Firestore, Auth, and Storage.
+        ◦ **User Interactions**: @testing-library/user-event for realistic user behavior.
+    • 7.6 Continuous Improvement:
+        ◦ **Weekly Reviews**: Test coverage analysis and flaky test identification.
+        ◦ **Team Training**: Testing workshops and pair programming sessions.
+        ◦ **Metrics Tracking**: Test execution time, coverage trends, maintenance overhead.
+
+8. Future Enhancements
     • Mobile Companion App: A React Native application for mechanics to update job cards, upload photos of repairs, and clock in/out of jobs directly from the workshop floor.
     • AI-Powered Insights: A module using vehicle service history and mileage to provide predictive maintenance recommendations (e.g., "Brake pads likely need replacement in the next 2,000 km").
     • Fintech Integration: Partnering with local financial institutions to provide open-banking integration for instant customer loan approvals for vehicle purchases or major repairs.
