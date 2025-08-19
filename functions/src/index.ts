@@ -4,4 +4,5 @@ export * from './vehicles';
 export * from './customers';
 export * from './sales';
 export * from './repairs';
-export * from './invoices'; 
+export * from './invoices';
+export * from './upload'; 
