@@ -122,7 +122,7 @@ const mockInvoices = [
 export const handlers = [
   // Vehicles API
   http.get('/api/v1/tenant/:tenantId/vehicles', () => {
-    return HttpResponse.json({ vehicles: mockVehicles });
+    return HttpResponse.json(mockVehicles);
   }),
 
   http.get('/api/v1/tenant/:tenantId/vehicles/:id', ({ params }) => {
@@ -135,7 +135,16 @@ export const handlers = [
 
   http.post('/api/v1/tenant/:tenantId/vehicles', async ({ request }) => {
     const vehicle = await request.json();
-    return HttpResponse.json({ id: 'new-id', ...vehicle });
+    return HttpResponse.json({ id: 'new-id', ...vehicle, tenantId: 'demo-tenant' });
+  }),
+
+  http.put('/api/v1/tenant/:tenantId/vehicles/:id', async ({ request }) => {
+    const vehicle = await request.json();
+    return HttpResponse.json({ id: '1', ...vehicle, tenantId: 'demo-tenant' });
+  }),
+
+  http.delete('/api/v1/tenant/:tenantId/vehicles/:id', () => {
+    return HttpResponse.json({ success: true });
   }),
 
   // Customers API

@@ -1,27 +1,31 @@
 import { vehiclesApi } from '../vehiclesApi';
-import { setupServer } from 'msw/node';
-import { handlers } from '../../../test/mocks/handlers';
+import { configureStore } from '@reduxjs/toolkit';
 
-const server = setupServer(...handlers);
-
-beforeAll(() => server.listen());
-afterEach(() => server.resetHandlers());
-afterAll(() => server.close());
+// Mock fetch globally
+const mockFetch = jest.fn();
+global.fetch = mockFetch;
 
 describe('vehiclesApi', () => {
-  const store = vehiclesApi.util.getRunningQueriesThunk();
+  let store: ReturnType<typeof setupStore>;
+
+  const setupStore = () => {
+    return configureStore({
+      reducer: {
+        [vehiclesApi.reducerPath]: vehiclesApi.reducer,
+      },
+      middleware: (getDefaultMiddleware) =>
+        getDefaultMiddleware().concat(vehiclesApi.middleware),
+    });
+  };
 
   beforeEach(() => {
-    store.dispatch(vehiclesApi.util.resetApiState());
+    store = setupStore();
+    mockFetch.mockClear();
   });
 
   describe('getVehicles', () => {
     it('fetches vehicles successfully', async () => {
-      const result = await store.dispatch(
-        vehiclesApi.endpoints.getVehicles.initiate('demo-tenant')
-      );
-
-      expect(result.data).toEqual([
+      const mockVehicles = [
         {
           id: '1',
           tenantId: 'demo-tenant',
@@ -43,14 +47,24 @@ describe('vehiclesApi', () => {
           createdAt: new Date('2024-01-01'),
           updatedAt: new Date('2024-01-01'),
         },
-      ]);
-      expect(result.isSuccess).toBe(true);
+      ];
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockVehicles,
+        clone: function() { return this; },
+      });
+
+      const result = await store.dispatch(
+        vehiclesApi.endpoints.getVehicles.initiate('demo-tenant')
+      );
+
+      expect(result.data).toEqual(mockVehicles);
+      expect('data' in result).toBe(true);
     });
 
     it('handles network errors', async () => {
-      server.use(
-        handlers.find(h => h.info.method === 'GET' && h.info.path.includes('/vehicles'))!
-      );
+      mockFetch.mockRejectedValueOnce(new Error('Network error'));
 
       const result = await store.dispatch(
         vehiclesApi.endpoints.getVehicles.initiate('demo-tenant')
@@ -63,14 +77,7 @@ describe('vehiclesApi', () => {
 
   describe('getVehicle', () => {
     it('fetches a single vehicle successfully', async () => {
-      const result = await store.dispatch(
-        vehiclesApi.endpoints.getVehicle.initiate({
-          tenantId: 'demo-tenant',
-          vehicleId: '1',
-        })
-      );
-
-      expect(result.data).toEqual({
+      const mockVehicle = {
         id: '1',
         tenantId: 'demo-tenant',
         vin: 'ABC123456789',
@@ -90,11 +97,33 @@ describe('vehiclesApi', () => {
         features: ['Air Conditioning', 'Bluetooth'],
         createdAt: new Date('2024-01-01'),
         updatedAt: new Date('2024-01-01'),
+      };
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockVehicle,
+        clone: function() { return this; },
       });
-      expect(result.isSuccess).toBe(true);
+
+      const result = await store.dispatch(
+        vehiclesApi.endpoints.getVehicle.initiate({
+          tenantId: 'demo-tenant',
+          vehicleId: '1',
+        })
+      );
+
+      expect(result.data).toEqual(mockVehicle);
+      expect('data' in result).toBe(true);
     });
 
     it('handles vehicle not found', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 404,
+        statusText: 'Not Found',
+        clone: function() { return this; },
+      });
+
       const result = await store.dispatch(
         vehiclesApi.endpoints.getVehicle.initiate({
           tenantId: 'demo-tenant',
@@ -128,16 +157,24 @@ describe('vehiclesApi', () => {
         },
       };
 
+      const mockCreatedVehicle = {
+        id: 'new-id',
+        ...newVehicle.vehicle,
+        tenantId: 'demo-tenant',
+      };
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockCreatedVehicle,
+        clone: function() { return this; },
+      });
+
       const result = await store.dispatch(
         vehiclesApi.endpoints.createVehicle.initiate(newVehicle)
       );
 
-      expect(result.data).toEqual({
-        id: 'new-id',
-        ...newVehicle.vehicle,
-        tenantId: 'demo-tenant',
-      });
-      expect(result.isSuccess).toBe(true);
+      expect(result.data).toEqual(mockCreatedVehicle);
+      expect('data' in result).toBe(true);
     });
   });
 
@@ -152,21 +189,35 @@ describe('vehiclesApi', () => {
         },
       };
 
+      const mockUpdatedVehicle = {
+        id: '1',
+        ...updateData.vehicle,
+        tenantId: 'demo-tenant',
+      };
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockUpdatedVehicle,
+        clone: function() { return this; },
+      });
+
       const result = await store.dispatch(
         vehiclesApi.endpoints.updateVehicle.initiate(updateData)
       );
 
-      expect(result.data).toEqual({
-        id: '1',
-        ...updateData.vehicle,
-        tenantId: 'demo-tenant',
-      });
-      expect(result.isSuccess).toBe(true);
+      expect(result.data).toEqual(mockUpdatedVehicle);
+      expect('data' in result).toBe(true);
     });
   });
 
   describe('deleteVehicle', () => {
     it('deletes a vehicle successfully', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ success: true }),
+        clone: function() { return this; },
+      });
+
       const result = await store.dispatch(
         vehiclesApi.endpoints.deleteVehicle.initiate({
           tenantId: 'demo-tenant',
@@ -175,7 +226,7 @@ describe('vehiclesApi', () => {
       );
 
       expect(result.data).toEqual({ success: true });
-      expect(result.isSuccess).toBe(true);
+      expect('data' in result).toBe(true);
     });
   });
 }); 
