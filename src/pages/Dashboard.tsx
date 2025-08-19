@@ -13,11 +13,12 @@ import {
 } from '@heroicons/react/24/outline';
 
 // Import actual page components
+import DashboardHome from './DashboardHome';
 import SalesPage from './SalesPage';
 import RepairsPage from './RepairsPage';
 import CustomersPage from './CustomersPage';
 import InventoryPage from './InventoryPage';
-const InvoicesPage = () => <div className="p-6">Invoices & Payments</div>;
+import InvoicesPage from './InvoicesPage';
 const SettingsPage = () => <div className="p-6">Settings</div>;
 
 const Dashboard: React.FC = () => {
@@ -106,7 +107,7 @@ const Dashboard: React.FC = () => {
           <div className="py-6">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
               <Routes>
-                <Route path="/" element={<div className="p-6">Welcome to Garaji Flow Dashboard</div>} />
+                <Route path="/" element={<DashboardHome />} />
                 <Route path="/sales" element={<SalesPage />} />
                 <Route path="/repairs" element={<RepairsPage />} />
                 <Route path="/customers" element={<CustomersPage />} />
