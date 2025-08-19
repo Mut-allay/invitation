@@ -1,1 +1,5 @@
-export { onUserCreate, setCustomClaims } from './auth'; 
+// Export all Cloud Functions
+export * from './auth';
+export * from './vehicles';
+export * from './customers';
+export * from './sales'; 

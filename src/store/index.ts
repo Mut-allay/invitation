@@ -1,16 +1,21 @@
 import { configureStore } from '@reduxjs/toolkit';
-import { setupListeners } from '@reduxjs/toolkit/query';
-import { api } from './api';
+import { vehiclesApi } from './api/vehiclesApi';
+import { customersApi } from './api/customersApi';
+import { salesApi } from './api/salesApi';
 
 export const store = configureStore({
   reducer: {
-    [api.reducerPath]: api.reducer,
+    [vehiclesApi.reducerPath]: vehiclesApi.reducer,
+    [customersApi.reducerPath]: customersApi.reducer,
+    [salesApi.reducerPath]: salesApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(api.middleware),
+    getDefaultMiddleware().concat(
+      vehiclesApi.middleware,
+      customersApi.middleware,
+      salesApi.middleware,
+    ),
 });
-
-setupListeners(store.dispatch);
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch; 

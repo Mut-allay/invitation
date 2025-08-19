@@ -12,8 +12,8 @@ import {
   ArrowRightOnRectangleIcon,
 } from '@heroicons/react/24/outline';
 
-// Placeholder components for now
-const SalesPage = () => <div className="p-6">Sales Management</div>;
+// Import actual page components
+import SalesPage from './SalesPage';
 const RepairsPage = () => <div className="p-6">Repairs & Service</div>;
 const CustomersPage = () => <div className="p-6">Customer Management</div>;
 const InventoryPage = () => <div className="p-6">Inventory Management</div>;
