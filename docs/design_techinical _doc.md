@@ -180,6 +180,11 @@ downloadcontent_copyexpand_less
             ▪ POST /api/v1/tenant/{tenantId}/payments/mobile-money – processMobileMoneyPayment
             ▪ POST /api/v1/tenant/{tenantId}/payments/bank-transfer – processBankTransfer
             ▪ GET /api/v1/tenant/{tenantId}/zra/validate-tpin – validateTPIN
+            ▪ POST /api/v1/tenant/{tenantId}/parts-orders – createPartsOrder
+            ▪ GET /api/v1/tenant/{tenantId}/parts-orders – getPartsOrders
+            ▪ PUT /api/v1/tenant/{tenantId}/parts-orders/{orderId}/status – updateOrderStatus
+            ▪ POST /api/v1/tenant/{tenantId}/parts-equalizations – createEqualization
+            ▪ GET /api/v1/tenant/{tenantId}/parts-equalizations – getEqualizations
 
         ◦ Security:
             ▪ Every function will first verify the Firebase ID token from the Authorization header.
@@ -200,6 +205,9 @@ repairs	{repairId}	tenantId, customerId, vehicleId, status (enum), reportedIssue
 sales	{saleId}	tenantId, customerId, vehicleId, salePrice, deposit, balance, status (enum)	Records a vehicle sale transaction.
 invoices	{invoiceId}	tenantId, saleId OR repairId, invoiceNumber, totalAmount, taxBreakdown (map), markId (ZRA), dueDate	Financial invoice, linked to a sale or repair.
 payments	{paymentId}	tenantId, invoiceId, amount, method (enum), reference, provider (mobile money)	Records a payment against an invoice.
+partsOrders	{orderId}	tenantId, supplierTenantId, status (enum), totalAmount, orderDate, expectedDelivery, notes	Parts orders from workshop to supplier.
+↳ orderItems	{itemId}	inventoryId, qty, unitPrice, totalPrice, status (enum)	Individual items in a parts order.
+partsEqualizations	{equalizationId}	tenantId, partnerTenantId, period (YYYY-MM), totalAmount, status (enum), settlementDate	Payment equalization between partner businesses.
 auditLogs	{logId}	tenantId, actorUid, entityType, entityId, action (enum), diff (map), timestamp	Immutable log of all critical system actions.
 
 **Zambian Market Extensions**:
@@ -232,6 +240,10 @@ zraSubmissions	{submissionId}	invoiceId, markId, qrCodeUrl, submissionStatus, re
         ◦ Barcode/QR code scanning using the device camera or a connected USB scanner for quick part identification.
         ◦ Automated low-stock reports emailed to managers when currentStock falls below reorderLevel.
         ◦ Tool tracking module with a digital check-in/check-out log assigned to mechanics.
+        ◦ **Parts Ordering System**: Workshop managers can order parts from automotive shops (same business or partner businesses).
+        ◦ **Payment Equalization**: Automated payment reconciliation for parts used in repairs between workshop and parts supplier.
+        ◦ **Partner Business Integration**: Seamless integration with partner automotive shops for parts procurement.
+        ◦ **Real-time Inventory Sync**: Live inventory synchronization between workshop and parts supplier systems.
 
     • 3.4 Customer Relationship Management (CRM):
         ◦ Customer segmentation based on behavior (e.g., new buyer, service-only, inactive > 90 days).
@@ -465,7 +477,23 @@ setCustomUserClaims(uid, { tenantId, role, permissions: ['create_invoice', 'dele
 - Modern design patterns
 - Component library maintenance
 
-### 8.6 Hytel Dev Shop Collective Excellence
+### 8.6 Neo - Parts Management & Supply Chain Developer
+**Role**: Parts Ordering System & Supply Chain Integration
+**Capabilities Demonstrated**:
+- Supply chain management systems
+- Multi-business integration
+- Payment equalization and reconciliation
+- Real-time inventory synchronization
+- Partner business management
+
+**Key Contributions**:
+- Parts ordering and procurement system
+- Inter-business payment equalization
+- Supply chain workflow automation
+- Partner business integration
+- Parts tracking and reconciliation
+
+### 8.7 Hytel Dev Shop Collective Excellence
 **Technical Capabilities Showcased**:
 - **Full-Stack Development**: Complete frontend and backend expertise
 - **Local Market Understanding**: Deep knowledge of Zambian business requirements
