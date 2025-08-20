@@ -6,8 +6,8 @@ import {
   UserGroupIcon,
   CubeIcon,
   DocumentTextIcon,
-  TrendingUpIcon,
-  TrendingDownIcon,
+  ArrowTrendingUpIcon,
+  ArrowTrendingDownIcon,
   ClockIcon,
   CheckCircleIcon
 } from '@heroicons/react/24/outline';
@@ -87,9 +87,9 @@ const DashboardHome: React.FC = () => {
           {trend && (
             <div className="flex items-center mt-2">
               {trend.isPositive ? (
-                <TrendingUpIcon className="h-4 w-4 text-green-500 mr-1" />
+                <ArrowTrendingUpIcon className="h-4 w-4 text-green-500 mr-1" />
               ) : (
-                <TrendingDownIcon className="h-4 w-4 text-red-500 mr-1" />
+                <ArrowTrendingDownIcon className="h-4 w-4 text-red-500 mr-1" />
               )}
               <span className={`text-sm ${trend.isPositive ? 'text-green-600' : 'text-red-600'}`}>
                 {trend.value}% from last month

@@ -5,10 +5,11 @@ import { Vehicle } from '../../types/vehicle';
 interface VehicleCardProps {
   vehicle: Vehicle;
   onView: () => void;
+  onEdit?: () => void;
   onSale: () => void;
 }
 
-export const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, onView, onSale }) => {
+export const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, onView, onEdit, onSale }) => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'available':
@@ -91,6 +92,17 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, onView, onSal
             <EyeIcon className="h-4 w-4 mr-1" />
             View
           </button>
+          {onEdit && (
+            <button
+              onClick={onEdit}
+              className="flex-1 bg-yellow-100 text-yellow-700 px-3 py-2 rounded-lg text-sm font-medium hover:bg-yellow-200 transition-colors flex items-center justify-center"
+            >
+              <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+              Edit
+            </button>
+          )}
           {vehicle.status === 'available' && (
             <button
               onClick={onSale}

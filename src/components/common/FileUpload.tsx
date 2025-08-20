@@ -2,7 +2,6 @@ import React, { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { 
   CloudArrowUpIcon, 
-  XMarkIcon, 
   DocumentIcon,
   PhotoIcon,
   CheckCircleIcon,

@@ -1,14 +1,11 @@
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { onDocumentCreated, onDocumentUpdated, onDocumentDeleted } from 'firebase-functions/v2/firestore';
 import { getFirestore } from 'firebase-admin/firestore';
-import { getAuth } from 'firebase-admin/auth';
 import { initializeApp } from 'firebase-admin/app';
 
 // Initialize Firebase Admin
 initializeApp();
 
 const db = getFirestore();
-const auth = getAuth();
 
 // Get vehicles for a tenant
 export const getVehicles = onCall<{ tenantId: string }>(async (request) => {
@@ -81,7 +78,7 @@ export const getVehicle = onCall<{ tenantId: string; vehicleId: string }>(async 
 });
 
 // Create a new vehicle
-export const createVehicle = onCall<{ tenantId: string; vehicle: any }>(async (request) => {
+export const createVehicle = onCall<{ tenantId: string; vehicle: Record<string, unknown> }>(async (request) => {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'User must be authenticated');
   }
@@ -119,7 +116,7 @@ export const createVehicle = onCall<{ tenantId: string; vehicle: any }>(async (r
 });
 
 // Update a vehicle
-export const updateVehicle = onCall<{ tenantId: string; vehicleId: string; vehicle: any }>(async (request) => {
+export const updateVehicle = onCall<{ tenantId: string; vehicleId: string; vehicle: Record<string, unknown> }>(async (request) => {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'User must be authenticated');
   }
