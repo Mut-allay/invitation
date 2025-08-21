@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 const Login: React.FC = () => {
@@ -6,7 +7,15 @@ const Login: React.FC = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, user } = useAuth();
+  const navigate = useNavigate();
+
+  // Redirect if user is already logged in
+  useEffect(() => {
+    if (user) {
+      navigate('/');
+    }
+  }, [user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -14,10 +23,13 @@ const Login: React.FC = () => {
     setLoading(true);
 
     try {
+      console.log('Attempting login with:', email);
       await login(email, password);
+      console.log('Login successful!');
+      // The redirect will happen automatically via useEffect when user state updates
     } catch (error) {
-      setError('Failed to log in. Please check your credentials.');
       console.error('Login error:', error);
+      setError('Failed to log in. Please check your credentials.');
     } finally {
       setLoading(false);
     }
