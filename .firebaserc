@@ -1,0 +1,8 @@
+{
+  "projects": {
+    "default": "garaji-flow-dev",
+    "dev": "garaji-flow-dev",
+    "staging": "garaji-flow-staging",
+    "prod": "garaji-flow-prod"
+  }
+} 

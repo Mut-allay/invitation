@@ -1,0 +1,30 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Allow authenticated users to upload files to their own folder
+    match /users/{userId}/{allPaths=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Allow authenticated users to upload vehicle images
+    match /vehicles/{vehicleId}/{allPaths=**} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Allow authenticated users to upload repair documents
+    match /repairs/{repairId}/{allPaths=**} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Allow authenticated users to upload invoice attachments
+    match /invoices/{invoiceId}/{allPaths=**} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Admin access for all files
+    match /{allPaths=**} {
+      allow read, write: if request.auth != null && 
+        request.auth.token.role == 'admin';
+    }
+  }
+} 
