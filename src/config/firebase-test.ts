@@ -4,7 +4,6 @@ import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 import { getFunctions } from 'firebase/functions';
 
-// Use test environment configuration for now
 const firebaseConfig = {
   apiKey: "AIzaSyBvqKLZSeTmCRJiMBGOR3D3HH9F_IGkk60",
   authDomain: "garaji-flow-test.firebaseapp.com",
