@@ -1,13 +1,11 @@
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { getFirestore } from 'firebase-admin/firestore';
-import { getAuth } from 'firebase-admin/auth';
+import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 import { initializeApp } from 'firebase-admin/app';
 
 // Initialize Firebase Admin
 initializeApp();
 
 const db = getFirestore();
-const auth = getAuth();
 
 // Get sales for a tenant
 export const getSales = onCall<{ tenantId: string }>(async (request) => {
@@ -117,7 +115,7 @@ export const createSale = onCall<{ tenantId: string; sale: any }>(async (request
     // Update customer's vehicles owned
     const customerRef = db.collection('customers').doc(sale.customerId);
     batch.update(customerRef, {
-      vehiclesOwned: db.FieldValue.arrayUnion(sale.vehicleId),
+      vehiclesOwned: FieldValue.arrayUnion(sale.vehicleId),
       updatedAt: new Date(),
     });
 

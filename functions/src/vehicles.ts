@@ -1,4 +1,5 @@
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
+import { onDocumentUpdated } from 'firebase-functions/v2/firestore'; // <-- FIXED: Added this import for the trigger
 import { getFirestore } from 'firebase-admin/firestore';
 import { initializeApp } from 'firebase-admin/app';
 
@@ -90,7 +91,7 @@ export const createVehicle = onCall<{ tenantId: string; vehicle: Record<string, 
     throw new HttpsError('permission-denied', 'Access denied to this tenant');
   }
 
-  // Check permissions
+  // Check permissions from custom claims
   if (!userClaims.permissions?.includes('create_vehicle')) {
     throw new HttpsError('permission-denied', 'Insufficient permissions');
   }
@@ -203,7 +204,7 @@ export const deleteVehicle = onCall<{ tenantId: string; vehicleId: string }>(asy
 });
 
 // Trigger: Update vehicle status when sold
-export const onVehicleStatusUpdate = onDocumentUpdated('vehicles/{vehicleId}', async (event) => {
+export const onVehicleStatusUpdate = onDocumentUpdated('vehicles/{vehicleId}', async (event: any) => {
   const beforeData = event.data?.before.data();
   const afterData = event.data?.after.data();
 
@@ -211,7 +212,7 @@ export const onVehicleStatusUpdate = onDocumentUpdated('vehicles/{vehicleId}', a
     // Vehicle was just sold, create audit log
     const auditLog = {
       tenantId: afterData.tenantId,
-      actorUid: 'system',
+      actorUid: 'system', // Or capture the user who made the change if available
       entityType: 'vehicle',
       entityId: event.params.vehicleId,
       action: 'vehicle_sold',
@@ -222,6 +223,6 @@ export const onVehicleStatusUpdate = onDocumentUpdated('vehicles/{vehicleId}', a
     };
 
     await db.collection('auditLogs').add(auditLog);
-    console.log(`Vehicle ${event.params.vehicleId} marked as sold`);
+    console.log(`Vehicle ${event.params.vehicleId} marked as sold and logged.`);
   }
-}); 
+});

@@ -1,5 +1,5 @@
-import React from 'react';
-import { Repair } from '../../types/repair';
+import React, { useState, useEffect } from 'react';
+import type { Repair, RepairFormData } from '../../types/index';
 
 interface RepairModalProps {
   repair: Repair;

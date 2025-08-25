@@ -1,15 +1,13 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { Repair, RepairFormData } from '../../types/repair';
+import { Repair, RepairFormData } from '../../types/index';
 
 export const repairsApi = createApi({
   reducerPath: 'repairsApi',
   baseQuery: fetchBaseQuery({
     baseUrl: '/api/v1',
-    prepareHeaders: (headers, { getState }) => {
+    prepareHeaders: (headers) => {
       const token = localStorage.getItem('authToken');
-      if (token) {
-        headers.set('authorization', `Bearer ${token}`);
-      }
+      if (token) headers.set('authorization', `Bearer ${token}`);
       return headers;
     },
   }),
@@ -19,12 +17,10 @@ export const repairsApi = createApi({
       query: (tenantId) => `/tenant/${tenantId}/repairs`,
       providesTags: ['Repair'],
     }),
-    
     getRepair: builder.query<Repair, { tenantId: string; repairId: string }>({
       query: ({ tenantId, repairId }) => `/tenant/${tenantId}/repairs/${repairId}`,
       providesTags: (result, error, { repairId }) => [{ type: 'Repair', id: repairId }],
     }),
-    
     createRepair: builder.mutation<Repair, { tenantId: string; repair: RepairFormData }>({
       query: ({ tenantId, repair }) => ({
         url: `/tenant/${tenantId}/repairs`,
@@ -33,7 +29,6 @@ export const repairsApi = createApi({
       }),
       invalidatesTags: ['Repair'],
     }),
-    
     updateRepair: builder.mutation<Repair, { tenantId: string; repairId: string; repair: Partial<RepairFormData> }>({
       query: ({ tenantId, repairId, repair }) => ({
         url: `/tenant/${tenantId}/repairs/${repairId}`,
@@ -45,7 +40,6 @@ export const repairsApi = createApi({
         'Repair',
       ],
     }),
-    
     deleteRepair: builder.mutation<void, { tenantId: string; repairId: string }>({
       query: ({ tenantId, repairId }) => ({
         url: `/tenant/${tenantId}/repairs/${repairId}`,
