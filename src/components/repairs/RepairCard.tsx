@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { 
   WrenchScrewdriverIcon, 
-  CalendarIcon, 
   ClockIcon,
   UserIcon,
   TruckIcon,

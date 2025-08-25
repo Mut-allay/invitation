@@ -5,7 +5,6 @@ import { useSales } from '../hooks/useSales';
 import { useRepairs } from '../hooks/useRepairs';
 import { useInventory } from '../hooks/useInventory';
 import { useInvoices } from '../hooks/useInvoices';
-import type { Vehicle, Customer, Sale, Repair, Inventory, Invoice } from '../types/index';
 
 const AppDemo: React.FC = () => {
   const [activeTab, setActiveTab] = useState('vehicles');

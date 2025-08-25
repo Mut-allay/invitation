@@ -11,7 +11,7 @@ import { CustomerModal } from '../components/customers/CustomerModal';
 import CustomerDetailView from '../components/customers/CustomerDetailView';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import { useCustomers } from '../hooks/useCustomers';
 import { getErrorMessage } from '@/lib/utils';

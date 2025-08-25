@@ -30,6 +30,7 @@ describe('useVehicles', () => {
   });
 
   it('returns vehicles data when API call is successful', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { useGetVehiclesQuery } = require('../../store/api/vehiclesApi');
     useGetVehiclesQuery.mockReturnValue({
       data: mockVehicles,
@@ -47,6 +48,7 @@ describe('useVehicles', () => {
   });
 
   it('returns loading state when API call is in progress', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { useGetVehiclesQuery } = require('../../store/api/vehiclesApi');
     useGetVehiclesQuery.mockReturnValue({
       data: undefined,
@@ -64,6 +66,7 @@ describe('useVehicles', () => {
   });
 
   it('returns error when API call fails', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { useGetVehiclesQuery } = require('../../store/api/vehiclesApi');
     const mockError = { data: { message: 'Failed to fetch vehicles' } };
     useGetVehiclesQuery.mockReturnValue({
@@ -82,6 +85,7 @@ describe('useVehicles', () => {
   });
 
   it('returns default empty array when no data is available', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { useGetVehiclesQuery } = require('../../store/api/vehiclesApi');
     useGetVehiclesQuery.mockReturnValue({
       data: undefined,
@@ -99,6 +103,7 @@ describe('useVehicles', () => {
   });
 
   it('handles error without data.message gracefully', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { useGetVehiclesQuery } = require('../../store/api/vehiclesApi');
     const mockError = { message: 'Network error' };
     useGetVehiclesQuery.mockReturnValue({
@@ -124,6 +129,7 @@ describe('useVehicles', () => {
       }),
     }));
 
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { useGetVehiclesQuery } = require('../../store/api/vehiclesApi');
     useGetVehiclesQuery.mockReturnValue({
       data: undefined,

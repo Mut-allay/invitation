@@ -16,7 +16,7 @@ interface CommandItem {
   id: string;
   title: string;
   description: string;
-  icon: React.ComponentType<any>;
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   action: () => void;
   category: 'navigation' | 'actions' | 'recent';
   keywords: string[];

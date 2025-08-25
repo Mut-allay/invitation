@@ -51,7 +51,7 @@ export const useMockVehicles = () => {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [filteredVehicles, setFilteredVehicles] = useState<Vehicle[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error] = useState<string | null>(null);
 
   useEffect(() => {
     // Simulate API call

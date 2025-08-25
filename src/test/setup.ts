@@ -2,6 +2,7 @@ import '@testing-library/jest-dom';
 
 // Ensure Jest DOM matchers are available
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace jest {
     interface Matchers<R> {
       toBeInTheDocument(): R;
@@ -13,11 +14,11 @@ declare global {
 
 // Polyfill TextEncoder for Node.js environment
 import { TextEncoder, TextDecoder } from 'util';
-(global as any).TextEncoder = TextEncoder;
-(global as any).TextDecoder = TextDecoder;
+(global as unknown as { TextEncoder: typeof TextEncoder }).TextEncoder = TextEncoder;
+(global as unknown as { TextDecoder: typeof TextDecoder }).TextDecoder = TextDecoder;
 
 // Polyfill fetch for Node.js environment
-(global as any).fetch = jest.fn(() => {
+(global as unknown as { fetch: jest.Mock }).fetch = jest.fn(() => {
   const response = {
     ok: true,
     status: 200,
@@ -36,8 +37,8 @@ import { TextEncoder, TextDecoder } from 'util';
   return Promise.resolve(response);
 }) as jest.Mock;
 
-(global as any).Request = jest.fn() as any;
-(global as any).Response = jest.fn() as any;
+(global as unknown as { Request: jest.Mock }).Request = jest.fn() as jest.Mock;
+(global as unknown as { Response: jest.Mock }).Response = jest.fn() as jest.Mock;
 
 // Temporarily disable MSW for testing due to version compatibility issues
 // import { server } from './mocks/server';
@@ -56,7 +57,7 @@ afterEach(() => {
 // afterAll(() => server.close());
 
 // Mock IntersectionObserver
-(global as any).IntersectionObserver = class IntersectionObserver {
+(global as unknown as { IntersectionObserver: typeof IntersectionObserver }).IntersectionObserver = class IntersectionObserver {
   constructor() {}
   disconnect() {}
   observe() {}
@@ -65,15 +66,15 @@ afterEach(() => {
   rootMargin: string = '';
   thresholds: readonly number[] = [];
   takeRecords() { return []; }
-} as any;
+} as typeof IntersectionObserver;
 
 // Mock ResizeObserver
-(global as any).ResizeObserver = class ResizeObserver {
+(global as unknown as { ResizeObserver: typeof ResizeObserver }).ResizeObserver = class ResizeObserver {
   constructor() {}
   disconnect() {}
   observe() {}
   unobserve() {}
-};
+} as typeof ResizeObserver;
 
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
@@ -99,7 +100,7 @@ const localStorageMock = {
   length: 0,
   key: jest.fn(),
 };
-(global as any).localStorage = localStorageMock as any;
+(global as unknown as { localStorage: typeof localStorage }).localStorage = localStorageMock as typeof localStorage;
 
 // Mock sessionStorage
 const sessionStorageMock = {
@@ -110,7 +111,7 @@ const sessionStorageMock = {
   length: 0,
   key: jest.fn(),
 };
-(global as any).sessionStorage = sessionStorageMock as any;
+(global as unknown as { sessionStorage: typeof sessionStorage }).sessionStorage = sessionStorageMock as typeof sessionStorage;
 
 // Suppress console errors in tests unless explicitly needed
 const originalError = console.error;

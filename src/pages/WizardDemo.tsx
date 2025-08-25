@@ -5,16 +5,16 @@ import Step2 from '../components/organisms/forms/Step2';
 import Step3 from '../components/organisms/forms/Step3';
 
 const WizardDemo: React.FC = () => {
-  const [formData, setFormData] = React.useState<Record<string, any>>({});
+  const [formData, setFormData] = React.useState<Record<string, unknown>>({});
 
-  const updateFormData = (stepId: string, data: any) => {
+  const updateFormData = (stepId: string, data: Record<string, unknown>) => {
     setFormData(prev => ({
       ...prev,
-      [stepId]: { ...prev[stepId], ...data }
+      [stepId]: { ...(prev[stepId] as Record<string, unknown> || {}), ...data }
     }));
   };
 
-  const handleFormComplete = (formData: any) => {
+  const handleFormComplete = (formData: Record<string, unknown>) => {
     console.log('Form completed with data:', formData);
     alert('Form submitted successfully! Check console for data.');
   };

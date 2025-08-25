@@ -53,7 +53,7 @@ const Login: React.FC = () => {
       // Mock Google sign-in for now
       await new Promise(resolve => setTimeout(resolve, 1000));
       success('Google sign-in feature coming soon!');
-    } catch (error) {
+    } catch {
       showError('Google sign-in failed. Please try again.');
     } finally {
       setLoading(false);

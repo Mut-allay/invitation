@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { 
   PlusIcon, 
   MagnifyingGlassIcon, 
-  FunnelIcon,
   CubeIcon,
   ExclamationTriangleIcon,
   CurrencyDollarIcon,
@@ -15,8 +14,6 @@ import {
   ShoppingCartIcon
 } from '@heroicons/react/24/outline';
 import { useInventory } from '../hooks/useInventory';
-import { useVehicles } from '../hooks/useVehicles';
-import { InventoryCard } from '../components/inventory/InventoryCard';
 import { InventoryModal } from '../components/inventory/InventoryModal';
 import { SupplierModal } from '../components/inventory/SupplierModal';
 import { useToast } from '../contexts/ToastContext';
@@ -159,7 +156,7 @@ const InventoryPage: React.FC = () => {
   const [isCreating, setIsCreating] = useState(false);
 
   const { inventory: apiInventory, loading, error } = useInventory();
-  const { success, error: toastError } = useToast();
+  const { success } = useToast();
 
   // Use mock data if API returns empty
   const inventory = apiInventory.length === 0 && !loading ? mockInventory : apiInventory;

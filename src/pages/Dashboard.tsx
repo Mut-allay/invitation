@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
@@ -14,10 +14,8 @@ import {
   ChevronDownIcon,
   ChevronRightIcon,
   MagnifyingGlassIcon,
-  UserIcon,
   BellIcon,
-  Bars3Icon,
-  XMarkIcon
+  Bars3Icon
 } from '@heroicons/react/24/outline';
 
 // Import actual page components
@@ -38,7 +36,7 @@ const Dashboard: React.FC = () => {
   const { user, logout } = useAuth();
   const { success } = useToast();
   const location = useLocation();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  // Mobile navigation is handled by MobileNav component
   const [commandMenuOpen, setCommandMenuOpen] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set(['management', 'business']));
 
@@ -223,7 +221,7 @@ const Dashboard: React.FC = () => {
               <button
                 type="button"
                 className="lg:hidden p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary transition-all duration-200 interactive"
-                onClick={() => setSidebarOpen(true)}
+                onClick={() => {/* Mobile navigation handled by MobileNav component */}}
               >
                 <Bars3Icon className="h-6 w-6" />
               </button>

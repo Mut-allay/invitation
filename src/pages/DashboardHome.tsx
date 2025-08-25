@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
   CurrencyDollarIcon,
   TruckIcon,
   WrenchScrewdriverIcon,
   UserGroupIcon,
   CubeIcon,
-  DocumentTextIcon,
   ArrowTrendingUpIcon,
   ArrowTrendingDownIcon,
   ClockIcon,
@@ -143,7 +142,7 @@ const DashboardHome: React.FC = () => {
   const StatCard = ({ title, value, icon: Icon, color, trend, description, gradient }: {
     title: string;
     value: string | number;
-    icon: any;
+    icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
     color: string;
     trend?: { value: number; isPositive: boolean };
     description?: string;

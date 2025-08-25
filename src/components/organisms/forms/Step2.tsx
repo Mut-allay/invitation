@@ -1,8 +1,15 @@
 import React from 'react';
 
+interface CustomerFormData {
+  customerName?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+}
+
 interface Step2Props {
-  formData: any;
-  updateFormData: (data: any) => void;
+  formData: CustomerFormData;
+  updateFormData: (data: Partial<CustomerFormData>) => void;
   errors?: string;
 }
 

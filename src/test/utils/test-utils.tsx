@@ -37,18 +37,18 @@ const createTestStore = () => {
   });
 };
 
-// Mock auth context
-const mockAuthContext = {
-  user: {
-    id: 'test-user-id',
-    email: 'test@example.com',
-    tenantId: 'demo-tenant',
-    role: 'admin',
-  },
-  login: jest.fn(),
-  logout: jest.fn(),
-  loading: false,
-};
+// Mock auth context - commented out as it's not currently used
+// const mockAuthContext = {
+//   user: {
+//     id: 'test-user-id',
+//     email: 'test@example.com',
+//     tenantId: 'demo-tenant',
+//     role: 'admin',
+//   },
+//   login: jest.fn(),
+//   logout: jest.fn(),
+//   loading: false,
+// };
 
 // Custom render function that includes providers
 const AllTheProviders = ({ children }: { children: React.ReactNode }) => {

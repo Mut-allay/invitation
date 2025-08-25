@@ -1,8 +1,16 @@
 import React from 'react';
 
+interface ServiceFormData {
+  serviceType?: string;
+  priority?: string;
+  reportedIssues?: string;
+  estimatedCost?: string;
+  estimatedDuration?: string;
+}
+
 interface Step3Props {
-  formData: any;
-  updateFormData: (data: any) => void;
+  formData: ServiceFormData;
+  updateFormData: (data: Partial<ServiceFormData>) => void;
   errors?: string;
 }
 

@@ -1,15 +1,13 @@
 import React, { useState } from 'react';
 import { PlusIcon, MagnifyingGlassIcon, TruckIcon, CurrencyDollarIcon, EyeIcon } from '@heroicons/react/24/outline';
 import { useVehicles } from '../hooks/useVehicles';
-import { useSales } from '../hooks/useSales';
-import { useCustomers } from '../hooks/useCustomers';
 import { VehicleCard } from '../components/vehicles/VehicleCard';
 import { VehicleModal } from '../components/vehicles/VehicleModal';
 import { SaleModal } from '../components/sales/SaleModal';
 import VehicleDetailView from '../components/vehicles/VehicleDetailView';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import { getErrorMessage } from '@/lib/utils';
 import type { Vehicle } from '../types/index';

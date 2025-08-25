@@ -7,7 +7,6 @@ import {
   CalendarIcon, 
   MapPinIcon,
   CogIcon,
-  UserIcon,
   DocumentTextIcon
 } from '@heroicons/react/24/outline';
 import type { Vehicle } from '@/types/index';

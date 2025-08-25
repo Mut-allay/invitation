@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import type { Repair } from '../../types/index';
 
 interface JobCardModalProps {

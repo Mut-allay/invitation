@@ -7,7 +7,7 @@ const initialState = {
   },
 };
 
-const appReducer = (state = initialState, action: any) => {
+const appReducer = (state = initialState, action: { type: string; payload?: unknown }) => {
   switch (action.type) {
     case 'app/initialized':
       return {

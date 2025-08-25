@@ -182,7 +182,7 @@ export const SaleModal: React.FC<SaleModalProps> = ({ vehicle, isOpen, onClose }
               </label>
               <select
                 value={paymentMethod}
-                onChange={(e) => setPaymentMethod(e.target.value as any)}
+                onChange={(e) => setPaymentMethod(e.target.value as 'cash' | 'bank_transfer' | 'mobile_money')}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="cash">Cash</option>

@@ -1,8 +1,15 @@
 import React from 'react';
 
+interface VehicleFormData {
+  make?: string;
+  model?: string;
+  year?: string;
+  regNumber?: string;
+}
+
 interface Step1Props {
-  formData: any;
-  updateFormData: (data: any) => void;
+  formData: VehicleFormData;
+  updateFormData: (data: Partial<VehicleFormData>) => void;
   errors?: string;
 }
 

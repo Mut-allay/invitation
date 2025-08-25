@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { 
   PlusIcon, 
   MagnifyingGlassIcon, 
-  FunnelIcon,
   DocumentTextIcon,
   CurrencyDollarIcon,
   ClockIcon,
@@ -13,9 +12,6 @@ import {
   DocumentArrowDownIcon
 } from '@heroicons/react/24/outline';
 import { useInvoices } from '../hooks/useInvoices';
-import { useVehicles } from '../hooks/useVehicles';
-import { useCustomers } from '../hooks/useCustomers';
-import { InvoiceCard } from '../components/invoices/InvoiceCard';
 import { InvoiceModal } from '../components/invoices/InvoiceModal';
 import { PaymentModal } from '../components/invoices/PaymentModal';
 import { useToast } from '../contexts/ToastContext';
@@ -127,7 +123,7 @@ const InvoicesPage: React.FC = () => {
   const [isCreating, setIsCreating] = useState(false);
 
   const { invoices: apiInvoices, loading, error } = useInvoices();
-  const { success, error: toastError } = useToast();
+  const { success } = useToast();
 
   // Use mock data if API returns empty
   const invoices = apiInvoices.length === 0 && !loading ? mockInvoices : apiInvoices;

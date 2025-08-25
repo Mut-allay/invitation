@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import type { Invoice } from '../../types/index';
 
 interface PaymentModalProps {

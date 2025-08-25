@@ -1,10 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { 
   EyeIcon, 
   PencilIcon, 
   CubeIcon,
-  WrenchScrewdriverIcon,
-  BeakerIcon,
   ExclamationTriangleIcon
 } from '@heroicons/react/24/outline';
 import type { Inventory } from '../../types/index';

@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { 
   PlusIcon, 
   MagnifyingGlassIcon, 
-  FunnelIcon,
   ClockIcon,
   WrenchScrewdriverIcon,
   CheckCircleIcon,
@@ -12,9 +11,6 @@ import {
   CurrencyDollarIcon
 } from '@heroicons/react/24/outline';
 import { useRepairs } from '../hooks/useRepairs';
-import { useVehicles } from '../hooks/useVehicles';
-import { useCustomers } from '../hooks/useCustomers';
-import { RepairCard } from '../components/repairs/RepairCard';
 import { RepairModal } from '../components/repairs/RepairModal';
 import { JobCardModal } from '../components/repairs/JobCardModal';
 import { useToast } from '../contexts/ToastContext';
@@ -119,7 +115,7 @@ const RepairsPage: React.FC = () => {
   const [assignedTechnicians, setAssignedTechnicians] = useState<Record<string, string>>({});
 
   const { repairs: apiRepairs, loading, error } = useRepairs();
-  const { success, error: toastError } = useToast();
+  const { success } = useToast();
 
   // Use mock data if API returns empty or undefined
   const repairs = (!apiRepairs || apiRepairs.length === 0) && !loading ? mockRepairs : (apiRepairs || []);

@@ -1,14 +1,12 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { 
   DocumentTextIcon, 
   CurrencyDollarIcon, 
   CalendarIcon,
   CheckCircleIcon,
   ClockIcon,
-  XCircleIcon,
   EyeIcon,
-  PencilIcon,
-  TrashIcon
+  PencilIcon
 } from '@heroicons/react/24/outline';
 import type { Invoice } from '../../types/index';
 

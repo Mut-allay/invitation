@@ -27,7 +27,7 @@ interface MainChartProps {
 
 interface CustomTooltipProps {
   active?: boolean;
-  payload?: any[];
+  payload?: Array<{ name: string; value: number | string }>;
   label?: string;
 }
 

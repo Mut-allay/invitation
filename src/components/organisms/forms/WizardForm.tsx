@@ -14,7 +14,7 @@ interface WizardStep {
 
 interface WizardFormProps {
   steps: WizardStep[];
-  onComplete: (formData: any) => void;
+  onComplete: (formData: Record<string, unknown>) => void;
   title?: string;
   className?: string;
 }
@@ -26,7 +26,7 @@ const WizardForm: React.FC<WizardFormProps> = ({
   className = ''
 }) => {
   const [currentStep, setCurrentStep] = useState(0);
-  const [formData, setFormData] = useState<Record<string, any>>({});
+  const [formData, setFormData] = useState<Record<string, unknown>>({});
   const [isValidating, setIsValidating] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -34,10 +34,10 @@ const WizardForm: React.FC<WizardFormProps> = ({
   const isFirstStep = currentStep === 0;
   const isLastStep = currentStep === steps.length - 1;
 
-  const updateFormData = (stepId: string, data: any) => {
+  const updateFormData = (stepId: string, data: Record<string, unknown>) => {
     setFormData(prev => ({
       ...prev,
-      [stepId]: { ...prev[stepId], ...data }
+      [stepId]: { ...(prev[stepId] as Record<string, unknown> || {}), ...data }
     }));
   };
 
@@ -53,7 +53,7 @@ const WizardForm: React.FC<WizardFormProps> = ({
         setErrors({ [currentStepData.id]: 'Please complete all required fields' });
       }
       return isValid;
-    } catch (error) {
+    } catch {
       setErrors({ [currentStepData.id]: 'Validation failed' });
       return false;
     } finally {
@@ -153,9 +153,9 @@ const WizardForm: React.FC<WizardFormProps> = ({
         <div className="min-h-[200px]">
           {React.cloneElement(currentStepData.component as React.ReactElement, {
             formData: formData[currentStepData.id] || {},
-            updateFormData: (data: any) => updateFormData(currentStepData.id, data),
+            updateFormData: (data: Record<string, unknown>) => updateFormData(currentStepData.id, data),
             errors: errors[currentStepData.id]
-          } as any)}
+          } as Record<string, unknown>)}
         </div>
       </div>
 

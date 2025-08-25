@@ -5,17 +5,29 @@ import {
   Cog6ToothIcon,
   ShieldCheckIcon,
   DocumentTextIcon,
-  CurrencyDollarIcon,
-  BellIcon,
   CloudArrowUpIcon,
   ArrowPathIcon,
   CheckIcon,
-  XMarkIcon,
   PencilIcon,
   PlusIcon,
   TrashIcon
 } from '@heroicons/react/24/outline';
 import { useToast } from '../contexts/ToastContext';
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  status: string;
+}
+
+interface ServiceType {
+  id: string;
+  name: string;
+  basePrice: number;
+  description: string;
+}
 
 // Mock data
 const mockCompanyData = {
@@ -60,7 +72,7 @@ const SettingsPage: React.FC = () => {
   const [showAddUser, setShowAddUser] = useState(false);
   const [showAddService, setShowAddService] = useState(false);
 
-  const { success, error: toastError } = useToast();
+  const { success } = useToast();
 
   const tabs = [
     { id: 'company', name: 'Company Profile', icon: BuildingOfficeIcon },
@@ -76,10 +88,12 @@ const SettingsPage: React.FC = () => {
     success('Company profile updated successfully');
   };
 
-  const handleAddUser = (userData: any) => {
-    const newUser = {
+  const handleAddUser = (userData: Record<string, unknown>) => {
+    const newUser: User = {
       id: (users.length + 1).toString(),
-      ...userData,
+      name: userData.name as string,
+      email: userData.email as string,
+      role: userData.role as string,
       status: 'active',
     };
     setUsers([...users, newUser]);
@@ -92,10 +106,12 @@ const SettingsPage: React.FC = () => {
     success('User deleted successfully');
   };
 
-  const handleAddService = (serviceData: any) => {
-    const newService = {
+  const handleAddService = (serviceData: Record<string, unknown>) => {
+    const newService: ServiceType = {
       id: (serviceTypes.length + 1).toString(),
-      ...serviceData,
+      name: serviceData.name as string,
+      basePrice: serviceData.basePrice as number,
+      description: serviceData.description as string,
     };
     setServiceTypes([...serviceTypes, newService]);
     setShowAddService(false);
@@ -115,7 +131,7 @@ const SettingsPage: React.FC = () => {
     success('System restored from backup');
   };
 
-  const handlePreferenceChange = (key: string, value: any) => {
+  const handlePreferenceChange = (key: string, value: string | number | boolean) => {
     setPreferences(prev => ({ ...prev, [key]: value }));
     success('Preference updated');
   };
