@@ -10,6 +10,12 @@ import { repairsApi } from '../../store/api/repairsApi';
 import { inventoryApi } from '../../store/api/inventoryApi';
 import { invoicesApi } from '../../store/api/invoicesApi';
 import { uploadApi } from '../../store/api/uploadApi';
+// Mock partsOrdersApi for tests to avoid import issues
+const partsOrdersApi = {
+  reducerPath: 'partsOrdersApi',
+  reducer: (state = {}) => state,
+  middleware: () => (next: any) => (action: any) => next(action),
+};
 import { AuthProvider } from '../../contexts/AuthContext';
 
 // Create a test store with all API slices
@@ -23,6 +29,7 @@ const createTestStore = () => {
       [inventoryApi.reducerPath]: inventoryApi.reducer,
       [invoicesApi.reducerPath]: invoicesApi.reducer,
       [uploadApi.reducerPath]: uploadApi.reducer,
+      [partsOrdersApi.reducerPath]: partsOrdersApi.reducer,
     },
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware().concat(
@@ -33,6 +40,7 @@ const createTestStore = () => {
         inventoryApi.middleware,
         invoicesApi.middleware,
         uploadApi.middleware,
+        partsOrdersApi.middleware,
       ),
   });
 };
@@ -40,14 +48,22 @@ const createTestStore = () => {
 // Mock auth context
 const mockAuthContext = {
   user: {
-    id: 'test-user-id',
+    uid: 'test-user-id',
     email: 'test@example.com',
-    tenantId: 'demo-tenant',
-    role: 'admin',
-  },
+    displayName: 'Test User',
+  } as any, // Firebase User type
   login: jest.fn(),
   logout: jest.fn(),
   loading: false,
+};
+
+// Mock AuthProvider for tests
+const MockAuthProvider = ({ children }: { children: React.ReactNode }) => {
+  return (
+    <div data-testid="mock-auth-provider">
+      {children}
+    </div>
+  );
 };
 
 // Custom render function that includes providers
@@ -56,11 +72,11 @@ const AllTheProviders = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <Provider store={store}>
-      <AuthProvider>
+      <MockAuthProvider>
         <BrowserRouter>
           {children}
         </BrowserRouter>
-      </AuthProvider>
+      </MockAuthProvider>
     </Provider>
   );
 };

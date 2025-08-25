@@ -6,6 +6,7 @@ import { repairsApi } from './api/repairsApi';
 import { inventoryApi } from './api/inventoryApi';
 import { invoicesApi } from './api/invoicesApi';
 import { uploadApi } from './api/uploadApi';
+import { partsOrdersApi } from './api/partsOrdersApi';
 
 export const store = configureStore({
   reducer: {
@@ -16,6 +17,7 @@ export const store = configureStore({
     [inventoryApi.reducerPath]: inventoryApi.reducer,
     [invoicesApi.reducerPath]: invoicesApi.reducer,
     [uploadApi.reducerPath]: uploadApi.reducer,
+    [partsOrdersApi.reducerPath]: partsOrdersApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
@@ -26,6 +28,7 @@ export const store = configureStore({
       inventoryApi.middleware,
       invoicesApi.middleware,
       uploadApi.middleware,
+      partsOrdersApi.middleware,
     ),
 });
 
