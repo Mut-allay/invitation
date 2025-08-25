@@ -124,8 +124,8 @@ const VehicleDetailView: React.FC<VehicleDetailViewProps> = ({ vehicle, onEdit, 
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <p className="text-sm font-medium text-gray-900">Purchase Price</p>
-              <p className="text-lg font-bold text-gray-900">{formatCurrency(vehicle.purchasePrice)}</p>
+              <p className="text-sm font-medium text-gray-900">Cost Price</p>
+              <p className="text-lg font-bold text-gray-900">{formatCurrency(vehicle.costPrice)}</p>
             </div>
             <div>
               <p className="text-sm font-medium text-gray-900">Selling Price</p>
@@ -134,13 +134,13 @@ const VehicleDetailView: React.FC<VehicleDetailViewProps> = ({ vehicle, onEdit, 
             <div>
               <p className="text-sm font-medium text-gray-900">Potential Profit</p>
               <p className="text-lg font-bold text-green-600">
-                {formatCurrency(vehicle.sellingPrice - vehicle.purchasePrice)}
+                {formatCurrency(vehicle.sellingPrice - vehicle.costPrice)}
               </p>
             </div>
             <div>
               <p className="text-sm font-medium text-gray-900">Profit Margin</p>
               <p className="text-lg font-bold text-green-600">
-                {(((vehicle.sellingPrice - vehicle.purchasePrice) / vehicle.purchasePrice) * 100).toFixed(1)}%
+                {(((vehicle.sellingPrice - vehicle.costPrice) / vehicle.costPrice) * 100).toFixed(1)}%
               </p>
             </div>
           </div>
@@ -156,7 +156,7 @@ const VehicleDetailView: React.FC<VehicleDetailViewProps> = ({ vehicle, onEdit, 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <p className="text-sm font-medium text-gray-900">Engine</p>
-              <p className="text-sm text-gray-600">{vehicle.engine || 'Not specified'}</p>
+              <p className="text-sm text-gray-600">Not specified</p>
             </div>
             <div>
               <p className="text-sm font-medium text-gray-900">Transmission</p>
@@ -182,11 +182,11 @@ const VehicleDetailView: React.FC<VehicleDetailViewProps> = ({ vehicle, onEdit, 
         <CardContent className="space-y-4">
           <div>
             <p className="text-sm font-medium text-gray-900 mb-2">Condition</p>
-            <p className="text-sm text-gray-600">{vehicle.condition || 'Not specified'}</p>
+            <p className="text-sm text-gray-600">Not specified</p>
           </div>
           <div>
             <p className="text-sm font-medium text-gray-900 mb-2">Notes</p>
-            <p className="text-sm text-gray-600">{vehicle.notes || 'No additional notes'}</p>
+            <p className="text-sm text-gray-600">{vehicle.description || 'No additional notes'}</p>
           </div>
         </CardContent>
       </Card>

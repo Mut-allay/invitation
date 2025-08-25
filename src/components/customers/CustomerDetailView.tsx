@@ -26,7 +26,7 @@ const CustomerDetailView: React.FC<CustomerDetailViewProps> = ({ customer, onEdi
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div className="flex items-center space-x-4">
             <Avatar className="h-16 w-16">
-              <AvatarImage src={customer.avatar} alt={customer.name} />
+              <AvatarImage src="" alt={customer.name} />
               <AvatarFallback className="text-lg font-semibold">
                 {getInitials(customer.name)}
               </AvatarFallback>
@@ -97,15 +97,15 @@ const CustomerDetailView: React.FC<CustomerDetailViewProps> = ({ customer, onEdi
         <CardContent>
           {customer.vehiclesOwned.length > 0 ? (
             <div className="space-y-3">
-              {customer.vehiclesOwned.map((vehicle, index) => (
+              {customer.vehiclesOwned.map((vehicleId, index) => (
                 <div key={index} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                   <div>
-                    <p className="font-medium text-slate-900">{vehicle.make} {vehicle.model}</p>
-                    <p className="text-responsive-sm text-slate-600">{vehicle.year} • {vehicle.plateNumber}</p>
+                    <p className="font-medium text-slate-900">Vehicle #{vehicleId.slice(-6)}</p>
+                    <p className="text-responsive-sm text-slate-600">ID: {vehicleId}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-responsive-sm font-medium text-slate-900">{vehicle.color}</p>
-                    <p className="text-xs text-slate-500">{vehicle.vin}</p>
+                    <p className="text-responsive-sm font-medium text-slate-900">Owned</p>
+                    <p className="text-xs text-slate-500">Customer Vehicle</p>
                   </div>
                 </div>
               ))}

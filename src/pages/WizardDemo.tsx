@@ -23,7 +23,7 @@ const WizardDemo: React.FC = () => {
     {
       id: 'vehicle-details',
       title: 'Vehicle Details',
-      component: <Step1 formData={formData} updateFormData={updateFormData} />,
+      component: <Step1 formData={formData['vehicle-details'] || {}} updateFormData={(data) => updateFormData('vehicle-details', data)} />,
       validation: () => {
         // Add validation logic here
         return true;
@@ -32,7 +32,7 @@ const WizardDemo: React.FC = () => {
     {
       id: 'customer-details',
       title: 'Customer Information',
-      component: <Step2 formData={formData} updateFormData={updateFormData} />,
+      component: <Step2 formData={formData['customer-details'] || {}} updateFormData={(data) => updateFormData('customer-details', data)} />,
       validation: () => {
         // Add validation logic here
         return true;
@@ -41,7 +41,7 @@ const WizardDemo: React.FC = () => {
     {
       id: 'service-details',
       title: 'Service Information',
-      component: <Step3 formData={formData} updateFormData={updateFormData} />,
+      component: <Step3 formData={formData['service-details'] || {}} updateFormData={(data) => updateFormData('service-details', data)} />,
       validation: () => {
         // Add validation logic here
         return true;
