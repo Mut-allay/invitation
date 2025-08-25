@@ -10,15 +10,17 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "types": ["node", "jest"]
   },
   "compileOnSave": true,
   "include": [
     "src"
   ],
   "exclude": [
-    "src/**/__tests__/**/*",
-    "src/**/*.test.ts",
-    "src/**/*.spec.ts"
+    "../node_modules",
+    "../src",
+    "../coverage",
+    "src/__tests__"
   ]
 } 

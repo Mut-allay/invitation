@@ -1,13 +1,11 @@
 import React, { useState } from 'react';
 import { 
-  UserIcon, 
-  PhoneIcon, 
-  EnvelopeIcon, 
-  MapPinIcon, 
-  TruckIcon,
-  EyeIcon,
-  PencilIcon,
-  TrashIcon
+  EyeIcon, 
+  PencilIcon, 
+  PhoneIcon,
+  EnvelopeIcon,
+  MapPinIcon,
+  TruckIcon
 } from '@heroicons/react/24/outline';
 import type { Customer } from '../../types/index';
 

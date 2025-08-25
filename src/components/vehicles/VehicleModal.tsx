@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { XMarkIcon, TruckIcon, CalendarIcon, CurrencyDollarIcon } from '@heroicons/react/24/outline';
-import type { Vehicle, VehicleFormData } from '../../types/index';
+import React from 'react';
+import { XMarkIcon, TruckIcon, CalendarIcon } from '@heroicons/react/24/outline';
+import type { Vehicle } from '../../types/index';
 
 interface VehicleModalProps {
   vehicle: Vehicle;

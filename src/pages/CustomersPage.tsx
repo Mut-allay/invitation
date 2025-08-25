@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
-import { PlusIcon, MagnifyingGlassIcon, UserGroupIcon, PhoneIcon, EnvelopeIcon } from '@heroicons/react/24/outline';
-import { useCustomers } from '../hooks/useCustomers';
-import { useVehicles } from '../hooks/useVehicles';
+import { 
+  PlusIcon, 
+  MagnifyingGlassIcon, 
+  UserGroupIcon,
+  PhoneIcon,
+  EnvelopeIcon
+} from '@heroicons/react/24/outline';
 import { CustomerCard } from '../components/customers/CustomerCard';
 import { CustomerModal } from '../components/customers/CustomerModal';
 import CustomerDetailView from '../components/customers/CustomerDetailView';

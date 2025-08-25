@@ -1,8 +1,18 @@
 import React, { useState } from 'react';
+<<<<<<< Updated upstream
 import { PlusIcon, MagnifyingGlassIcon, TruckIcon, CurrencyDollarIcon, EyeIcon } from '@heroicons/react/24/outline';
 import { useVehicles } from '../hooks/useVehicles';
 import { useSales } from '../hooks/useSales';
 import { useCustomers } from '../hooks/useCustomers';
+=======
+import { 
+  PlusIcon, 
+  MagnifyingGlassIcon, 
+  EyeIcon,
+  CurrencyDollarIcon,
+  TruckIcon
+} from '@heroicons/react/24/outline';
+>>>>>>> Stashed changes
 import { VehicleCard } from '../components/vehicles/VehicleCard';
 import { VehicleModal } from '../components/vehicles/VehicleModal';
 import { SaleModal } from '../components/sales/SaleModal';

@@ -5,7 +5,7 @@ export const vehiclesApi = createApi({
   reducerPath: 'vehiclesApi',
   baseQuery: fetchBaseQuery({
     baseUrl: '/api/v1',
-    prepareHeaders: (headers, { getState }) => {
+    prepareHeaders: (headers) => {
       // Add auth token to headers
       const token = localStorage.getItem('authToken');
       if (token) {

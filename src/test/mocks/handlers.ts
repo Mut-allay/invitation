@@ -206,8 +206,7 @@ export const handlers = [
   }),
 
   // Upload API
-  http.post('/api/v1/tenant/:tenantId/upload', async ({ request }) => {
-    const formData = await request.formData();
+  http.post('/api/v1/tenant/:tenantId/upload', async () => {
     return HttpResponse.json({
       id: 'upload-id',
       fileName: 'test-file.jpg',
