@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { Sale, SaleFormData } from '../../types/index';
+import type { Sale, SaleFormData } from '../../types/index';
 
 export const salesApi = createApi({
   reducerPath: 'salesApi',

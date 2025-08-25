@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { Invoice, InvoiceFormData, Payment, PaymentFormData } from '../../types/index';
+import type { Invoice, InvoiceFormData, Payment, PaymentFormData } from '../../types/index';
 
 export const invoicesApi = createApi({
   reducerPath: 'invoicesApi',

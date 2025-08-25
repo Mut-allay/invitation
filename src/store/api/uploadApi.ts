@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { UploadedFile } from '../../types/index';
+import type { UploadedFile } from '../../types/index';
 
 export const uploadApi = createApi({
   reducerPath: 'uploadApi',

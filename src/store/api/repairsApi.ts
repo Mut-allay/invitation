@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { Repair, RepairFormData } from '../../types/index';
+import type { Repair, RepairFormData } from '../../types/index';
 
 export const repairsApi = createApi({
   reducerPath: 'repairsApi',

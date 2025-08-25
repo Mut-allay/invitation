@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { Inventory, InventoryFormData } from '../../types/index';
+import type { Inventory, InventoryFormData } from '../../types/index';
 
 export const inventoryApi = createApi({
   reducerPath: 'inventoryApi',
