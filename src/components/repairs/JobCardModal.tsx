@@ -1,5 +1,5 @@
-import React from 'react';
-import { Repair } from '../../types/repair';
+import React, { useState } from 'react';
+import type { Repair } from '../../types/index';
 
 interface JobCardModalProps {
   repair: Repair;

@@ -1,0 +1,12 @@
+{"users": [
+{
+  "localId": "LLUWeceqL9fmrHeMjaf8f1vRG0Y2",
+  "email": "admin@demoautoshop.com",
+  "emailVerified": false,
+  "passwordHash": "X8QW1pO1Kbde75a7/wKknfMq/Nxr5iyKIBMQMVJwXMjYHamQroXXuJ5WGOrg6imFcNLaPR+WxsD0rOMp7/wTkw==",
+  "salt": "spj+BpitIknbaA==",
+  "lastSignedInAt": "1755776311903",
+  "createdAt": "1755776149453",
+  "disabled": false,
+  "providerUserInfo": []
+}]}

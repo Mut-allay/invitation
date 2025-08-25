@@ -1,5 +1,5 @@
-import React from 'react';
-import { Invoice } from '../../types/invoice';
+import React, { useState } from 'react';
+import type { Invoice } from '../../types/index';
 
 interface PaymentModalProps {
   invoice: Invoice | null;

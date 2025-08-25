@@ -1,17 +1,13 @@
 import { useGetSalesQuery } from '../store/api/salesApi';
-import { useAuth } from '../contexts/AuthContext';
 
 export const useSales = () => {
-  const { user } = useAuth();
-  const tenantId = user?.tenantId;
-
-  const { data: sales = [], isLoading: loading, error } = useGetSalesQuery(tenantId, {
-    skip: !tenantId,
-  });
-
-  return {
-    sales,
-    loading,
-    error: error ? (error as any)?.data?.message || 'Failed to load sales' : null,
+  // TODO: Get tenant ID from user context or auth
+  const tenantId = 'demo-tenant'; // Default tenant ID for now
+  const { data, isLoading, error } = useGetSalesQuery(tenantId);
+  
+  return { 
+    sales: data || [], 
+    loading: isLoading, 
+    error 
   };
 }; 
