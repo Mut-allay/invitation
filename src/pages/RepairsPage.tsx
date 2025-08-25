@@ -6,14 +6,10 @@ import {
   ClockIcon,
   WrenchScrewdriverIcon,
   CheckCircleIcon,
-<<<<<<< Updated upstream
   XCircleIcon,
   UserIcon,
   DocumentTextIcon,
   CurrencyDollarIcon
-=======
-  XCircleIcon
->>>>>>> Stashed changes
 } from '@heroicons/react/24/outline';
 import { useRepairs } from '../hooks/useRepairs';
 import { useVehicles } from '../hooks/useVehicles';
@@ -157,7 +153,6 @@ const RepairsPage: React.FC = () => {
     setShowJobCardModal(true);
   };
 
-<<<<<<< Updated upstream
   const handleAssignTechnician = (repairId: string, technicianId: string) => {
     setAssignedTechnicians(prev => ({
       ...prev,
@@ -191,9 +186,6 @@ const RepairsPage: React.FC = () => {
         return 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400';
     }
   };
-=======
-
->>>>>>> Stashed changes
 
   return (
     <div className="space-y-6 responsive-p">

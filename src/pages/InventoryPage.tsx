@@ -6,7 +6,6 @@ import {
   CubeIcon,
   ExclamationTriangleIcon,
   CurrencyDollarIcon,
-<<<<<<< Updated upstream
   WrenchScrewdriverIcon,
   BeakerIcon,
   TruckIcon,
@@ -14,10 +13,6 @@ import {
   PencilIcon,
   ArrowPathIcon,
   ShoppingCartIcon
-=======
-  TruckIcon,
-  WrenchScrewdriverIcon
->>>>>>> Stashed changes
 } from '@heroicons/react/24/outline';
 import { useInventory } from '../hooks/useInventory';
 import { useVehicles } from '../hooks/useVehicles';
@@ -212,7 +207,6 @@ const InventoryPage: React.FC = () => {
     setShowInventoryModal(true);
   };
 
-<<<<<<< Updated upstream
   const handleRestock = (item: Inventory) => {
     setSelectedInventory(item);
     setShowRestockModal(true);
@@ -243,9 +237,6 @@ const InventoryPage: React.FC = () => {
         return <CubeIcon className="h-4 w-4" />;
     }
   };
-=======
-
->>>>>>> Stashed changes
 
   const getStockStatusColor = (currentStock: number, reorderLevel: number) => {
     if (currentStock === 0) return 'text-red-600 dark:text-red-300';

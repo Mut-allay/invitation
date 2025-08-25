@@ -6,15 +6,11 @@ import {
   DocumentTextIcon,
   CurrencyDollarIcon,
   ClockIcon,
-<<<<<<< Updated upstream
   ExclamationTriangleIcon,
   CheckCircleIcon,
   EyeIcon,
   PencilIcon,
   DocumentArrowDownIcon
-=======
-  ExclamationTriangleIcon
->>>>>>> Stashed changes
 } from '@heroicons/react/24/outline';
 import { useInvoices } from '../hooks/useInvoices';
 import { useVehicles } from '../hooks/useVehicles';
@@ -184,7 +180,6 @@ const InvoicesPage: React.FC = () => {
     setShowPaymentModal(true);
   };
 
-<<<<<<< Updated upstream
   const handleGeneratePDF = (invoice: Invoice) => {
     // Mock PDF generation
     success(`PDF generated for ${invoice.invoiceNumber}`);
@@ -211,9 +206,6 @@ const InvoicesPage: React.FC = () => {
         return 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-300';
     }
   };
-=======
-
->>>>>>> Stashed changes
 
   const formatDate = (date: Date) => {
     return new Intl.DateTimeFormat('en-US', {

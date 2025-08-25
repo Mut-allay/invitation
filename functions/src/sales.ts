@@ -115,11 +115,7 @@ export const createSale = onCall<{ tenantId: string; sale: any }>(async (request
     // Update customer's vehicles owned
     const customerRef = db.collection('customers').doc(sale.customerId);
     batch.update(customerRef, {
-<<<<<<< Updated upstream
       vehiclesOwned: FieldValue.arrayUnion(sale.vehicleId),
-=======
-              vehiclesOwned: FieldValue.arrayUnion(sale.vehicleId),
->>>>>>> Stashed changes
       updatedAt: new Date(),
     });
 
