@@ -61,6 +61,10 @@ export default {
         lib: ['ES2022', 'DOM', 'DOM.Iterable'],
         target: 'ES2022',
         types: ['jest', '@testing-library/jest-dom', 'node'],
+        baseUrl: '.',
+        paths: {
+          '@/*': ['./src/*']
+        }
       },
     }],
   },

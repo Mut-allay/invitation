@@ -19,6 +19,7 @@ import { InvoiceCard } from '../components/invoices/InvoiceCard';
 import { InvoiceModal } from '../components/invoices/InvoiceModal';
 import { PaymentModal } from '../components/invoices/PaymentModal';
 import { useToast } from '../contexts/ToastContext';
+import { getErrorMessage } from '@/lib/utils';
 import type { Invoice } from '../types/index';
 
 // Mock invoices data for when the API returns empty
@@ -356,7 +357,7 @@ const InvoicesPage: React.FC = () => {
         </div>
       ) : error ? (
         <div className="card-glass border border-red-200 dark:border-red-800 p-4">
-          <p className="text-red-800 dark:text-red-400">Error loading invoices: {error}</p>
+          <p className="text-red-800 dark:text-red-400">Error loading invoices: {getErrorMessage(error)}</p>
         </div>
       ) : filteredInvoices.length === 0 ? (
         <div className="card-glass p-8 text-center">

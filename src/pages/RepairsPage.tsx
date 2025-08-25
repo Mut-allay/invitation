@@ -18,6 +18,7 @@ import { RepairCard } from '../components/repairs/RepairCard';
 import { RepairModal } from '../components/repairs/RepairModal';
 import { JobCardModal } from '../components/repairs/JobCardModal';
 import { useToast } from '../contexts/ToastContext';
+import { getErrorMessage } from '@/lib/utils';
 import type { Repair } from '../types/index';
 
 // Mock technicians data
@@ -293,7 +294,7 @@ const RepairsPage: React.FC = () => {
         </div>
       ) : error ? (
         <div className="card-glass border border-red-200 dark:border-red-800 p-4">
-          <p className="text-red-800 dark:text-red-400">Error loading repairs: {error}</p>
+          <p className="text-red-800 dark:text-red-400">Error loading repairs: {getErrorMessage(error)}</p>
         </div>
       ) : filteredRepairs.length === 0 ? (
         <div className="card-glass p-8 text-center">

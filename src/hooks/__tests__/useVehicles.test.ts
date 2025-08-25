@@ -77,7 +77,7 @@ describe('useVehicles', () => {
     await waitFor(() => {
       expect(result.current.vehicles).toEqual([]);
       expect(result.current.loading).toBe(false);
-      expect(result.current.error).toBe('Failed to fetch vehicles');
+      expect(result.current.error).toEqual(mockError);
     });
   });
 
@@ -112,7 +112,7 @@ describe('useVehicles', () => {
     await waitFor(() => {
       expect(result.current.vehicles).toEqual([]);
       expect(result.current.loading).toBe(false);
-      expect(result.current.error).toBe('Failed to load vehicles');
+      expect(result.current.error).toEqual(mockError);
     });
   });
 

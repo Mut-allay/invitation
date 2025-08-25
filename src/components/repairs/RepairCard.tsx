@@ -4,7 +4,8 @@ import {
   CalendarIcon, 
   ClockIcon,
   UserIcon,
-  TruckIcon
+  TruckIcon,
+  EyeIcon
 } from '@heroicons/react/24/outline';
 import type { Repair } from '../../types/index';
 

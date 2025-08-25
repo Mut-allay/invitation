@@ -20,6 +20,7 @@ import { InventoryCard } from '../components/inventory/InventoryCard';
 import { InventoryModal } from '../components/inventory/InventoryModal';
 import { SupplierModal } from '../components/inventory/SupplierModal';
 import { useToast } from '../contexts/ToastContext';
+import { getErrorMessage } from '@/lib/utils';
 import type { Inventory } from '../types/index';
 
 // Mock inventory data for when the API returns empty
@@ -402,7 +403,7 @@ const InventoryPage: React.FC = () => {
         </div>
       ) : error ? (
         <div className="card-glass border border-red-200 dark:border-red-800 p-4">
-          <p className="text-red-800 dark:text-red-400">Error loading inventory: {error}</p>
+          <p className="text-red-800 dark:text-red-400">Error loading inventory: {getErrorMessage(error)}</p>
         </div>
       ) : filteredInventory.length === 0 ? (
         <div className="card-glass p-8 text-center">

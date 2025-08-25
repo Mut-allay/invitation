@@ -121,7 +121,10 @@ const VehicleDemo: React.FC = () => {
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
                       target.style.display = 'none';
-                      target.nextElementSibling!.style.display = 'flex';
+                      const nextSibling = target.nextElementSibling as HTMLElement;
+                      if (nextSibling) {
+                        nextSibling.style.display = 'flex';
+                      }
                     }}
                   />
                 ) : null}

@@ -13,6 +13,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
+import { useCustomers } from '../hooks/useCustomers';
+import { getErrorMessage } from '@/lib/utils';
 import type { Customer } from '../types/index';
 
 const CustomersPage: React.FC = () => {
@@ -156,7 +158,7 @@ const CustomersPage: React.FC = () => {
               ) : error ? (
                 <Card>
                   <CardContent className="p-4">
-                    <p className="text-destructive">Error loading customers: {error}</p>
+                    <p className="text-destructive">Error loading customers: {getErrorMessage(error)}</p>
                   </CardContent>
                 </Card>
               ) : filteredCustomers.length === 0 ? (

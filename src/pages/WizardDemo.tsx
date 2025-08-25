@@ -5,6 +5,15 @@ import Step2 from '../components/organisms/forms/Step2';
 import Step3 from '../components/organisms/forms/Step3';
 
 const WizardDemo: React.FC = () => {
+  const [formData, setFormData] = React.useState<Record<string, any>>({});
+
+  const updateFormData = (stepId: string, data: any) => {
+    setFormData(prev => ({
+      ...prev,
+      [stepId]: { ...prev[stepId], ...data }
+    }));
+  };
+
   const handleFormComplete = (formData: any) => {
     console.log('Form completed with data:', formData);
     alert('Form submitted successfully! Check console for data.');
@@ -14,7 +23,7 @@ const WizardDemo: React.FC = () => {
     {
       id: 'vehicle-details',
       title: 'Vehicle Details',
-      component: <Step1 />,
+      component: <Step1 formData={formData} updateFormData={updateFormData} />,
       validation: () => {
         // Add validation logic here
         return true;
@@ -23,7 +32,7 @@ const WizardDemo: React.FC = () => {
     {
       id: 'customer-details',
       title: 'Customer Information',
-      component: <Step2 />,
+      component: <Step2 formData={formData} updateFormData={updateFormData} />,
       validation: () => {
         // Add validation logic here
         return true;
@@ -32,7 +41,7 @@ const WizardDemo: React.FC = () => {
     {
       id: 'service-details',
       title: 'Service Information',
-      component: <Step3 />,
+      component: <Step3 formData={formData} updateFormData={updateFormData} />,
       validation: () => {
         // Add validation logic here
         return true;

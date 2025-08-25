@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
+import { getErrorMessage } from '@/lib/utils';
 import type { Vehicle } from '../types/index';
 
 const SalesPage: React.FC = () => {
@@ -206,7 +207,7 @@ const SalesPage: React.FC = () => {
               ) : error ? (
                 <Card>
                   <CardContent className="p-4">
-                    <p className="text-destructive">Error loading vehicles: {error}</p>
+                    <p className="text-destructive">Error loading vehicles: {getErrorMessage(error)}</p>
                   </CardContent>
                 </Card>
               ) : (

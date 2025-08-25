@@ -155,7 +155,7 @@ const WizardForm: React.FC<WizardFormProps> = ({
             formData: formData[currentStepData.id] || {},
             updateFormData: (data: any) => updateFormData(currentStepData.id, data),
             errors: errors[currentStepData.id]
-          })}
+          } as any)}
         </div>
       </div>
 

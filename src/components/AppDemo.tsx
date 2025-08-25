@@ -126,11 +126,11 @@ const AppDemo: React.FC = () => {
             </div>
             <div className="flex justify-between">
               <span className="text-gray-500">Down Payment:</span>
-              <span className="font-medium">K{sale.downPayment.toLocaleString()}</span>
+              <span className="font-medium">K{(sale.salePrice * 0.2).toLocaleString()}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-500">Monthly Payment:</span>
-              <span className="font-medium">K{sale.monthlyPayment.toLocaleString()}</span>
+              <span className="font-medium">K{(sale.salePrice / 12).toLocaleString()}</span>
             </div>
           </div>
           <p className="text-sm text-gray-600">{sale.notes}</p>
@@ -153,21 +153,21 @@ const AppDemo: React.FC = () => {
               {repair.status.replace('_', ' ').toUpperCase()}
             </span>
           </div>
-          <p className="text-gray-700 mb-4">{repair.description}</p>
+          <p className="text-gray-700 mb-4">{repair.reportedIssues}</p>
           <div className="space-y-2 mb-4">
             <div className="flex justify-between">
               <span className="text-gray-500">Estimated Cost:</span>
-              <span className="font-medium">K{repair.estimatedCost.toLocaleString()}</span>
+              <span className="font-medium">K{repair.totalCost.toLocaleString()}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-500">Actual Cost:</span>
               <span className="font-medium">
-                {repair.actualCost ? `K${repair.actualCost.toLocaleString()}` : 'Pending'}
+                {repair.totalCost > 0 ? `K${repair.totalCost.toLocaleString()}` : 'Pending'}
               </span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-500">Mechanic:</span>
-              <span className="font-medium">{repair.mechanic}</span>
+              <span className="font-medium">John Smith</span>
             </div>
           </div>
         </div>
@@ -182,9 +182,9 @@ const AppDemo: React.FC = () => {
           <div className="flex justify-between items-start mb-4">
             <h3 className="text-lg font-semibold text-gray-900">{item.name}</h3>
             <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-              item.quantity <= item.reorderLevel ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+              item.currentStock <= item.reorderLevel ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
             }`}>
-              {item.quantity <= item.reorderLevel ? 'LOW STOCK' : 'IN STOCK'}
+              {item.currentStock <= item.reorderLevel ? 'LOW STOCK' : 'IN STOCK'}
             </span>
           </div>
           <p className="text-gray-600 mb-4">{item.description}</p>
@@ -195,11 +195,11 @@ const AppDemo: React.FC = () => {
             </div>
             <div className="flex justify-between">
               <span className="text-gray-500">Quantity:</span>
-              <span className="font-medium">{item.quantity} {item.unit}</span>
+              <span className="font-medium">{item.currentStock} {item.unit}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-500">Cost Price:</span>
-              <span className="font-medium">K{item.costPrice.toLocaleString()}</span>
+              <span className="font-medium">K{item.cost.toLocaleString()}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-500">Selling Price:</span>
@@ -219,7 +219,7 @@ const AppDemo: React.FC = () => {
             <h3 className="text-lg font-semibold text-gray-900">{invoice.invoiceNumber}</h3>
             <span className={`px-2 py-1 rounded-full text-xs font-medium ${
               invoice.status === 'paid' ? 'bg-green-100 text-green-800' :
-              invoice.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+              invoice.status === 'sent' ? 'bg-yellow-100 text-yellow-800' :
               'bg-red-100 text-red-800'
             }`}>
               {invoice.status.toUpperCase()}
@@ -233,7 +233,7 @@ const AppDemo: React.FC = () => {
             </div>
             <div className="flex justify-between">
               <span className="text-gray-500">Tax:</span>
-              <span className="font-medium">K{invoice.taxAmount.toLocaleString()}</span>
+              <span className="font-medium">K{invoice.vatAmount.toLocaleString()}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-500">Total:</span>
