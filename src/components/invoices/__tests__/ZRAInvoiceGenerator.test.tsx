@@ -61,11 +61,33 @@ describe('ZRAInvoiceGenerator', () => {
       const user = userEvent.setup();
       render(<ZRAInvoiceGenerator {...defaultProps} />);
       
+      // Fill in all required fields except TPIN
+      const businessNameInput = screen.getByLabelText(/Business Name/);
+      const customerNameInput = screen.getByLabelText(/Customer Name/);
+      const customerTpinInput = screen.getByLabelText(/Customer TPIN/);
       const businessTpinInput = screen.getByLabelText(/Business TPIN/);
+      
+      await user.type(businessNameInput, 'Test Business');
+      await user.type(customerNameInput, 'Test Customer');
+      await user.type(customerTpinInput, '1234567890');
       await user.type(businessTpinInput, '123abc456');
       
       // Should only accept digits
       expect(businessTpinInput).toHaveValue('123456');
+      
+      // Add an item to satisfy the items requirement
+      const descriptionInput = screen.getByLabelText(/Description/);
+      const quantityInput = screen.getByLabelText(/Quantity/);
+      const unitPriceInput = screen.getByLabelText(/Unit Price/);
+      
+      await user.type(descriptionInput, 'Test Service');
+      await user.clear(quantityInput);
+      await user.type(quantityInput, '1');
+      await user.clear(unitPriceInput);
+      await user.type(unitPriceInput, '100');
+      
+      const addItemButton = screen.getByText('Add Item');
+      await user.click(addItemButton);
       
       // Try to generate invoice with invalid TPIN
       const generateButton = screen.getByText('Generate Invoice');
@@ -129,7 +151,7 @@ describe('ZRAInvoiceGenerator', () => {
       
       // Check totals in the invoice summary
       await waitFor(() => {
-        expect(screen.getAllByText('K 100.00')).toHaveLength(2); // Subtotal appears in table and summary
+        expect(screen.getAllByText('K 100.00')).toHaveLength(3); // Unit price, total in table, and summary
         expect(screen.getAllByText('K 16.00')).toHaveLength(2); // VAT appears in table and summary
         expect(screen.getAllByText('K 116.00')).toHaveLength(1); // Total appears in summary
       });
