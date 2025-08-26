@@ -17,6 +17,21 @@ export interface UploadedFile {
   };
 }
 
+export interface UploadFile {
+  file: File;
+  fileName: string;
+  originalName: string;
+  fileSize: number;
+  mimeType: string;
+}
+
+export interface UploadMetadata {
+  vehicleId?: string;
+  customerId?: string;
+  repairId?: string;
+  type: 'vehicle_image' | 'document' | 'invoice' | 'receipt';
+}
+
 export interface UploadProgress {
   fileName: string;
   progress: number;
