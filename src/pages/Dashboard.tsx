@@ -30,6 +30,7 @@ import BusinessIntelligencePage from './BusinessIntelligencePage';
 import WizardDemo from './WizardDemo';
 
 import SettingsPage from './SettingsPage';
+import ZambianMarketDemo from './ZambianMarketDemo';
 import CommandMenu from '../components/ui/CommandMenu';
 import ThemeToggle from '@/components/ui/theme-toggle';
 import MobileNav from '@/components/ui/mobile-nav';
@@ -68,7 +69,7 @@ const Dashboard: React.FC = () => {
       name: 'Tools',
       items: [
         { name: 'Wizard Demo', href: '/wizard', icon: Cog6ToothIcon, description: 'Form wizard examples' },
-
+        { name: 'Zambian Market Demo', href: '/zambian-demo', icon: UserGroupIcon, description: 'Zambian market customization features' },
       ]
     }
   ];
@@ -272,7 +273,7 @@ const Dashboard: React.FC = () => {
                   <Route path="/invoices" element={<InvoicesPage />} />
                   <Route path="/analytics" element={<BusinessIntelligencePage />} />
                   <Route path="/wizard" element={<WizardDemo />} />
-
+                  <Route path="/zambian-demo" element={<ZambianMarketDemo />} />
                   <Route path="/settings" element={<SettingsPage />} />
                 </Routes>
               </PageTransition>
