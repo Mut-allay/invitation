@@ -12,6 +12,7 @@ export default {
     '^../config/firebase$': '<rootDir>/src/test/__mocks__/firebase-config.ts',
     '^../../config/firebase$': '<rootDir>/src/test/__mocks__/firebase-config.ts',
     '^src/config/firebase$': '<rootDir>/src/test/__mocks__/firebase-config.ts',
+    '^../../config/firebase$': '<rootDir>/src/test/__mocks__/firebase-config.ts',
     '^firebase/app$': '<rootDir>/src/test/__mocks__/firebase.ts',
     '^firebase/auth$': '<rootDir>/src/test/__mocks__/firebase.ts',
     '^firebase/firestore$': '<rootDir>/src/test/__mocks__/firebase.ts',
