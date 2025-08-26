@@ -8,8 +8,7 @@ import { Button } from '../ui/button';
 import type { 
   PartsInventory, 
   PartsUsage, 
-  PartsManagementFormData,
-  Repair 
+  PartsManagementFormData
 } from '../../types/repair';
 
 interface PartsManagementInterfaceProps {
@@ -155,20 +154,6 @@ export const PartsManagementInterface: React.FC<PartsManagementInterfaceProps> =
         notes: 'Regular maintenance'
       }
     ];
-
-    const mockRepair: Repair = {
-      id: repairId,
-      tenantId,
-      customerId: 'customer-1',
-      vehicleId: 'vehicle-1',
-      status: 'in_progress',
-      reportedIssues: 'Engine making strange noise',
-      totalCost: 500,
-      laborCost: 300,
-      partsCost: 200,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
 
     setPartsInventory(mockPartsInventory);
     setPartsUsage(mockPartsUsage);

@@ -5,7 +5,15 @@ import type { } from '../../../types/repair';
 
 // Mock the Button component
 jest.mock('../../ui/button', () => ({
-  Button: ({ children, onClick, disabled, variant, size, className, ...props }: any) => (
+  Button: ({ children, onClick, disabled, variant, size, className, ...props }: {
+    children: React.ReactNode;
+    onClick?: () => void;
+    disabled?: boolean;
+    variant?: string;
+    size?: string;
+    className?: string;
+    [key: string]: unknown;
+  }) => (
     <button
       onClick={onClick}
       disabled={disabled}
