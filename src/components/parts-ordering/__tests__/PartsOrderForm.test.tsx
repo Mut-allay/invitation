@@ -15,7 +15,7 @@ describe('PartsOrderForm', () => {
   });
 
   it('should render when isOpen is true', () => {
-    renderWithProviders(<PartsOrderForm {...defaultProps} />);
+    const { container } = renderWithProviders(<PartsOrderForm {...defaultProps} />);
 
     // Check that the form is rendered
     expect(screen.getByTestId('parts-order-form')).toBeInTheDocument();
