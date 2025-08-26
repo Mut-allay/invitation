@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   UserIcon, 
-  PhoneIcon, 
   EnvelopeIcon, 
-  MapPinIcon, 
   TruckIcon,
   ClockIcon,
   CurrencyDollarIcon,
@@ -16,7 +14,7 @@ import {
   WrenchScrewdriverIcon,
   ChartBarIcon
 } from '@heroicons/react/24/outline';
-import { Customer, ServiceRecord, CustomerSegment, CommunicationPreferences } from '../../types/customer';
+import { Customer, CustomerSegment } from '../../types/customer';
 import { createMockVehicle } from '../../test/utils/test-utils';
 
 interface CustomerProfileManagerProps {
@@ -158,7 +156,7 @@ export const CustomerProfileManager: React.FC<CustomerProfileManagerProps> = ({
               return (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id as any)}
+                  onClick={() => setActiveTab(tab.id as 'overview' | 'service-history' | 'vehicles' | 'communications' | 'analytics')}
                   className={`flex items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
                     activeTab === tab.id
                       ? 'border-blue-500 text-blue-600'

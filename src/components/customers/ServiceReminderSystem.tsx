@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
   BellIcon, 
   ClockIcon, 
@@ -6,20 +6,15 @@ import {
   EnvelopeIcon, 
   ChatBubbleLeftRightIcon,
   PlusIcon,
-  PencilIcon,
   TrashIcon,
-  CheckIcon,
   XMarkIcon,
-  ExclamationTriangleIcon,
-  CalendarIcon,
-  WrenchScrewdriverIcon
+  CalendarIcon
 } from '@heroicons/react/24/outline';
 import { ServiceReminder, Customer, ReminderStatus } from '../../types/customer';
 
 interface ServiceReminderSystemProps {
   customer: Customer;
   onSendReminder: (reminderId: string, method: 'email' | 'sms' | 'whatsapp') => void;
-  onUpdateReminder: (reminderId: string, updates: Partial<ServiceReminder>) => void;
   onDeleteReminder: (reminderId: string) => void;
   onClose: () => void;
 }
@@ -27,13 +22,10 @@ interface ServiceReminderSystemProps {
 export const ServiceReminderSystem: React.FC<ServiceReminderSystemProps> = ({
   customer,
   onSendReminder,
-  onUpdateReminder,
   onDeleteReminder,
   onClose
 }) => {
   const [activeTab, setActiveTab] = useState<'reminders' | 'schedule' | 'history'>('reminders');
-  const [showCreateForm, setShowCreateForm] = useState(false);
-  const [editingReminder, setEditingReminder] = useState<ServiceReminder | null>(null);
   const [newReminder, setNewReminder] = useState({
     reminderType: 'time' as 'mileage' | 'time' | 'manual',
     dueDate: new Date(),
@@ -123,7 +115,6 @@ export const ServiceReminderSystem: React.FC<ServiceReminderSystemProps> = ({
     };
 
     setReminders([...reminders, reminder]);
-    setShowCreateForm(false);
     setNewReminder({
       reminderType: 'time',
       dueDate: new Date(),
@@ -338,7 +329,7 @@ export const ServiceReminderSystem: React.FC<ServiceReminderSystemProps> = ({
                     <label className="block text-sm font-medium text-gray-700 mb-2">Reminder Type</label>
                     <select
                       value={newReminder.reminderType}
-                      onChange={(e) => setNewReminder({ ...newReminder, reminderType: e.target.value as any })}
+                      onChange={(e) => setNewReminder({ ...newReminder, reminderType: e.target.value as 'mileage' | 'time' | 'manual' })}
                       className="block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                       <option value="time">Time-based</option>

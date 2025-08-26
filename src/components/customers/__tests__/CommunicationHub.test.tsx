@@ -18,7 +18,6 @@ describe('CommunicationHub', () => {
   });
 
   const mockOnSendMessage = jest.fn();
-  const mockOnUpdatePreferences = jest.fn();
   const mockOnClose = jest.fn();
 
   beforeEach(() => {
@@ -30,7 +29,6 @@ describe('CommunicationHub', () => {
       <CommunicationHub
         customer={mockCustomer}
         onSendMessage={mockOnSendMessage}
-        onUpdatePreferences={mockOnUpdatePreferences}
         onClose={mockOnClose}
       />
     );
@@ -44,7 +42,6 @@ describe('CommunicationHub', () => {
       <CommunicationHub
         customer={mockCustomer}
         onSendMessage={mockOnSendMessage}
-        onUpdatePreferences={mockOnUpdatePreferences}
         onClose={mockOnClose}
       />
     );
@@ -58,7 +55,6 @@ describe('CommunicationHub', () => {
       <CommunicationHub
         customer={mockCustomer}
         onSendMessage={mockOnSendMessage}
-        onUpdatePreferences={mockOnUpdatePreferences}
         onClose={mockOnClose}
       />
     );
@@ -79,7 +75,6 @@ describe('CommunicationHub', () => {
       <CommunicationHub
         customer={mockCustomer}
         onSendMessage={mockOnSendMessage}
-        onUpdatePreferences={mockOnUpdatePreferences}
         onClose={mockOnClose}
       />
     );
@@ -101,7 +96,6 @@ describe('CommunicationHub', () => {
       <CommunicationHub
         customer={mockCustomer}
         onSendMessage={mockOnSendMessage}
-        onUpdatePreferences={mockOnUpdatePreferences}
         onClose={mockOnClose}
       />
     );
@@ -115,7 +109,6 @@ describe('CommunicationHub', () => {
       <CommunicationHub
         customer={mockCustomer}
         onSendMessage={mockOnSendMessage}
-        onUpdatePreferences={mockOnUpdatePreferences}
         onClose={mockOnClose}
       />
     );
@@ -133,7 +126,6 @@ describe('CommunicationHub', () => {
       <CommunicationHub
         customer={mockCustomer}
         onSendMessage={mockOnSendMessage}
-        onUpdatePreferences={mockOnUpdatePreferences}
         onClose={mockOnClose}
       />
     );
@@ -155,7 +147,6 @@ describe('CommunicationHub', () => {
       <CommunicationHub
         customer={mockCustomer}
         onSendMessage={mockOnSendMessage}
-        onUpdatePreferences={mockOnUpdatePreferences}
         onClose={mockOnClose}
       />
     );
@@ -178,7 +169,6 @@ describe('CommunicationHub', () => {
       <CommunicationHub
         customer={mockCustomer}
         onSendMessage={mockOnSendMessage}
-        onUpdatePreferences={mockOnUpdatePreferences}
         onClose={mockOnClose}
       />
     );
@@ -213,7 +203,6 @@ describe('CommunicationHub', () => {
       <CommunicationHub
         customer={mockCustomer}
         onSendMessage={mockOnSendMessage}
-        onUpdatePreferences={mockOnUpdatePreferences}
         onClose={mockOnClose}
       />
     );
@@ -249,7 +238,6 @@ describe('CommunicationHub', () => {
       <CommunicationHub
         customer={mockCustomer}
         onSendMessage={mockOnSendMessage}
-        onUpdatePreferences={mockOnUpdatePreferences}
         onClose={mockOnClose}
       />
     );
@@ -263,7 +251,6 @@ describe('CommunicationHub', () => {
       <CommunicationHub
         customer={mockCustomer}
         onSendMessage={mockOnSendMessage}
-        onUpdatePreferences={mockOnUpdatePreferences}
         onClose={mockOnClose}
       />
     );
@@ -286,7 +273,6 @@ describe('CommunicationHub', () => {
       <CommunicationHub
         customer={mockCustomer}
         onSendMessage={mockOnSendMessage}
-        onUpdatePreferences={mockOnUpdatePreferences}
         onClose={mockOnClose}
       />
     );
@@ -312,7 +298,6 @@ describe('CommunicationHub', () => {
       <CommunicationHub
         customer={mockCustomer}
         onSendMessage={mockOnSendMessage}
-        onUpdatePreferences={mockOnUpdatePreferences}
         onClose={mockOnClose}
       />
     );
@@ -328,7 +313,6 @@ describe('CommunicationHub', () => {
       <CommunicationHub
         customer={mockCustomer}
         onSendMessage={mockOnSendMessage}
-        onUpdatePreferences={mockOnUpdatePreferences}
         onClose={mockOnClose}
       />
     );
@@ -347,7 +331,6 @@ describe('CommunicationHub', () => {
       <CommunicationHub
         customer={mockCustomer}
         onSendMessage={mockOnSendMessage}
-        onUpdatePreferences={mockOnUpdatePreferences}
         onClose={mockOnClose}
       />
     );
@@ -363,7 +346,6 @@ describe('CommunicationHub', () => {
       <CommunicationHub
         customer={mockCustomer}
         onSendMessage={mockOnSendMessage}
-        onUpdatePreferences={mockOnUpdatePreferences}
         onClose={mockOnClose}
       />
     );
@@ -379,7 +361,6 @@ describe('CommunicationHub', () => {
       <CommunicationHub
         customer={mockCustomer}
         onSendMessage={mockOnSendMessage}
-        onUpdatePreferences={mockOnUpdatePreferences}
         onClose={mockOnClose}
       />
     );
@@ -399,7 +380,6 @@ describe('CommunicationHub', () => {
       <CommunicationHub
         customer={mockCustomer}
         onSendMessage={mockOnSendMessage}
-        onUpdatePreferences={mockOnUpdatePreferences}
         onClose={mockOnClose}
       />
     );
@@ -415,7 +395,6 @@ describe('CommunicationHub', () => {
       <CommunicationHub
         customer={mockCustomer}
         onSendMessage={mockOnSendMessage}
-        onUpdatePreferences={mockOnUpdatePreferences}
         onClose={mockOnClose}
       />
     );
@@ -435,7 +414,6 @@ describe('CommunicationHub', () => {
       <CommunicationHub
         customer={mockCustomer}
         onSendMessage={mockOnSendMessage}
-        onUpdatePreferences={mockOnUpdatePreferences}
         onClose={mockOnClose}
       />
     );
@@ -451,7 +429,6 @@ describe('CommunicationHub', () => {
       <CommunicationHub
         customer={mockCustomer}
         onSendMessage={mockOnSendMessage}
-        onUpdatePreferences={mockOnUpdatePreferences}
         onClose={mockOnClose}
       />
     );
@@ -473,7 +450,6 @@ describe('CommunicationHub', () => {
       <CommunicationHub
         customer={mockCustomer}
         onSendMessage={mockOnSendMessage}
-        onUpdatePreferences={mockOnUpdatePreferences}
         onClose={mockOnClose}
       />
     );
@@ -496,7 +472,6 @@ describe('CommunicationHub', () => {
       <CommunicationHub
         customer={mockCustomer}
         onSendMessage={mockOnSendMessage}
-        onUpdatePreferences={mockOnUpdatePreferences}
         onClose={mockOnClose}
       />
     );
@@ -518,7 +493,6 @@ describe('CommunicationHub', () => {
       <CommunicationHub
         customer={mockCustomer}
         onSendMessage={mockOnSendMessage}
-        onUpdatePreferences={mockOnUpdatePreferences}
         onClose={mockOnClose}
       />
     );
@@ -542,7 +516,6 @@ describe('CommunicationHub', () => {
       <CommunicationHub
         customer={customerWithoutPrefs}
         onSendMessage={mockOnSendMessage}
-        onUpdatePreferences={mockOnUpdatePreferences}
         onClose={mockOnClose}
       />
     );
@@ -560,7 +533,6 @@ describe('CommunicationHub', () => {
       <CommunicationHub
         customer={mockCustomer}
         onSendMessage={mockOnSendMessage}
-        onUpdatePreferences={mockOnUpdatePreferences}
         onClose={mockOnClose}
       />
     );
@@ -576,7 +548,6 @@ describe('CommunicationHub', () => {
       <CommunicationHub
         customer={mockCustomer}
         onSendMessage={mockOnSendMessage}
-        onUpdatePreferences={mockOnUpdatePreferences}
         onClose={mockOnClose}
       />
     );
@@ -598,7 +569,6 @@ describe('CommunicationHub', () => {
       <CommunicationHub
         customer={mockCustomer}
         onSendMessage={mockOnSendMessage}
-        onUpdatePreferences={mockOnUpdatePreferences}
         onClose={mockOnClose}
       />
     );
@@ -622,7 +592,6 @@ describe('CommunicationHub', () => {
       <CommunicationHub
         customer={customerWithoutHistory}
         onSendMessage={mockOnSendMessage}
-        onUpdatePreferences={mockOnUpdatePreferences}
         onClose={mockOnClose}
       />
     );
@@ -640,7 +609,6 @@ describe('CommunicationHub', () => {
       <CommunicationHub
         customer={mockCustomer}
         onSendMessage={mockOnSendMessage}
-        onUpdatePreferences={mockOnUpdatePreferences}
         onClose={mockOnClose}
       />
     );

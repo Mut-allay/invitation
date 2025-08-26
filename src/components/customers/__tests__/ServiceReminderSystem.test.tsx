@@ -9,7 +9,6 @@ describe('ServiceReminderSystem', () => {
   });
 
   const mockOnSendReminder = jest.fn();
-  const mockOnUpdateReminder = jest.fn();
   const mockOnDeleteReminder = jest.fn();
   const mockOnClose = jest.fn();
 
@@ -22,7 +21,6 @@ describe('ServiceReminderSystem', () => {
       <ServiceReminderSystem
         customer={mockCustomer}
         onSendReminder={mockOnSendReminder}
-        onUpdateReminder={mockOnUpdateReminder}
         onDeleteReminder={mockOnDeleteReminder}
         onClose={mockOnClose}
       />
@@ -37,7 +35,6 @@ describe('ServiceReminderSystem', () => {
       <ServiceReminderSystem
         customer={mockCustomer}
         onSendReminder={mockOnSendReminder}
-        onUpdateReminder={mockOnUpdateReminder}
         onDeleteReminder={mockOnDeleteReminder}
         onClose={mockOnClose}
       />
@@ -53,7 +50,6 @@ describe('ServiceReminderSystem', () => {
       <ServiceReminderSystem
         customer={mockCustomer}
         onSendReminder={mockOnSendReminder}
-        onUpdateReminder={mockOnUpdateReminder}
         onDeleteReminder={mockOnDeleteReminder}
         onClose={mockOnClose}
       />
@@ -70,7 +66,6 @@ describe('ServiceReminderSystem', () => {
       <ServiceReminderSystem
         customer={mockCustomer}
         onSendReminder={mockOnSendReminder}
-        onUpdateReminder={mockOnUpdateReminder}
         onDeleteReminder={mockOnDeleteReminder}
         onClose={mockOnClose}
       />
@@ -89,7 +84,6 @@ describe('ServiceReminderSystem', () => {
       <ServiceReminderSystem
         customer={mockCustomer}
         onSendReminder={mockOnSendReminder}
-        onUpdateReminder={mockOnUpdateReminder}
         onDeleteReminder={mockOnDeleteReminder}
         onClose={mockOnClose}
       />
@@ -106,7 +100,6 @@ describe('ServiceReminderSystem', () => {
       <ServiceReminderSystem
         customer={mockCustomer}
         onSendReminder={mockOnSendReminder}
-        onUpdateReminder={mockOnUpdateReminder}
         onDeleteReminder={mockOnDeleteReminder}
         onClose={mockOnClose}
       />
@@ -125,7 +118,6 @@ describe('ServiceReminderSystem', () => {
       <ServiceReminderSystem
         customer={mockCustomer}
         onSendReminder={mockOnSendReminder}
-        onUpdateReminder={mockOnUpdateReminder}
         onDeleteReminder={mockOnDeleteReminder}
         onClose={mockOnClose}
       />
@@ -154,7 +146,6 @@ describe('ServiceReminderSystem', () => {
       <ServiceReminderSystem
         customer={mockCustomer}
         onSendReminder={mockOnSendReminder}
-        onUpdateReminder={mockOnUpdateReminder}
         onDeleteReminder={mockOnDeleteReminder}
         onClose={mockOnClose}
       />
@@ -191,7 +182,6 @@ describe('ServiceReminderSystem', () => {
       <ServiceReminderSystem
         customer={mockCustomer}
         onSendReminder={mockOnSendReminder}
-        onUpdateReminder={mockOnUpdateReminder}
         onDeleteReminder={mockOnDeleteReminder}
         onClose={mockOnClose}
       />
@@ -211,7 +201,6 @@ describe('ServiceReminderSystem', () => {
       <ServiceReminderSystem
         customer={mockCustomer}
         onSendReminder={mockOnSendReminder}
-        onUpdateReminder={mockOnUpdateReminder}
         onDeleteReminder={mockOnDeleteReminder}
         onClose={mockOnClose}
       />
@@ -235,7 +224,6 @@ describe('ServiceReminderSystem', () => {
       <ServiceReminderSystem
         customer={mockCustomer}
         onSendReminder={mockOnSendReminder}
-        onUpdateReminder={mockOnUpdateReminder}
         onDeleteReminder={mockOnDeleteReminder}
         onClose={mockOnClose}
       />
@@ -259,7 +247,6 @@ describe('ServiceReminderSystem', () => {
       <ServiceReminderSystem
         customer={mockCustomer}
         onSendReminder={mockOnSendReminder}
-        onUpdateReminder={mockOnUpdateReminder}
         onDeleteReminder={mockOnDeleteReminder}
         onClose={mockOnClose}
       />
@@ -276,7 +263,6 @@ describe('ServiceReminderSystem', () => {
       <ServiceReminderSystem
         customer={mockCustomer}
         onSendReminder={mockOnSendReminder}
-        onUpdateReminder={mockOnUpdateReminder}
         onDeleteReminder={mockOnDeleteReminder}
         onClose={mockOnClose}
       />
@@ -296,7 +282,6 @@ describe('ServiceReminderSystem', () => {
       <ServiceReminderSystem
         customer={mockCustomer}
         onSendReminder={mockOnSendReminder}
-        onUpdateReminder={mockOnUpdateReminder}
         onDeleteReminder={mockOnDeleteReminder}
         onClose={mockOnClose}
       />
@@ -313,7 +298,6 @@ describe('ServiceReminderSystem', () => {
       <ServiceReminderSystem
         customer={mockCustomer}
         onSendReminder={mockOnSendReminder}
-        onUpdateReminder={mockOnUpdateReminder}
         onDeleteReminder={mockOnDeleteReminder}
         onClose={mockOnClose}
       />
@@ -335,7 +319,6 @@ describe('ServiceReminderSystem', () => {
       <ServiceReminderSystem
         customer={customerWithoutReminders}
         onSendReminder={mockOnSendReminder}
-        onUpdateReminder={mockOnUpdateReminder}
         onDeleteReminder={mockOnDeleteReminder}
         onClose={mockOnClose}
       />
@@ -350,7 +333,6 @@ describe('ServiceReminderSystem', () => {
       <ServiceReminderSystem
         customer={mockCustomer}
         onSendReminder={mockOnSendReminder}
-        onUpdateReminder={mockOnUpdateReminder}
         onDeleteReminder={mockOnDeleteReminder}
         onClose={mockOnClose}
       />
@@ -377,7 +359,6 @@ describe('ServiceReminderSystem', () => {
       <ServiceReminderSystem
         customer={mockCustomer}
         onSendReminder={mockOnSendReminder}
-        onUpdateReminder={mockOnUpdateReminder}
         onDeleteReminder={mockOnDeleteReminder}
         onClose={mockOnClose}
       />
@@ -400,7 +381,6 @@ describe('ServiceReminderSystem', () => {
       <ServiceReminderSystem
         customer={mockCustomer}
         onSendReminder={mockOnSendReminder}
-        onUpdateReminder={mockOnUpdateReminder}
         onDeleteReminder={mockOnDeleteReminder}
         onClose={mockOnClose}
       />
@@ -417,7 +397,6 @@ describe('ServiceReminderSystem', () => {
       <ServiceReminderSystem
         customer={mockCustomer}
         onSendReminder={mockOnSendReminder}
-        onUpdateReminder={mockOnUpdateReminder}
         onDeleteReminder={mockOnDeleteReminder}
         onClose={mockOnClose}
       />
@@ -433,7 +412,6 @@ describe('ServiceReminderSystem', () => {
       <ServiceReminderSystem
         customer={mockCustomer}
         onSendReminder={mockOnSendReminder}
-        onUpdateReminder={mockOnUpdateReminder}
         onDeleteReminder={mockOnDeleteReminder}
         onClose={mockOnClose}
       />
@@ -452,7 +430,6 @@ describe('ServiceReminderSystem', () => {
       <ServiceReminderSystem
         customer={customerWithoutVehicles}
         onSendReminder={mockOnSendReminder}
-        onUpdateReminder={mockOnUpdateReminder}
         onDeleteReminder={mockOnDeleteReminder}
         onClose={mockOnClose}
       />
@@ -471,7 +448,6 @@ describe('ServiceReminderSystem', () => {
       <ServiceReminderSystem
         customer={mockCustomer}
         onSendReminder={mockOnSendReminder}
-        onUpdateReminder={mockOnUpdateReminder}
         onDeleteReminder={mockOnDeleteReminder}
         onClose={mockOnClose}
       />

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
   ChatBubbleLeftRightIcon, 
   EnvelopeIcon, 
@@ -8,7 +8,6 @@ import {
   XMarkIcon,
   CheckIcon,
   ClockIcon,
-  ExclamationTriangleIcon,
   UserIcon,
   DocumentTextIcon,
   MegaphoneIcon,
@@ -20,14 +19,12 @@ import { Customer, CommunicationRecord, CommunicationPreferences } from '../../t
 interface CommunicationHubProps {
   customer: Customer;
   onSendMessage: (message: Partial<CommunicationRecord>) => void;
-  onUpdatePreferences: (preferences: CommunicationPreferences) => void;
   onClose: () => void;
 }
 
 export const CommunicationHub: React.FC<CommunicationHubProps> = ({
   customer,
   onSendMessage,
-  onUpdatePreferences,
   onClose
 }) => {
   const [activeTab, setActiveTab] = useState<'compose' | 'history' | 'campaigns' | 'preferences'>('compose');
@@ -203,7 +200,7 @@ export const CommunicationHub: React.FC<CommunicationHubProps> = ({
               return (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id as any)}
+                  onClick={() => setActiveTab(tab.id as 'compose' | 'history' | 'campaigns' | 'preferences')}
                   className={`flex items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
                     activeTab === tab.id
                       ? 'border-blue-500 text-blue-600'
