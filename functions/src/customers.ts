@@ -1,4 +1,4 @@
-import { onCall, HttpsError } from 'firebase-functions/v2/https';
+import { onCall, HttpsError, CallableRequest } from 'firebase-functions/v2/https';
 import { getFirestore } from 'firebase-admin/firestore';
 import { initializeApp } from 'firebase-admin/app';
 
@@ -7,8 +7,16 @@ initializeApp();
 
 const db = getFirestore();
 
+// Type definitions
+interface CustomerData {
+  tenantId: string;
+  createdAt?: FirebaseFirestore.Timestamp;
+  updatedAt?: FirebaseFirestore.Timestamp;
+  [key: string]: any;
+}
+
 // Get customers for a tenant
-export const getCustomers = onCall<{ tenantId: string }>(async (request) => {
+export const getCustomers = onCall<{ tenantId: string }>(async (request: CallableRequest<{ tenantId: string }>) => {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'User must be authenticated');
   }
@@ -24,12 +32,15 @@ export const getCustomers = onCall<{ tenantId: string }>(async (request) => {
     const customersRef = db.collection('customers');
     const snapshot = await customersRef.where('tenantId', '==', tenantId).get();
     
-    const customers = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-      createdAt: doc.data().createdAt?.toDate(),
-      updatedAt: doc.data().updatedAt?.toDate(),
-    }));
+    const customers = snapshot.docs.map(doc => {
+      const data = doc.data() as CustomerData;
+      return {
+        id: doc.id,
+        ...data,
+        createdAt: data.createdAt?.toDate(),
+        updatedAt: data.updatedAt?.toDate(),
+      };
+    });
 
     return { customers };
   } catch (error) {
@@ -39,7 +50,7 @@ export const getCustomers = onCall<{ tenantId: string }>(async (request) => {
 });
 
 // Get a single customer
-export const getCustomer = onCall<{ tenantId: string; customerId: string }>(async (request) => {
+export const getCustomer = onCall<{ tenantId: string; customerId: string }>(async (request: CallableRequest<{ tenantId: string; customerId: string }>) => {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'User must be authenticated');
   }
@@ -59,8 +70,8 @@ export const getCustomer = onCall<{ tenantId: string; customerId: string }>(asyn
       throw new HttpsError('not-found', 'Customer not found');
     }
 
-    const customerData = customerDoc.data();
-    if (customerData?.tenantId !== tenantId) {
+    const customerData = customerDoc.data() as CustomerData;
+    if (!customerData || customerData.tenantId !== tenantId) {
       throw new HttpsError('permission-denied', 'Access denied to this customer');
     }
 
@@ -77,7 +88,7 @@ export const getCustomer = onCall<{ tenantId: string; customerId: string }>(asyn
 });
 
 // Create a new customer
-export const createCustomer = onCall<{ tenantId: string; customer: any }>(async (request) => {
+export const createCustomer = onCall<{ tenantId: string; customer: CustomerData }>(async (request: CallableRequest<{ tenantId: string; customer: CustomerData }>) => {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'User must be authenticated');
   }
@@ -93,16 +104,18 @@ export const createCustomer = onCall<{ tenantId: string; customer: any }>(async 
     const customerData = {
       ...customer,
       tenantId,
-      vehiclesOwned: [],
       createdAt: new Date(),
       updatedAt: new Date(),
     };
 
     const customerRef = await db.collection('customers').add(customerData);
-    
+    const newCustomerDoc = await customerRef.get();
+
     return {
       id: customerRef.id,
-      ...customerData,
+      ...newCustomerDoc.data(),
+      createdAt: newCustomerDoc.data()?.createdAt?.toDate(),
+      updatedAt: newCustomerDoc.data()?.updatedAt?.toDate(),
     };
   } catch (error) {
     console.error('Error creating customer:', error);
@@ -111,7 +124,7 @@ export const createCustomer = onCall<{ tenantId: string; customer: any }>(async 
 });
 
 // Update a customer
-export const updateCustomer = onCall<{ tenantId: string; customerId: string; customer: any }>(async (request) => {
+export const updateCustomer = onCall<{ tenantId: string; customerId: string; customer: CustomerData }>(async (request: CallableRequest<{ tenantId: string; customerId: string; customer: CustomerData }>) => {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'User must be authenticated');
   }
@@ -131,8 +144,8 @@ export const updateCustomer = onCall<{ tenantId: string; customerId: string; cus
       throw new HttpsError('not-found', 'Customer not found');
     }
 
-    const existingData = customerDoc.data();
-    if (existingData?.tenantId !== tenantId) {
+    const existingData = customerDoc.data() as CustomerData;
+    if (!existingData || existingData.tenantId !== tenantId) {
       throw new HttpsError('permission-denied', 'Access denied to this customer');
     }
 
@@ -155,7 +168,7 @@ export const updateCustomer = onCall<{ tenantId: string; customerId: string; cus
 });
 
 // Delete a customer
-export const deleteCustomer = onCall<{ tenantId: string; customerId: string }>(async (request) => {
+export const deleteCustomer = onCall<{ tenantId: string; customerId: string }>(async (request: CallableRequest<{ tenantId: string; customerId: string }>) => {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'User must be authenticated');
   }
@@ -175,8 +188,8 @@ export const deleteCustomer = onCall<{ tenantId: string; customerId: string }>(a
       throw new HttpsError('not-found', 'Customer not found');
     }
 
-    const customerData = customerDoc.data();
-    if (customerData?.tenantId !== tenantId) {
+    const customerData = customerDoc.data() as CustomerData;
+    if (!customerData || customerData.tenantId !== tenantId) {
       throw new HttpsError('permission-denied', 'Access denied to this customer');
     }
 

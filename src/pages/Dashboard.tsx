@@ -26,6 +26,7 @@ import CustomersPage from './CustomersPage';
 import InventoryPage from './InventoryPage';
 import InvoicesPage from './InvoicesPage';
 import WizardDemo from './WizardDemo';
+
 import SettingsPage from './SettingsPage';
 import CommandMenu from '../components/ui/CommandMenu';
 import ThemeToggle from '@/components/ui/theme-toggle';
@@ -64,6 +65,7 @@ const Dashboard: React.FC = () => {
       name: 'Tools',
       items: [
         { name: 'Wizard Demo', href: '/wizard', icon: Cog6ToothIcon, description: 'Form wizard examples' },
+
       ]
     }
   ];
@@ -266,6 +268,7 @@ const Dashboard: React.FC = () => {
                   <Route path="/inventory" element={<InventoryPage />} />
                   <Route path="/invoices" element={<InvoicesPage />} />
                   <Route path="/wizard" element={<WizardDemo />} />
+
                   <Route path="/settings" element={<SettingsPage />} />
                 </Routes>
               </PageTransition>

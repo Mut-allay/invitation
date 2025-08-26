@@ -22,7 +22,8 @@ exports.getSales = (0, https_1.onCall)(async (request) => {
         const snapshot = await salesRef.where('tenantId', '==', tenantId).get();
         const sales = snapshot.docs.map(doc => {
             var _a, _b;
-            return (Object.assign(Object.assign({ id: doc.id }, doc.data()), { createdAt: (_a = doc.data().createdAt) === null || _a === void 0 ? void 0 : _a.toDate(), updatedAt: (_b = doc.data().updatedAt) === null || _b === void 0 ? void 0 : _b.toDate() }));
+            const data = doc.data();
+            return Object.assign(Object.assign({ id: doc.id }, data), { createdAt: (_a = data.createdAt) === null || _a === void 0 ? void 0 : _a.toDate(), updatedAt: (_b = data.updatedAt) === null || _b === void 0 ? void 0 : _b.toDate() });
         });
         return { sales };
     }
@@ -49,7 +50,7 @@ exports.getSale = (0, https_1.onCall)(async (request) => {
             throw new https_1.HttpsError('not-found', 'Sale not found');
         }
         const saleData = saleDoc.data();
-        if ((saleData === null || saleData === void 0 ? void 0 : saleData.tenantId) !== tenantId) {
+        if (!saleData || saleData.tenantId !== tenantId) {
             throw new https_1.HttpsError('permission-denied', 'Access denied to this sale');
         }
         return Object.assign(Object.assign({ id: saleDoc.id }, saleData), { createdAt: (_a = saleData.createdAt) === null || _a === void 0 ? void 0 : _a.toDate(), updatedAt: (_b = saleData.updatedAt) === null || _b === void 0 ? void 0 : _b.toDate() });
@@ -61,6 +62,7 @@ exports.getSale = (0, https_1.onCall)(async (request) => {
 });
 // Create a new sale
 exports.createSale = (0, https_1.onCall)(async (request) => {
+    var _a, _b, _c, _d;
     if (!request.auth) {
         throw new https_1.HttpsError('unauthenticated', 'User must be authenticated');
     }
@@ -70,45 +72,10 @@ exports.createSale = (0, https_1.onCall)(async (request) => {
         throw new https_1.HttpsError('permission-denied', 'Access denied to this tenant');
     }
     try {
-        // Start a batch write
-        const batch = db.batch();
-        // Create the sale document
-        const saleRef = db.collection('sales').doc();
-        const saleData = Object.assign(Object.assign({}, sale), { tenantId, status: 'completed', createdAt: new Date(), updatedAt: new Date() });
-        batch.set(saleRef, saleData);
-        // Update vehicle status to sold
-        const vehicleRef = db.collection('vehicles').doc(sale.vehicleId);
-        batch.update(vehicleRef, {
-            status: 'sold',
-            updatedAt: new Date(),
-        });
-        // Update customer's vehicles owned
-        const customerRef = db.collection('customers').doc(sale.customerId);
-        batch.update(customerRef, {
-            vehiclesOwned: firestore_1.FieldValue.arrayUnion(sale.vehicleId),
-            updatedAt: new Date(),
-        });
-        // Create audit log
-        const auditLogRef = db.collection('auditLogs').doc();
-        const auditLog = {
-            tenantId,
-            actorUid: request.auth.uid,
-            entityType: 'sale',
-            entityId: saleRef.id,
-            action: 'sale_created',
-            diff: {
-                vehicleId: sale.vehicleId,
-                customerId: sale.customerId,
-                salePrice: sale.salePrice,
-                deposit: sale.deposit,
-                balance: sale.balance,
-            },
-            timestamp: new Date(),
-        };
-        batch.set(auditLogRef, auditLog);
-        // Commit the batch
-        await batch.commit();
-        return Object.assign({ id: saleRef.id }, saleData);
+        const saleData = Object.assign(Object.assign({}, sale), { tenantId, createdAt: new Date(), updatedAt: new Date() });
+        const saleRef = await db.collection('sales').add(saleData);
+        const newSaleDoc = await saleRef.get();
+        return Object.assign(Object.assign({ id: saleRef.id }, newSaleDoc.data()), { createdAt: (_b = (_a = newSaleDoc.data()) === null || _a === void 0 ? void 0 : _a.createdAt) === null || _b === void 0 ? void 0 : _b.toDate(), updatedAt: (_d = (_c = newSaleDoc.data()) === null || _c === void 0 ? void 0 : _c.updatedAt) === null || _d === void 0 ? void 0 : _d.toDate() });
     }
     catch (error) {
         console.error('Error creating sale:', error);
@@ -132,7 +99,7 @@ exports.updateSale = (0, https_1.onCall)(async (request) => {
             throw new https_1.HttpsError('not-found', 'Sale not found');
         }
         const existingData = saleDoc.data();
-        if ((existingData === null || existingData === void 0 ? void 0 : existingData.tenantId) !== tenantId) {
+        if (!existingData || existingData.tenantId !== tenantId) {
             throw new https_1.HttpsError('permission-denied', 'Access denied to this sale');
         }
         const updateData = Object.assign(Object.assign({}, sale), { updatedAt: new Date() });
@@ -161,7 +128,7 @@ exports.deleteSale = (0, https_1.onCall)(async (request) => {
             throw new https_1.HttpsError('not-found', 'Sale not found');
         }
         const saleData = saleDoc.data();
-        if ((saleData === null || saleData === void 0 ? void 0 : saleData.tenantId) !== tenantId) {
+        if (!saleData || saleData.tenantId !== tenantId) {
             throw new https_1.HttpsError('permission-denied', 'Access denied to this sale');
         }
         await saleRef.delete();

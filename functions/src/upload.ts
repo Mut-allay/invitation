@@ -1,19 +1,26 @@
-import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { getFirestore } from 'firebase-admin/firestore';
+import { onCall, HttpsError, CallableRequest } from 'firebase-functions/v2/https';
 import { getStorage } from 'firebase-admin/storage';
+import { getFirestore } from 'firebase-admin/firestore';
 import { initializeApp } from 'firebase-admin/app';
-import * as path from 'path';
-import * as crypto from 'crypto';
 
 // Initialize Firebase Admin
 initializeApp();
 
-const db = getFirestore();
 const storage = getStorage();
 const bucket = storage.bucket();
+const db = getFirestore();
 
-// Upload file to Firebase Storage
-export const uploadFile = onCall<{ tenantId: string; file: any; metadata?: any }>(async (request) => {
+// Type definitions
+interface FileData {
+  tenantId: string;
+  path?: string;
+  createdAt?: FirebaseFirestore.Timestamp;
+  updatedAt?: FirebaseFirestore.Timestamp;
+  [key: string]: any;
+}
+
+// Upload a file
+export const uploadFile = onCall<{ tenantId: string; file: any; metadata?: any }>(async (request: CallableRequest<{ tenantId: string; file: any; metadata?: any }>) => {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'User must be authenticated');
   }
@@ -26,57 +33,52 @@ export const uploadFile = onCall<{ tenantId: string; file: any; metadata?: any }
   }
 
   try {
-    // Validate file data
-    if (!file || !file.data || !file.name || !file.mimeType) {
-      throw new HttpsError('invalid-argument', 'Invalid file data');
-    }
-
-    // Generate unique filename
-    const fileExtension = path.extname(file.name);
-    const fileName = `${crypto.randomBytes(16).toString('hex')}${fileExtension}`;
-    const filePath = `tenants/${tenantId}/uploads/${fileName}`;
+    // Generate a unique filename
+    const timestamp = Date.now();
+    const randomString = Math.random().toString(36).substring(2, 15);
+    const fileExtension = file.name.split('.').pop();
+    const fileName = `${tenantId}/${timestamp}_${randomString}.${fileExtension}`;
 
     // Upload to Firebase Storage
     const fileBuffer = Buffer.from(file.data, 'base64');
-    const fileUpload = bucket.file(filePath);
+    const storageFile = bucket.file(fileName);
     
-    await fileUpload.save(fileBuffer, {
+    await storageFile.save(fileBuffer, {
       metadata: {
-        contentType: file.mimeType,
+        contentType: file.type,
         metadata: {
-          originalName: file.name,
+          ...metadata,
           uploadedBy: request.auth.uid,
           tenantId,
-          ...metadata,
         },
       },
     });
 
-    // Get download URL
-    const [url] = await fileUpload.getSignedUrl({
-      action: 'read',
-      expires: '03-01-2500', // Far future expiration
-    });
-
     // Save file metadata to Firestore
-    const fileDoc = {
+    const fileData = {
       tenantId,
-      fileName,
-      originalName: file.name,
-      fileSize: fileBuffer.length,
-      mimeType: file.mimeType,
-      url,
-      path: filePath,
+      fileName: file.name,
+      path: fileName,
+      size: file.size,
+      type: file.type,
       uploadedBy: request.auth.uid,
-      uploadedAt: new Date(),
       metadata: metadata || {},
+      createdAt: new Date(),
+      updatedAt: new Date(),
     };
 
-    const fileRef = await db.collection('uploads').add(fileDoc);
+    const fileRef = await db.collection('files').add(fileData);
 
     return {
       id: fileRef.id,
-      ...fileDoc,
+      fileName: file.name,
+      path: fileName,
+      size: file.size,
+      type: file.type,
+      downloadUrl: await storageFile.getSignedUrl({
+        action: 'read',
+        expires: Date.now() + 1000 * 60 * 60 * 24 * 7, // 7 days
+      }),
     };
   } catch (error) {
     console.error('Error uploading file:', error);
@@ -85,7 +87,7 @@ export const uploadFile = onCall<{ tenantId: string; file: any; metadata?: any }
 });
 
 // Get uploaded files for a tenant
-export const getUploadedFiles = onCall<{ tenantId: string; type?: string; itemId?: string }>(async (request) => {
+export const getUploadedFiles = onCall<{ tenantId: string; type?: string; itemId?: string }>(async (request: CallableRequest<{ tenantId: string; type?: string; itemId?: string }>) => {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'User must be authenticated');
   }
@@ -98,33 +100,45 @@ export const getUploadedFiles = onCall<{ tenantId: string; type?: string; itemId
   }
 
   try {
-    let query = db.collection('uploads').where('tenantId', '==', tenantId);
+    let query = db.collection('files').where('tenantId', '==', tenantId);
 
     if (type) {
-      query = query.where('metadata.type', '==', type);
+      query = query.where('type', '==', type);
     }
 
     if (itemId) {
       query = query.where('metadata.itemId', '==', itemId);
     }
 
-    const snapshot = await query.orderBy('uploadedAt', 'desc').get();
+    const snapshot = await query.get();
     
-    const files = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-      uploadedAt: doc.data().uploadedAt?.toDate(),
-    }));
+    const files = await Promise.all(
+      snapshot.docs.map(async (doc) => {
+        const data = doc.data() as FileData;
+        const storageFile = bucket.file(data.path || '');
+        
+        return {
+          id: doc.id,
+          ...data,
+          createdAt: data.createdAt?.toDate(),
+          updatedAt: data.updatedAt?.toDate(),
+          downloadUrl: await storageFile.getSignedUrl({
+            action: 'read',
+            expires: Date.now() + 1000 * 60 * 60 * 24 * 7, // 7 days
+          }),
+        };
+      })
+    );
 
     return { files };
   } catch (error) {
-    console.error('Error fetching uploaded files:', error);
-    throw new HttpsError('internal', 'Failed to fetch uploaded files');
+    console.error('Error fetching files:', error);
+    throw new HttpsError('internal', 'Failed to fetch files');
   }
 });
 
-// Delete uploaded file
-export const deleteFile = onCall<{ tenantId: string; fileId: string }>(async (request) => {
+// Delete a file
+export const deleteFile = onCall<{ tenantId: string; fileId: string }>(async (request: CallableRequest<{ tenantId: string; fileId: string }>) => {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'User must be authenticated');
   }
@@ -137,21 +151,20 @@ export const deleteFile = onCall<{ tenantId: string; fileId: string }>(async (re
   }
 
   try {
-    // Get file document
-    const fileRef = db.collection('uploads').doc(fileId);
+    const fileRef = db.collection('files').doc(fileId);
     const fileDoc = await fileRef.get();
 
     if (!fileDoc.exists) {
       throw new HttpsError('not-found', 'File not found');
     }
 
-    const fileData = fileDoc.data();
-    if (fileData?.tenantId !== tenantId) {
+    const fileData = fileDoc.data() as FileData;
+    if (!fileData || fileData.tenantId !== tenantId) {
       throw new HttpsError('permission-denied', 'Access denied to this file');
     }
 
-    // Delete from Firebase Storage
-    const storageFile = bucket.file(fileData.path);
+    // Delete from Storage
+    const storageFile = bucket.file(fileData.path || '');
     await storageFile.delete();
 
     // Delete from Firestore
@@ -164,8 +177,8 @@ export const deleteFile = onCall<{ tenantId: string; fileId: string }>(async (re
   }
 });
 
-// Generate signed URL for file access
-export const getSignedUrl = onCall<{ tenantId: string; fileId: string }>(async (request) => {
+// Get signed URL for file download
+export const getSignedUrl = onCall<{ tenantId: string; fileId: string }>(async (request: CallableRequest<{ tenantId: string; fileId: string }>) => {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'User must be authenticated');
   }
@@ -178,25 +191,25 @@ export const getSignedUrl = onCall<{ tenantId: string; fileId: string }>(async (
   }
 
   try {
-    const fileRef = db.collection('uploads').doc(fileId);
+    const fileRef = db.collection('files').doc(fileId);
     const fileDoc = await fileRef.get();
 
     if (!fileDoc.exists) {
       throw new HttpsError('not-found', 'File not found');
     }
 
-    const fileData = fileDoc.data();
-    if (fileData?.tenantId !== tenantId) {
+    const fileData = fileDoc.data() as FileData;
+    if (!fileData || fileData.tenantId !== tenantId) {
       throw new HttpsError('permission-denied', 'Access denied to this file');
     }
 
-    const storageFile = bucket.file(fileData.path);
-    const [signedUrl] = await storageFile.getSignedUrl({
+    const storageFile = bucket.file(fileData.path || '');
+    const [url] = await storageFile.getSignedUrl({
       action: 'read',
-      expires: Date.now() + 60 * 60 * 1000, // 1 hour
+      expires: Date.now() + 1000 * 60 * 60 * 24 * 7, // 7 days
     });
 
-    return { signedUrl };
+    return { url };
   } catch (error) {
     console.error('Error generating signed URL:', error);
     throw new HttpsError('internal', 'Failed to generate signed URL');

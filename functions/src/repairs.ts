@@ -1,4 +1,4 @@
-import { onCall, HttpsError } from 'firebase-functions/v2/https';
+import { onCall, HttpsError, CallableRequest } from 'firebase-functions/v2/https';
 import { getFirestore } from 'firebase-admin/firestore';
 import { initializeApp } from 'firebase-admin/app';
 
@@ -7,8 +7,24 @@ initializeApp();
 
 const db = getFirestore();
 
+// Type definitions
+interface RepairData {
+  tenantId: string;
+  createdAt?: FirebaseFirestore.Timestamp;
+  updatedAt?: FirebaseFirestore.Timestamp;
+  estimatedCompletion?: FirebaseFirestore.Timestamp;
+  actualCompletion?: FirebaseFirestore.Timestamp;
+  closedAt?: FirebaseFirestore.Timestamp;
+  status?: string;
+  [key: string]: any;
+}
+
+interface JobCardData {
+  [key: string]: any;
+}
+
 // Get repairs for a tenant
-export const getRepairs = onCall<{ tenantId: string }>(async (request) => {
+export const getRepairs = onCall<{ tenantId: string }>(async (request: CallableRequest<{ tenantId: string }>) => {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'User must be authenticated');
   }
@@ -24,15 +40,18 @@ export const getRepairs = onCall<{ tenantId: string }>(async (request) => {
     const repairsRef = db.collection('repairs');
     const snapshot = await repairsRef.where('tenantId', '==', tenantId).get();
     
-    const repairs = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-      createdAt: doc.data().createdAt?.toDate(),
-      updatedAt: doc.data().updatedAt?.toDate(),
-      estimatedCompletion: doc.data().estimatedCompletion?.toDate(),
-      actualCompletion: doc.data().actualCompletion?.toDate(),
-      closedAt: doc.data().closedAt?.toDate(),
-    }));
+    const repairs = snapshot.docs.map(doc => {
+      const data = doc.data() as RepairData;
+      return {
+        id: doc.id,
+        ...data,
+        createdAt: data.createdAt?.toDate(),
+        updatedAt: data.updatedAt?.toDate(),
+        estimatedCompletion: data.estimatedCompletion?.toDate(),
+        actualCompletion: data.actualCompletion?.toDate(),
+        closedAt: data.closedAt?.toDate(),
+      };
+    });
 
     return { repairs };
   } catch (error) {
@@ -42,7 +61,7 @@ export const getRepairs = onCall<{ tenantId: string }>(async (request) => {
 });
 
 // Get a single repair
-export const getRepair = onCall<{ tenantId: string; repairId: string }>(async (request) => {
+export const getRepair = onCall<{ tenantId: string; repairId: string }>(async (request: CallableRequest<{ tenantId: string; repairId: string }>) => {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'User must be authenticated');
   }
@@ -62,8 +81,8 @@ export const getRepair = onCall<{ tenantId: string; repairId: string }>(async (r
       throw new HttpsError('not-found', 'Repair not found');
     }
 
-    const repairData = repairDoc.data();
-    if (repairData?.tenantId !== tenantId) {
+    const repairData = repairDoc.data() as RepairData;
+    if (!repairData || repairData.tenantId !== tenantId) {
       throw new HttpsError('permission-denied', 'Access denied to this repair');
     }
 
@@ -83,7 +102,7 @@ export const getRepair = onCall<{ tenantId: string; repairId: string }>(async (r
 });
 
 // Create a new repair
-export const createRepair = onCall<{ tenantId: string; repair: any }>(async (request) => {
+export const createRepair = onCall<{ tenantId: string; repair: RepairData }>(async (request: CallableRequest<{ tenantId: string; repair: RepairData }>) => {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'User must be authenticated');
   }
@@ -120,7 +139,7 @@ export const createRepair = onCall<{ tenantId: string; repair: any }>(async (req
 });
 
 // Update a repair
-export const updateRepair = onCall<{ tenantId: string; repairId: string; repair: any }>(async (request) => {
+export const updateRepair = onCall<{ tenantId: string; repairId: string; repair: RepairData }>(async (request: CallableRequest<{ tenantId: string; repairId: string; repair: RepairData }>) => {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'User must be authenticated');
   }
@@ -140,8 +159,8 @@ export const updateRepair = onCall<{ tenantId: string; repairId: string; repair:
       throw new HttpsError('not-found', 'Repair not found');
     }
 
-    const existingData = repairDoc.data();
-    if (existingData?.tenantId !== tenantId) {
+    const existingData = repairDoc.data() as RepairData;
+    if (!existingData || existingData.tenantId !== tenantId) {
       throw new HttpsError('permission-denied', 'Access denied to this repair');
     }
 
@@ -152,8 +171,8 @@ export const updateRepair = onCall<{ tenantId: string; repairId: string; repair:
 
     // If status is being updated to completed, set closedAt
     if (repair.status === 'completed' && existingData.status !== 'completed') {
-      updateData.closedAt = new Date();
-      updateData.actualCompletion = new Date();
+      updateData.closedAt = new Date() as any;
+      updateData.actualCompletion = new Date() as any;
     }
 
     await repairRef.update(updateData);
@@ -170,7 +189,7 @@ export const updateRepair = onCall<{ tenantId: string; repairId: string; repair:
 });
 
 // Delete a repair
-export const deleteRepair = onCall<{ tenantId: string; repairId: string }>(async (request) => {
+export const deleteRepair = onCall<{ tenantId: string; repairId: string }>(async (request: CallableRequest<{ tenantId: string; repairId: string }>) => {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'User must be authenticated');
   }
@@ -190,7 +209,7 @@ export const deleteRepair = onCall<{ tenantId: string; repairId: string }>(async
       throw new HttpsError('not-found', 'Repair not found');
     }
 
-    const repairData = repairDoc.data();
+    const repairData = repairDoc.data() as RepairData;
     if (repairData?.tenantId !== tenantId) {
       throw new HttpsError('permission-denied', 'Access denied to this repair');
     }
@@ -205,7 +224,7 @@ export const deleteRepair = onCall<{ tenantId: string; repairId: string }>(async
 });
 
 // Get job cards for a repair
-export const getJobCards = onCall<{ tenantId: string; repairId: string }>(async (request) => {
+export const getJobCards = onCall<{ tenantId: string; repairId: string }>(async (request: CallableRequest<{ tenantId: string; repairId: string }>) => {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'User must be authenticated');
   }
@@ -221,12 +240,15 @@ export const getJobCards = onCall<{ tenantId: string; repairId: string }>(async 
     const jobCardsRef = db.collection('repairs').doc(repairId).collection('jobCards');
     const snapshot = await jobCardsRef.get();
     
-    const jobCards = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-      createdAt: doc.data().createdAt?.toDate(),
-      updatedAt: doc.data().updatedAt?.toDate(),
-    }));
+    const jobCards = snapshot.docs.map(doc => {
+      const data = doc.data() as JobCardData;
+      return {
+        id: doc.id,
+        ...data,
+        createdAt: data.createdAt?.toDate(),
+        updatedAt: data.updatedAt?.toDate(),
+      };
+    });
 
     return { jobCards };
   } catch (error) {
@@ -236,7 +258,7 @@ export const getJobCards = onCall<{ tenantId: string; repairId: string }>(async 
 });
 
 // Create a job card
-export const createJobCard = onCall<{ tenantId: string; repairId: string; jobCard: any }>(async (request) => {
+export const createJobCard = onCall<{ tenantId: string; repairId: string; jobCard: JobCardData }>(async (request: CallableRequest<{ tenantId: string; repairId: string; jobCard: JobCardData }>) => {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'User must be authenticated');
   }
