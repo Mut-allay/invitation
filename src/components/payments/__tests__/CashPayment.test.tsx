@@ -93,7 +93,8 @@ describe('CashPayment', () => {
       expect(continueButton).toBeDisabled();
       
       // Enter sufficient amount to proceed to confirmation
-      await user.clear(amountInput);
+      await user.click(amountInput);
+      await user.keyboard('{Control>}a{/Control}');
       await user.type(amountInput, '2000');
       await user.click(continueButton);
       
@@ -105,7 +106,9 @@ describe('CashPayment', () => {
       const backButton = screen.getByText('Back');
       await user.click(backButton);
       
-      await user.clear(amountInput);
+      // Clear and re-enter amount
+      await user.click(amountInput);
+      await user.keyboard('{Control>}a{/Control}');
       await user.type(amountInput, '1000');
       await user.click(continueButton);
       
@@ -311,7 +314,8 @@ describe('CashPayment', () => {
       expect(continueButton).toBeDisabled();
       
       // Enter sufficient amount to proceed
-      await user.clear(amountInput);
+      await user.click(amountInput);
+      await user.keyboard('{Control>}a{/Control}');
       await user.type(amountInput, '2000');
       await user.click(continueButton);
       
@@ -451,7 +455,8 @@ describe('CashPayment', () => {
       expect(continueButton).toBeDisabled();
       
       // Enter sufficient amount to proceed to confirmation
-      await user.clear(amountInput);
+      await user.click(amountInput);
+      await user.keyboard('{Control>}a{/Control}');
       await user.type(amountInput, '2000');
       await user.click(continueButton);
       
@@ -463,7 +468,9 @@ describe('CashPayment', () => {
       const backButton = screen.getByText('Back');
       await user.click(backButton);
       
-      await user.clear(amountInput);
+      // Clear and re-enter amount
+      await user.click(amountInput);
+      await user.keyboard('{Control>}a{/Control}');
       await user.type(amountInput, '1000');
       await user.click(continueButton);
       
@@ -491,7 +498,8 @@ describe('CashPayment', () => {
       expect(continueButton).toBeDisabled();
       
       // Enter sufficient amount to proceed to confirmation
-      await user.clear(amountInput);
+      await user.click(amountInput);
+      await user.keyboard('{Control>}a{/Control}');
       await user.type(amountInput, '2000');
       await user.click(continueButton);
       
@@ -503,7 +511,9 @@ describe('CashPayment', () => {
       const backButton = screen.getByText('Back');
       await user.click(backButton);
       
-      await user.clear(amountInput);
+      // Clear and re-enter amount
+      await user.click(amountInput);
+      await user.keyboard('{Control>}a{/Control}');
       await user.type(amountInput, '1000');
       await user.click(continueButton);
       
@@ -522,7 +532,9 @@ describe('CashPayment', () => {
       const backButton2 = screen.getByText('Back');
       await user.click(backButton2);
       
-      await user.clear(amountInput);
+      // Clear and re-enter amount
+      await user.click(amountInput);
+      await user.keyboard('{Control>}a{/Control}');
       await user.type(amountInput, '2000');
       await user.click(continueButton);
       
