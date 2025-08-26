@@ -1,11 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   CalendarIcon,
-  ClockIcon,
-  UserIcon,
-  WrenchScrewdriverIcon,
   ExclamationTriangleIcon,
-  CheckCircleIcon,
   XMarkIcon,
   PlusIcon,
   ArrowLeftIcon,
@@ -39,7 +35,6 @@ interface SchedulingState {
 export const BaySchedulingSystem: React.FC<BaySchedulingSystemProps> = ({
   tenantId,
   onScheduleCreated,
-  onScheduleUpdated,
   onScheduleDeleted
 }) => {
   const [schedulingState, setSchedulingState] = useState<SchedulingState>({
@@ -268,7 +263,7 @@ export const BaySchedulingSystem: React.FC<BaySchedulingSystemProps> = ({
     try {
       setSchedules(prev => prev.filter(schedule => schedule.id !== scheduleId));
       onScheduleDeleted?.(scheduleId);
-    } catch (err) {
+    } catch {
       setError('Failed to delete schedule');
     } finally {
       setIsLoading(false);

@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { AdvancedJobCardWorkflow } from '../AdvancedJobCardWorkflow';
-import type { RepairStatus, CompletionData } from '../../../types/repair';
+import type { } from '../../../types/repair';
 
 // Mock the Button component
 jest.mock('../../ui/button', () => ({

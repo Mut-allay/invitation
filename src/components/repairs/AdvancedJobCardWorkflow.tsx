@@ -3,12 +3,8 @@ import {
   CheckCircleIcon, 
   ClockIcon, 
   ExclamationTriangleIcon,
-  UserIcon,
-  WrenchScrewdriverIcon,
   ShieldCheckIcon,
-  ArrowRightIcon,
   PlayIcon,
-  PauseIcon,
   StopIcon
 } from '@heroicons/react/24/outline';
 import { Button } from '../ui/button';
@@ -54,53 +50,8 @@ export const AdvancedJobCardWorkflow: React.FC<JobCardWorkflowProps> = ({
   const [error, setError] = useState<string | null>(null);
 
   // Mock data - in real implementation, this would come from API
-  const mockMechanics: Mechanic[] = [
-    {
-      id: '1',
-      tenantId: 'demo-tenant',
-      name: 'John Mechanic',
-      specialization: ['Engine', 'Transmission'],
-      hourlyRate: 25,
-      availability: 'available',
-      createdAt: new Date(),
-      updatedAt: new Date()
-    },
-    {
-      id: '2',
-      tenantId: 'demo-tenant',
-      name: 'Sarah Technician',
-      specialization: ['Electrical', 'Diagnostics'],
-      hourlyRate: 30,
-      availability: 'available',
-      createdAt: new Date(),
-      updatedAt: new Date()
-    }
-  ];
-
-  const mockBays: Bay[] = [
-    {
-      id: '1',
-      tenantId: 'demo-tenant',
-      name: 'Bay 1',
-      type: 'standard',
-      status: 'available',
-      capacity: 1,
-      equipment: ['Lift', 'Tools', 'Diagnostic'],
-      createdAt: new Date(),
-      updatedAt: new Date()
-    },
-    {
-      id: '2',
-      tenantId: 'demo-tenant',
-      name: 'Bay 2',
-      type: 'heavy_duty',
-      status: 'available',
-      capacity: 1,
-      equipment: ['Heavy Lift', 'Specialized Tools'],
-      createdAt: new Date(),
-      updatedAt: new Date()
-    }
-  ];
+  // const mockMechanics: Mechanic[] = [...];
+  // const mockBays: Bay[] = [...];
 
   // Initialize workflow steps
   useEffect(() => {
@@ -225,7 +176,7 @@ export const AdvancedJobCardWorkflow: React.FC<JobCardWorkflowProps> = ({
       }));
 
       onStatusChange(newStatus);
-    } catch (err) {
+    } catch {
       setError('Failed to start workflow');
     } finally {
       setIsLoading(false);
@@ -272,7 +223,7 @@ export const AdvancedJobCardWorkflow: React.FC<JobCardWorkflowProps> = ({
           currentStep: nextStepIndex < updatedSteps.length ? nextStepIndex : prev.currentStep
         };
       });
-    } catch (err) {
+    } catch {
       setError('Failed to update step');
     } finally {
       setIsLoading(false);
@@ -292,7 +243,7 @@ export const AdvancedJobCardWorkflow: React.FC<JobCardWorkflowProps> = ({
             : checkpoint
         )
       }));
-    } catch (err) {
+    } catch {
       setError('Failed to update quality check');
     } finally {
       setIsLoading(false);
@@ -323,7 +274,7 @@ export const AdvancedJobCardWorkflow: React.FC<JobCardWorkflowProps> = ({
 
       onStatusChange(newStatus);
       onComplete(completionData);
-    } catch (err) {
+    } catch {
       setError('Failed to complete workflow');
     } finally {
       setIsLoading(false);
@@ -420,7 +371,7 @@ export const AdvancedJobCardWorkflow: React.FC<JobCardWorkflowProps> = ({
       <div className="mb-6">
         <h4 className="text-md font-medium text-gray-900 mb-4">Workflow Steps</h4>
         <div className="space-y-3">
-          {workflowState.steps.map((step, index) => (
+          {workflowState.steps.map((step) => (
             <div
               key={step.id}
               className={`p-4 border rounded-lg ${

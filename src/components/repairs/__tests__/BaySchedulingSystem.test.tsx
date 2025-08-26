@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BaySchedulingSystem } from '../BaySchedulingSystem';
-import type { BaySchedule } from '../../../types/repair';
+import type { } from '../../../types/repair';
 
 // Mock the Button component
 jest.mock('../../ui/button', () => ({

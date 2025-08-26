@@ -1,15 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  CubeIcon,
   ExclamationTriangleIcon,
-  CheckCircleIcon,
   XMarkIcon,
-  PlusIcon,
-  MinusIcon,
-  CurrencyDollarIcon,
-  TruckIcon,
-  ClockIcon,
-  UserIcon
+  PlusIcon
 } from '@heroicons/react/24/outline';
 import { Button } from '../ui/button';
 import type { 
@@ -50,7 +43,6 @@ export const PartsManagementInterface: React.FC<PartsManagementInterfaceProps> =
 
   const [partsInventory, setPartsInventory] = useState<PartsInventory[]>([]);
   const [partsUsage, setPartsUsage] = useState<PartsUsage[]>([]);
-  const [repair, setRepair] = useState<Repair | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -180,7 +172,6 @@ export const PartsManagementInterface: React.FC<PartsManagementInterfaceProps> =
 
     setPartsInventory(mockPartsInventory);
     setPartsUsage(mockPartsUsage);
-    setRepair(mockRepair);
   }, [repairId, tenantId]);
 
   const handleAddParts = () => {
