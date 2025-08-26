@@ -1,5 +1,5 @@
-import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { getFirestore, FieldValue } from 'firebase-admin/firestore';
+import { onCall, HttpsError, CallableRequest } from 'firebase-functions/v2/https';
+import { getFirestore } from 'firebase-admin/firestore';
 import { initializeApp } from 'firebase-admin/app';
 
 // Initialize Firebase Admin
@@ -7,8 +7,16 @@ initializeApp();
 
 const db = getFirestore();
 
+// Type definitions
+interface SaleData {
+  tenantId: string;
+  createdAt?: FirebaseFirestore.Timestamp;
+  updatedAt?: FirebaseFirestore.Timestamp;
+  [key: string]: any;
+}
+
 // Get sales for a tenant
-export const getSales = onCall<{ tenantId: string }>(async (request) => {
+export const getSales = onCall<{ tenantId: string }>(async (request: CallableRequest<{ tenantId: string }>) => {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'User must be authenticated');
   }
@@ -24,12 +32,15 @@ export const getSales = onCall<{ tenantId: string }>(async (request) => {
     const salesRef = db.collection('sales');
     const snapshot = await salesRef.where('tenantId', '==', tenantId).get();
     
-    const sales = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-      createdAt: doc.data().createdAt?.toDate(),
-      updatedAt: doc.data().updatedAt?.toDate(),
-    }));
+    const sales = snapshot.docs.map(doc => {
+      const data = doc.data() as SaleData;
+      return {
+        id: doc.id,
+        ...data,
+        createdAt: data.createdAt?.toDate(),
+        updatedAt: data.updatedAt?.toDate(),
+      };
+    });
 
     return { sales };
   } catch (error) {
@@ -39,7 +50,7 @@ export const getSales = onCall<{ tenantId: string }>(async (request) => {
 });
 
 // Get a single sale
-export const getSale = onCall<{ tenantId: string; saleId: string }>(async (request) => {
+export const getSale = onCall<{ tenantId: string; saleId: string }>(async (request: CallableRequest<{ tenantId: string; saleId: string }>) => {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'User must be authenticated');
   }
@@ -59,8 +70,8 @@ export const getSale = onCall<{ tenantId: string; saleId: string }>(async (reque
       throw new HttpsError('not-found', 'Sale not found');
     }
 
-    const saleData = saleDoc.data();
-    if (saleData?.tenantId !== tenantId) {
+    const saleData = saleDoc.data() as SaleData;
+    if (!saleData || saleData.tenantId !== tenantId) {
       throw new HttpsError('permission-denied', 'Access denied to this sale');
     }
 
@@ -77,7 +88,7 @@ export const getSale = onCall<{ tenantId: string; saleId: string }>(async (reque
 });
 
 // Create a new sale
-export const createSale = onCall<{ tenantId: string; sale: any }>(async (request) => {
+export const createSale = onCall<{ tenantId: string; sale: SaleData }>(async (request: CallableRequest<{ tenantId: string; sale: SaleData }>) => {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'User must be authenticated');
   }
@@ -90,61 +101,21 @@ export const createSale = onCall<{ tenantId: string; sale: any }>(async (request
   }
 
   try {
-    // Start a batch write
-    const batch = db.batch();
-
-    // Create the sale document
-    const saleRef = db.collection('sales').doc();
     const saleData = {
       ...sale,
       tenantId,
-      status: 'completed',
       createdAt: new Date(),
       updatedAt: new Date(),
     };
 
-    batch.set(saleRef, saleData);
-
-    // Update vehicle status to sold
-    const vehicleRef = db.collection('vehicles').doc(sale.vehicleId);
-    batch.update(vehicleRef, {
-      status: 'sold',
-      updatedAt: new Date(),
-    });
-
-    // Update customer's vehicles owned
-    const customerRef = db.collection('customers').doc(sale.customerId);
-    batch.update(customerRef, {
-      vehiclesOwned: FieldValue.arrayUnion(sale.vehicleId),
-      updatedAt: new Date(),
-    });
-
-    // Create audit log
-    const auditLogRef = db.collection('auditLogs').doc();
-    const auditLog = {
-      tenantId,
-      actorUid: request.auth.uid,
-      entityType: 'sale',
-      entityId: saleRef.id,
-      action: 'sale_created',
-      diff: {
-        vehicleId: sale.vehicleId,
-        customerId: sale.customerId,
-        salePrice: sale.salePrice,
-        deposit: sale.deposit,
-        balance: sale.balance,
-      },
-      timestamp: new Date(),
-    };
-
-    batch.set(auditLogRef, auditLog);
-
-    // Commit the batch
-    await batch.commit();
+    const saleRef = await db.collection('sales').add(saleData);
+    const newSaleDoc = await saleRef.get();
 
     return {
       id: saleRef.id,
-      ...saleData,
+      ...newSaleDoc.data(),
+      createdAt: newSaleDoc.data()?.createdAt?.toDate(),
+      updatedAt: newSaleDoc.data()?.updatedAt?.toDate(),
     };
   } catch (error) {
     console.error('Error creating sale:', error);
@@ -153,7 +124,7 @@ export const createSale = onCall<{ tenantId: string; sale: any }>(async (request
 });
 
 // Update a sale
-export const updateSale = onCall<{ tenantId: string; saleId: string; sale: any }>(async (request) => {
+export const updateSale = onCall<{ tenantId: string; saleId: string; sale: SaleData }>(async (request: CallableRequest<{ tenantId: string; saleId: string; sale: SaleData }>) => {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'User must be authenticated');
   }
@@ -173,8 +144,8 @@ export const updateSale = onCall<{ tenantId: string; saleId: string; sale: any }
       throw new HttpsError('not-found', 'Sale not found');
     }
 
-    const existingData = saleDoc.data();
-    if (existingData?.tenantId !== tenantId) {
+    const existingData = saleDoc.data() as SaleData;
+    if (!existingData || existingData.tenantId !== tenantId) {
       throw new HttpsError('permission-denied', 'Access denied to this sale');
     }
 
@@ -197,7 +168,7 @@ export const updateSale = onCall<{ tenantId: string; saleId: string; sale: any }
 });
 
 // Delete a sale
-export const deleteSale = onCall<{ tenantId: string; saleId: string }>(async (request) => {
+export const deleteSale = onCall<{ tenantId: string; saleId: string }>(async (request: CallableRequest<{ tenantId: string; saleId: string }>) => {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'User must be authenticated');
   }
@@ -217,8 +188,8 @@ export const deleteSale = onCall<{ tenantId: string; saleId: string }>(async (re
       throw new HttpsError('not-found', 'Sale not found');
     }
 
-    const saleData = saleDoc.data();
-    if (saleData?.tenantId !== tenantId) {
+    const saleData = saleDoc.data() as SaleData;
+    if (!saleData || saleData.tenantId !== tenantId) {
       throw new HttpsError('permission-denied', 'Access denied to this sale');
     }
 

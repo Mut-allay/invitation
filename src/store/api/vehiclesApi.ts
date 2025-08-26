@@ -1,10 +1,10 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { Vehicle, VehicleFormData } from '../../types/index';
+import type { Vehicle, VehicleFormData } from '../../types/index';
 
 export const vehiclesApi = createApi({
   reducerPath: 'vehiclesApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: '/api/v1',
+    baseUrl: 'http://localhost:5001/garajiflow-dev/us-central1',
     prepareHeaders: (headers) => {
       // Add auth token to headers
       const token = localStorage.getItem('authToken');
@@ -17,29 +17,37 @@ export const vehiclesApi = createApi({
   tagTypes: ['Vehicle'],
   endpoints: (builder) => ({
     getVehicles: builder.query<Vehicle[], string>({
-      query: (tenantId) => `/tenant/${tenantId}/vehicles`,
+      query: (tenantId) => ({
+        url: '/getVehicles',
+        method: 'POST',
+        body: { tenantId },
+      }),
       providesTags: ['Vehicle'],
     }),
     
     getVehicle: builder.query<Vehicle, { tenantId: string; vehicleId: string }>({
-      query: ({ tenantId, vehicleId }) => `/tenant/${tenantId}/vehicles/${vehicleId}`,
+      query: ({ tenantId, vehicleId }) => ({
+        url: '/getVehicle',
+        method: 'POST',
+        body: { tenantId, vehicleId },
+      }),
       providesTags: (result, error, { vehicleId }) => [{ type: 'Vehicle', id: vehicleId }],
     }),
     
     createVehicle: builder.mutation<Vehicle, { tenantId: string; vehicle: VehicleFormData }>({
       query: ({ tenantId, vehicle }) => ({
-        url: `/tenant/${tenantId}/vehicles`,
+        url: '/createVehicle',
         method: 'POST',
-        body: vehicle,
+        body: { tenantId, vehicle },
       }),
       invalidatesTags: ['Vehicle'],
     }),
     
     updateVehicle: builder.mutation<Vehicle, { tenantId: string; vehicleId: string; vehicle: Partial<VehicleFormData> }>({
       query: ({ tenantId, vehicleId, vehicle }) => ({
-        url: `/tenant/${tenantId}/vehicles/${vehicleId}`,
-        method: 'PUT',
-        body: vehicle,
+        url: '/updateVehicle',
+        method: 'POST',
+        body: { tenantId, vehicleId, vehicle },
       }),
       invalidatesTags: (result, error, { vehicleId }) => [
         { type: 'Vehicle', id: vehicleId },
@@ -49,8 +57,9 @@ export const vehiclesApi = createApi({
     
     deleteVehicle: builder.mutation<void, { tenantId: string; vehicleId: string }>({
       query: ({ tenantId, vehicleId }) => ({
-        url: `/tenant/${tenantId}/vehicles/${vehicleId}`,
-        method: 'DELETE',
+        url: '/deleteVehicle',
+        method: 'POST',
+        body: { tenantId, vehicleId },
       }),
       invalidatesTags: ['Vehicle'],
     }),

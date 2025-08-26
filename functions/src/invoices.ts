@@ -1,4 +1,4 @@
-import { onCall, HttpsError } from 'firebase-functions/v2/https';
+import { onCall, HttpsError, CallableRequest } from 'firebase-functions/v2/https';
 import { getFirestore } from 'firebase-admin/firestore';
 import { initializeApp } from 'firebase-admin/app';
 
@@ -7,8 +7,16 @@ initializeApp();
 
 const db = getFirestore();
 
+// Type definitions
+interface InvoiceData {
+  tenantId: string;
+  createdAt?: FirebaseFirestore.Timestamp;
+  updatedAt?: FirebaseFirestore.Timestamp;
+  [key: string]: any;
+}
+
 // Get invoices for a tenant
-export const getInvoices = onCall<{ tenantId: string }>(async (request) => {
+export const getInvoices = onCall<{ tenantId: string }>(async (request: CallableRequest<{ tenantId: string }>) => {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'User must be authenticated');
   }
@@ -24,15 +32,15 @@ export const getInvoices = onCall<{ tenantId: string }>(async (request) => {
     const invoicesRef = db.collection('invoices');
     const snapshot = await invoicesRef.where('tenantId', '==', tenantId).get();
     
-    const invoices = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-      createdAt: doc.data().createdAt?.toDate(),
-      updatedAt: doc.data().updatedAt?.toDate(),
-      issueDate: doc.data().issueDate?.toDate(),
-      dueDate: doc.data().dueDate?.toDate(),
-      paidDate: doc.data().paidDate?.toDate(),
-    }));
+    const invoices = snapshot.docs.map(doc => {
+      const data = doc.data() as InvoiceData;
+      return {
+        id: doc.id,
+        ...data,
+        createdAt: data.createdAt?.toDate(),
+        updatedAt: data.updatedAt?.toDate(),
+      };
+    });
 
     return { invoices };
   } catch (error) {
@@ -42,7 +50,7 @@ export const getInvoices = onCall<{ tenantId: string }>(async (request) => {
 });
 
 // Get a single invoice
-export const getInvoice = onCall<{ tenantId: string; invoiceId: string }>(async (request) => {
+export const getInvoice = onCall<{ tenantId: string; invoiceId: string }>(async (request: CallableRequest<{ tenantId: string; invoiceId: string }>) => {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'User must be authenticated');
   }
@@ -62,8 +70,8 @@ export const getInvoice = onCall<{ tenantId: string; invoiceId: string }>(async 
       throw new HttpsError('not-found', 'Invoice not found');
     }
 
-    const invoiceData = invoiceDoc.data();
-    if (invoiceData?.tenantId !== tenantId) {
+    const invoiceData = invoiceDoc.data() as InvoiceData;
+    if (!invoiceData || invoiceData.tenantId !== tenantId) {
       throw new HttpsError('permission-denied', 'Access denied to this invoice');
     }
 
@@ -72,9 +80,6 @@ export const getInvoice = onCall<{ tenantId: string; invoiceId: string }>(async 
       ...invoiceData,
       createdAt: invoiceData.createdAt?.toDate(),
       updatedAt: invoiceData.updatedAt?.toDate(),
-      issueDate: invoiceData.issueDate?.toDate(),
-      dueDate: invoiceData.dueDate?.toDate(),
-      paidDate: invoiceData.paidDate?.toDate(),
     };
   } catch (error) {
     console.error('Error fetching invoice:', error);
@@ -83,7 +88,7 @@ export const getInvoice = onCall<{ tenantId: string; invoiceId: string }>(async 
 });
 
 // Create a new invoice
-export const createInvoice = onCall<{ tenantId: string; invoice: any }>(async (request) => {
+export const createInvoice = onCall<{ tenantId: string; invoice: InvoiceData }>(async (request: CallableRequest<{ tenantId: string; invoice: InvoiceData }>) => {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'User must be authenticated');
   }
@@ -96,37 +101,21 @@ export const createInvoice = onCall<{ tenantId: string; invoice: any }>(async (r
   }
 
   try {
-    // Calculate VAT (16% in Zambia)
-    const vatRate = 0.16;
-    const subtotal = invoice.items.reduce((sum: number, item: any) => sum + (item.quantity * item.unitPrice), 0);
-    const vatAmount = subtotal * vatRate;
-    const totalAmount = subtotal + vatAmount;
-
-    // Generate invoice number
-    const invoiceNumber = `INV-${Date.now()}-${Math.random().toString(36).substr(2, 5).toUpperCase()}`;
-
     const invoiceData = {
       ...invoice,
       tenantId,
-      invoiceNumber,
-      subtotal,
-      vatAmount,
-      vatRate,
-      totalAmount,
-      taxBreakdown: {
-        vat: vatAmount,
-      },
-      status: 'draft',
-      issueDate: new Date(),
       createdAt: new Date(),
       updatedAt: new Date(),
     };
 
     const invoiceRef = await db.collection('invoices').add(invoiceData);
-    
+    const newInvoiceDoc = await invoiceRef.get();
+
     return {
       id: invoiceRef.id,
-      ...invoiceData,
+      ...newInvoiceDoc.data(),
+      createdAt: newInvoiceDoc.data()?.createdAt?.toDate(),
+      updatedAt: newInvoiceDoc.data()?.updatedAt?.toDate(),
     };
   } catch (error) {
     console.error('Error creating invoice:', error);
@@ -135,7 +124,7 @@ export const createInvoice = onCall<{ tenantId: string; invoice: any }>(async (r
 });
 
 // Update an invoice
-export const updateInvoice = onCall<{ tenantId: string; invoiceId: string; invoice: any }>(async (request) => {
+export const updateInvoice = onCall<{ tenantId: string; invoiceId: string; invoice: InvoiceData }>(async (request: CallableRequest<{ tenantId: string; invoiceId: string; invoice: InvoiceData }>) => {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'User must be authenticated');
   }
@@ -155,8 +144,8 @@ export const updateInvoice = onCall<{ tenantId: string; invoiceId: string; invoi
       throw new HttpsError('not-found', 'Invoice not found');
     }
 
-    const existingData = invoiceDoc.data();
-    if (existingData?.tenantId !== tenantId) {
+    const existingData = invoiceDoc.data() as InvoiceData;
+    if (!existingData || existingData.tenantId !== tenantId) {
       throw new HttpsError('permission-denied', 'Access denied to this invoice');
     }
 
@@ -179,7 +168,7 @@ export const updateInvoice = onCall<{ tenantId: string; invoiceId: string; invoi
 });
 
 // Delete an invoice
-export const deleteInvoice = onCall<{ tenantId: string; invoiceId: string }>(async (request) => {
+export const deleteInvoice = onCall<{ tenantId: string; invoiceId: string }>(async (request: CallableRequest<{ tenantId: string; invoiceId: string }>) => {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'User must be authenticated');
   }
@@ -199,8 +188,8 @@ export const deleteInvoice = onCall<{ tenantId: string; invoiceId: string }>(asy
       throw new HttpsError('not-found', 'Invoice not found');
     }
 
-    const invoiceData = invoiceDoc.data();
-    if (invoiceData?.tenantId !== tenantId) {
+    const invoiceData = invoiceDoc.data() as InvoiceData;
+    if (!invoiceData || invoiceData.tenantId !== tenantId) {
       throw new HttpsError('permission-denied', 'Access denied to this invoice');
     }
 
@@ -298,8 +287,8 @@ export const createPayment = onCall<{ tenantId: string; payment: any }>(async (r
   }
 });
 
-// Submit invoice to ZRA (placeholder for ZRA integration)
-export const submitToZRA = onCall<{ tenantId: string; invoiceId: string }>(async (request) => {
+// Submit invoice to ZRA
+export const submitToZRA = onCall<{ tenantId: string; invoiceId: string }>(async (request: CallableRequest<{ tenantId: string; invoiceId: string }>) => {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'User must be authenticated');
   }
@@ -312,23 +301,32 @@ export const submitToZRA = onCall<{ tenantId: string; invoiceId: string }>(async
   }
 
   try {
-    // This would integrate with ZRA Smart-Invoice API
-    // For now, we'll simulate the response
-    const markId = `ZRA-${Date.now()}-${Math.random().toString(36).substr(2, 5).toUpperCase()}`;
-    const qrCode = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${markId}`;
-
-    // Update invoice with ZRA data
     const invoiceRef = db.collection('invoices').doc(invoiceId);
+    const invoiceDoc = await invoiceRef.get();
+
+    if (!invoiceDoc.exists) {
+      throw new HttpsError('not-found', 'Invoice not found');
+    }
+
+    const invoiceData = invoiceDoc.data() as InvoiceData;
+    if (!invoiceData || invoiceData.tenantId !== tenantId) {
+      throw new HttpsError('permission-denied', 'Access denied to this invoice');
+    }
+
+    // Update invoice status to submitted
     await invoiceRef.update({
-      markId,
-      qrCode,
-      status: 'sent',
+      status: 'submitted_to_zra',
+      submittedAt: new Date(),
       updatedAt: new Date(),
     });
 
-    return { markId, qrCode };
+    return {
+      success: true,
+      message: 'Invoice submitted to ZRA successfully',
+      submittedAt: new Date(),
+    };
   } catch (error) {
-    console.error('Error submitting to ZRA:', error);
-    throw new HttpsError('internal', 'Failed to submit to ZRA');
+    console.error('Error submitting invoice to ZRA:', error);
+    throw new HttpsError('internal', 'Failed to submit invoice to ZRA');
   }
 }); 

@@ -1,10 +1,10 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { Invoice, InvoiceFormData, Payment, PaymentFormData } from '../../types/index';
+import type { Invoice, InvoiceFormData } from '../../types/index';
 
 export const invoicesApi = createApi({
   reducerPath: 'invoicesApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: '/api/v1',
+    baseUrl: 'http://localhost:5001/garajiflow-dev/us-central1',
     prepareHeaders: (headers) => {
       const token = localStorage.getItem('authToken');
       if (token) headers.set('authorization', `Bearer ${token}`);
@@ -14,26 +14,34 @@ export const invoicesApi = createApi({
   tagTypes: ['Invoice'],
   endpoints: (builder) => ({
     getInvoices: builder.query<Invoice[], string>({
-      query: (tenantId) => `/tenant/${tenantId}/invoices`,
+      query: (tenantId) => ({
+        url: '/getInvoices',
+        method: 'POST',
+        body: { tenantId },
+      }),
       providesTags: ['Invoice'],
     }),
     getInvoice: builder.query<Invoice, { tenantId: string; invoiceId: string }>({
-      query: ({ tenantId, invoiceId }) => `/tenant/${tenantId}/invoices/${invoiceId}`,
+      query: ({ tenantId, invoiceId }) => ({
+        url: '/getInvoice',
+        method: 'POST',
+        body: { tenantId, invoiceId },
+      }),
       providesTags: (result, error, { invoiceId }) => [{ type: 'Invoice', id: invoiceId }],
     }),
     createInvoice: builder.mutation<Invoice, { tenantId: string; invoice: InvoiceFormData }>({
       query: ({ tenantId, invoice }) => ({
-        url: `/tenant/${tenantId}/invoices`,
+        url: '/createInvoice',
         method: 'POST',
-        body: invoice,
+        body: { tenantId, invoice },
       }),
       invalidatesTags: ['Invoice'],
     }),
     updateInvoice: builder.mutation<Invoice, { tenantId: string; invoiceId: string; invoice: Partial<InvoiceFormData> }>({
       query: ({ tenantId, invoiceId, invoice }) => ({
-        url: `/tenant/${tenantId}/invoices/${invoiceId}`,
-        method: 'PUT',
-        body: invoice,
+        url: '/updateInvoice',
+        method: 'POST',
+        body: { tenantId, invoiceId, invoice },
       }),
       invalidatesTags: (result, error, { invoiceId }) => [
         { type: 'Invoice', id: invoiceId },
@@ -42,19 +50,21 @@ export const invoicesApi = createApi({
     }),
     deleteInvoice: builder.mutation<void, { tenantId: string; invoiceId: string }>({
       query: ({ tenantId, invoiceId }) => ({
-        url: `/tenant/${tenantId}/invoices/${invoiceId}`,
-        method: 'DELETE',
+        url: '/deleteInvoice',
+        method: 'POST',
+        body: { tenantId, invoiceId },
       }),
       invalidatesTags: ['Invoice'],
     }),
-    addPayment: builder.mutation<Payment, { tenantId: string; invoiceId: string; payment: PaymentFormData }>({
-      query: ({ tenantId, invoiceId, payment }) => ({
-        url: `/tenant/${tenantId}/invoices/${invoiceId}/payments`,
+    submitToZRA: builder.mutation<any, { tenantId: string; invoiceId: string }>({
+      query: ({ tenantId, invoiceId }) => ({
+        url: '/submitToZRA',
         method: 'POST',
-        body: payment,
+        body: { tenantId, invoiceId },
       }),
       invalidatesTags: (result, error, { invoiceId }) => [
         { type: 'Invoice', id: invoiceId },
+        'Invoice',
       ],
     }),
   }),
@@ -66,5 +76,5 @@ export const {
   useCreateInvoiceMutation,
   useUpdateInvoiceMutation,
   useDeleteInvoiceMutation,
-  useAddPaymentMutation,
+  useSubmitToZRAMutation,
 } = invoicesApi; 

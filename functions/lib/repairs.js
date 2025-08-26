@@ -22,7 +22,8 @@ exports.getRepairs = (0, https_1.onCall)(async (request) => {
         const snapshot = await repairsRef.where('tenantId', '==', tenantId).get();
         const repairs = snapshot.docs.map(doc => {
             var _a, _b, _c, _d, _e;
-            return (Object.assign(Object.assign({ id: doc.id }, doc.data()), { createdAt: (_a = doc.data().createdAt) === null || _a === void 0 ? void 0 : _a.toDate(), updatedAt: (_b = doc.data().updatedAt) === null || _b === void 0 ? void 0 : _b.toDate(), estimatedCompletion: (_c = doc.data().estimatedCompletion) === null || _c === void 0 ? void 0 : _c.toDate(), actualCompletion: (_d = doc.data().actualCompletion) === null || _d === void 0 ? void 0 : _d.toDate(), closedAt: (_e = doc.data().closedAt) === null || _e === void 0 ? void 0 : _e.toDate() }));
+            const data = doc.data();
+            return Object.assign(Object.assign({ id: doc.id }, data), { createdAt: (_a = data.createdAt) === null || _a === void 0 ? void 0 : _a.toDate(), updatedAt: (_b = data.updatedAt) === null || _b === void 0 ? void 0 : _b.toDate(), estimatedCompletion: (_c = data.estimatedCompletion) === null || _c === void 0 ? void 0 : _c.toDate(), actualCompletion: (_d = data.actualCompletion) === null || _d === void 0 ? void 0 : _d.toDate(), closedAt: (_e = data.closedAt) === null || _e === void 0 ? void 0 : _e.toDate() });
         });
         return { repairs };
     }
@@ -49,7 +50,7 @@ exports.getRepair = (0, https_1.onCall)(async (request) => {
             throw new https_1.HttpsError('not-found', 'Repair not found');
         }
         const repairData = repairDoc.data();
-        if ((repairData === null || repairData === void 0 ? void 0 : repairData.tenantId) !== tenantId) {
+        if (!repairData || repairData.tenantId !== tenantId) {
             throw new https_1.HttpsError('permission-denied', 'Access denied to this repair');
         }
         return Object.assign(Object.assign({ id: repairDoc.id }, repairData), { createdAt: (_a = repairData.createdAt) === null || _a === void 0 ? void 0 : _a.toDate(), updatedAt: (_b = repairData.updatedAt) === null || _b === void 0 ? void 0 : _b.toDate(), estimatedCompletion: (_c = repairData.estimatedCompletion) === null || _c === void 0 ? void 0 : _c.toDate(), actualCompletion: (_d = repairData.actualCompletion) === null || _d === void 0 ? void 0 : _d.toDate(), closedAt: (_e = repairData.closedAt) === null || _e === void 0 ? void 0 : _e.toDate() });
@@ -96,7 +97,7 @@ exports.updateRepair = (0, https_1.onCall)(async (request) => {
             throw new https_1.HttpsError('not-found', 'Repair not found');
         }
         const existingData = repairDoc.data();
-        if ((existingData === null || existingData === void 0 ? void 0 : existingData.tenantId) !== tenantId) {
+        if (!existingData || existingData.tenantId !== tenantId) {
             throw new https_1.HttpsError('permission-denied', 'Access denied to this repair');
         }
         const updateData = Object.assign(Object.assign({}, repair), { updatedAt: new Date() });
@@ -156,7 +157,8 @@ exports.getJobCards = (0, https_1.onCall)(async (request) => {
         const snapshot = await jobCardsRef.get();
         const jobCards = snapshot.docs.map(doc => {
             var _a, _b;
-            return (Object.assign(Object.assign({ id: doc.id }, doc.data()), { createdAt: (_a = doc.data().createdAt) === null || _a === void 0 ? void 0 : _a.toDate(), updatedAt: (_b = doc.data().updatedAt) === null || _b === void 0 ? void 0 : _b.toDate() }));
+            const data = doc.data();
+            return Object.assign(Object.assign({ id: doc.id }, data), { createdAt: (_a = data.createdAt) === null || _a === void 0 ? void 0 : _a.toDate(), updatedAt: (_b = data.updatedAt) === null || _b === void 0 ? void 0 : _b.toDate() });
         });
         return { jobCards };
     }

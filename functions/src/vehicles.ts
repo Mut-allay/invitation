@@ -1,4 +1,4 @@
-import { onCall, HttpsError } from 'firebase-functions/v2/https';
+import { onCall, HttpsError, CallableRequest } from 'firebase-functions/v2/https';
 import { onDocumentUpdated } from 'firebase-functions/v2/firestore';
 import { getFirestore } from 'firebase-admin/firestore';
 import { initializeApp } from 'firebase-admin/app';
@@ -8,8 +8,16 @@ initializeApp();
 
 const db = getFirestore();
 
+// Type definitions
+interface VehicleData {
+  tenantId: string;
+  createdAt?: FirebaseFirestore.Timestamp;
+  updatedAt?: FirebaseFirestore.Timestamp;
+  [key: string]: any;
+}
+
 // Get vehicles for a tenant
-export const getVehicles = onCall<{ tenantId: string }>(async (request) => {
+export const getVehicles = onCall<{ tenantId: string }>(async (request: CallableRequest<{ tenantId: string }>) => {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'User must be authenticated');
   }
@@ -17,7 +25,6 @@ export const getVehicles = onCall<{ tenantId: string }>(async (request) => {
   const { tenantId } = request.data;
   const userClaims = request.auth.token;
 
-  // Verify user belongs to the tenant
   if (userClaims.tenantId !== tenantId) {
     throw new HttpsError('permission-denied', 'Access denied to this tenant');
   }
@@ -26,12 +33,15 @@ export const getVehicles = onCall<{ tenantId: string }>(async (request) => {
     const vehiclesRef = db.collection('vehicles');
     const snapshot = await vehiclesRef.where('tenantId', '==', tenantId).get();
     
-    const vehicles = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-      createdAt: doc.data().createdAt?.toDate(),
-      updatedAt: doc.data().updatedAt?.toDate(),
-    }));
+    const vehicles = snapshot.docs.map(doc => {
+      const data = doc.data() as VehicleData;
+      return {
+        id: doc.id,
+        ...data,
+        createdAt: data.createdAt?.toDate(),
+        updatedAt: data.updatedAt?.toDate(),
+      };
+    });
 
     return { vehicles };
   } catch (error) {
@@ -41,7 +51,7 @@ export const getVehicles = onCall<{ tenantId: string }>(async (request) => {
 });
 
 // Get a single vehicle
-export const getVehicle = onCall<{ tenantId: string; vehicleId: string }>(async (request) => {
+export const getVehicle = onCall<{ tenantId: string; vehicleId: string }>(async (request: CallableRequest<{ tenantId: string; vehicleId: string }>) => {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'User must be authenticated');
   }
@@ -61,8 +71,8 @@ export const getVehicle = onCall<{ tenantId: string; vehicleId: string }>(async 
       throw new HttpsError('not-found', 'Vehicle not found');
     }
 
-    const vehicleData = vehicleDoc.data();
-    if (vehicleData?.tenantId !== tenantId) {
+    const vehicleData = vehicleDoc.data() as VehicleData;
+    if (!vehicleData || vehicleData.tenantId !== tenantId) {
       throw new HttpsError('permission-denied', 'Access denied to this vehicle');
     }
 
@@ -79,7 +89,7 @@ export const getVehicle = onCall<{ tenantId: string; vehicleId: string }>(async 
 });
 
 // Create a new vehicle
-export const createVehicle = onCall<{ tenantId: string; vehicle: Record<string, unknown> }>(async (request) => {
+export const createVehicle = onCall<{ tenantId: string; vehicle: Record<string, unknown> }>(async (request: CallableRequest<{ tenantId: string; vehicle: Record<string, unknown> }>) => {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'User must be authenticated');
   }
@@ -91,11 +101,6 @@ export const createVehicle = onCall<{ tenantId: string; vehicle: Record<string, 
     throw new HttpsError('permission-denied', 'Access denied to this tenant');
   }
 
-  // Check permissions from custom claims
-  if (!userClaims.permissions?.includes('create_vehicle')) {
-    throw new HttpsError('permission-denied', 'Insufficient permissions');
-  }
-
   try {
     const vehicleData = {
       ...vehicle,
@@ -105,10 +110,13 @@ export const createVehicle = onCall<{ tenantId: string; vehicle: Record<string, 
     };
 
     const vehicleRef = await db.collection('vehicles').add(vehicleData);
-    
+    const newVehicleDoc = await vehicleRef.get();
+
     return {
       id: vehicleRef.id,
-      ...vehicleData,
+      ...newVehicleDoc.data(),
+      createdAt: newVehicleDoc.data()?.createdAt?.toDate(),
+      updatedAt: newVehicleDoc.data()?.updatedAt?.toDate(),
     };
   } catch (error) {
     console.error('Error creating vehicle:', error);
@@ -117,7 +125,7 @@ export const createVehicle = onCall<{ tenantId: string; vehicle: Record<string, 
 });
 
 // Update a vehicle
-export const updateVehicle = onCall<{ tenantId: string; vehicleId: string; vehicle: Record<string, unknown> }>(async (request) => {
+export const updateVehicle = onCall<{ tenantId: string; vehicleId: string; vehicle: Record<string, unknown> }>(async (request: CallableRequest<{ tenantId: string; vehicleId: string; vehicle: Record<string, unknown> }>) => {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'User must be authenticated');
   }
@@ -129,10 +137,6 @@ export const updateVehicle = onCall<{ tenantId: string; vehicleId: string; vehic
     throw new HttpsError('permission-denied', 'Access denied to this tenant');
   }
 
-  if (!userClaims.permissions?.includes('update_vehicle')) {
-    throw new HttpsError('permission-denied', 'Insufficient permissions');
-  }
-
   try {
     const vehicleRef = db.collection('vehicles').doc(vehicleId);
     const vehicleDoc = await vehicleRef.get();
@@ -141,8 +145,8 @@ export const updateVehicle = onCall<{ tenantId: string; vehicleId: string; vehic
       throw new HttpsError('not-found', 'Vehicle not found');
     }
 
-    const existingData = vehicleDoc.data();
-    if (existingData?.tenantId !== tenantId) {
+    const existingData = vehicleDoc.data() as VehicleData;
+    if (!existingData || existingData.tenantId !== tenantId) {
       throw new HttpsError('permission-denied', 'Access denied to this vehicle');
     }
 
@@ -165,7 +169,7 @@ export const updateVehicle = onCall<{ tenantId: string; vehicleId: string; vehic
 });
 
 // Delete a vehicle
-export const deleteVehicle = onCall<{ tenantId: string; vehicleId: string }>(async (request) => {
+export const deleteVehicle = onCall<{ tenantId: string; vehicleId: string }>(async (request: CallableRequest<{ tenantId: string; vehicleId: string }>) => {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'User must be authenticated');
   }
@@ -177,10 +181,6 @@ export const deleteVehicle = onCall<{ tenantId: string; vehicleId: string }>(asy
     throw new HttpsError('permission-denied', 'Access denied to this tenant');
   }
 
-  if (!userClaims.permissions?.includes('delete_vehicle')) {
-    throw new HttpsError('permission-denied', 'Insufficient permissions');
-  }
-
   try {
     const vehicleRef = db.collection('vehicles').doc(vehicleId);
     const vehicleDoc = await vehicleRef.get();
@@ -189,8 +189,8 @@ export const deleteVehicle = onCall<{ tenantId: string; vehicleId: string }>(asy
       throw new HttpsError('not-found', 'Vehicle not found');
     }
 
-    const vehicleData = vehicleDoc.data();
-    if (vehicleData?.tenantId !== tenantId) {
+    const vehicleData = vehicleDoc.data() as VehicleData;
+    if (!vehicleData || vehicleData.tenantId !== tenantId) {
       throw new HttpsError('permission-denied', 'Access denied to this vehicle');
     }
 
@@ -203,26 +203,26 @@ export const deleteVehicle = onCall<{ tenantId: string; vehicleId: string }>(asy
   }
 });
 
-// Trigger: Update vehicle status when sold
-export const onVehicleStatusUpdate = onDocumentUpdated('vehicles/{vehicleId}', async (event: any) => {
+// Firestore trigger for vehicle updates
+export const onVehicleUpdated = onDocumentUpdated('vehicles/{vehicleId}', async (event) => {
+  const vehicleId = event.params.vehicleId;
   const beforeData = event.data?.before.data();
   const afterData = event.data?.after.data();
 
-  if (beforeData?.status !== 'sold' && afterData?.status === 'sold') {
-    // Vehicle was just sold, create audit log
-    const auditLog = {
-      tenantId: afterData.tenantId,
-      actorUid: 'system', // Or capture the user who made the change if available
-      entityType: 'vehicle',
-      entityId: event.params.vehicleId,
-      action: 'vehicle_sold',
-      diff: {
-        status: { from: beforeData?.status, to: 'sold' }
-      },
-      timestamp: new Date(),
-    };
-
-    await db.collection('auditLogs').add(auditLog);
-    console.log(`Vehicle ${event.params.vehicleId} marked as sold and logged.`);
+  if (!beforeData || !afterData) {
+    console.log('No data available for vehicle update trigger');
+    return;
   }
+
+  // Log the vehicle update
+  console.log(`Vehicle ${vehicleId} updated:`, {
+    before: beforeData,
+    after: afterData,
+  });
+
+  // You can add additional logic here, such as:
+  // - Updating related documents
+  // - Sending notifications
+  // - Creating audit logs
+  // - Triggering workflows
 });

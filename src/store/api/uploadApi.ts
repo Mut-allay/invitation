@@ -1,10 +1,10 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { UploadedFile } from '../../types/index';
+import type { UploadFile, UploadMetadata } from '../../types/index';
 
 export const uploadApi = createApi({
   reducerPath: 'uploadApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: '/api/v1',
+    baseUrl: 'http://localhost:5001/garajiflow-dev/us-central1',
     prepareHeaders: (headers) => {
       const token = localStorage.getItem('authToken');
       if (token) headers.set('authorization', `Bearer ${token}`);
@@ -13,15 +13,35 @@ export const uploadApi = createApi({
   }),
   tagTypes: ['Upload'],
   endpoints: (builder) => ({
-    uploadFile: builder.mutation<UploadedFile, { tenantId: string; file: File }>({
-      query: ({ tenantId, file }) => ({
-        url: `/tenant/${tenantId}/upload`,
+    uploadFile: builder.mutation<UploadFile, { tenantId: string; file: any; metadata?: UploadMetadata }>({
+      query: ({ tenantId, file, metadata }) => ({
+        url: '/uploadFile',
         method: 'POST',
-        body: file,
+        body: { tenantId, file, metadata },
+      }),
+      invalidatesTags: ['Upload'],
+    }),
+    getUploadedFiles: builder.query<UploadFile[], { tenantId: string; type?: string; itemId?: string }>({
+      query: ({ tenantId, type, itemId }) => ({
+        url: '/getUploadedFiles',
+        method: 'POST',
+        body: { tenantId, type, itemId },
+      }),
+      providesTags: ['Upload'],
+    }),
+    deleteFile: builder.mutation<void, { tenantId: string; fileId: string }>({
+      query: ({ tenantId, fileId }) => ({
+        url: '/deleteFile',
+        method: 'POST',
+        body: { tenantId, fileId },
       }),
       invalidatesTags: ['Upload'],
     }),
   }),
 });
 
-export const { useUploadFileMutation } = uploadApi; 
+export const {
+  useUploadFileMutation,
+  useGetUploadedFilesQuery,
+  useDeleteFileMutation,
+} = uploadApi; 
