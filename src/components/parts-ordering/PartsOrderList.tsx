@@ -67,7 +67,7 @@ export const PartsOrderList: React.FC<PartsOrderListProps> = ({
       {/* Search and Filter Controls */}
       <div>
         <input
-          placeholder="Search by supplier name or order ID..."
+          placeholder="Search by supplier name..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />

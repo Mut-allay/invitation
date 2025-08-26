@@ -115,7 +115,7 @@ describe('PredictiveAnalytics', () => {
     render(<PredictiveAnalytics />);
     
     await waitFor(() => {
-      // Should show both up and down trends
+      // Should show trend indicators
       const trendElements = screen.getAllByText(/Customer Trends/);
       expect(trendElements.length).toBeGreaterThan(0);
     }, { timeout: 3000 });
