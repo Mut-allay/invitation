@@ -1,55 +1,58 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { Repair, RepairFormData } from '../../types/repair';
+import type { Repair, RepairFormData } from '../../types/index';
 
 export const repairsApi = createApi({
   reducerPath: 'repairsApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: '/api/v1',
-    prepareHeaders: (headers, { getState }) => {
+    baseUrl: 'http://localhost:5001/garajiflow-dev/us-central1',
+    prepareHeaders: (headers) => {
       const token = localStorage.getItem('authToken');
-      if (token) {
-        headers.set('authorization', `Bearer ${token}`);
-      }
+      if (token) headers.set('authorization', `Bearer ${token}`);
       return headers;
     },
   }),
   tagTypes: ['Repair'],
   endpoints: (builder) => ({
     getRepairs: builder.query<Repair[], string>({
-      query: (tenantId) => `/tenant/${tenantId}/repairs`,
+      query: (tenantId) => ({
+        url: '/getRepairs',
+        method: 'POST',
+        body: { tenantId },
+      }),
       providesTags: ['Repair'],
     }),
-    
     getRepair: builder.query<Repair, { tenantId: string; repairId: string }>({
-      query: ({ tenantId, repairId }) => `/tenant/${tenantId}/repairs/${repairId}`,
+      query: ({ tenantId, repairId }) => ({
+        url: '/getRepair',
+        method: 'POST',
+        body: { tenantId, repairId },
+      }),
       providesTags: (result, error, { repairId }) => [{ type: 'Repair', id: repairId }],
     }),
-    
     createRepair: builder.mutation<Repair, { tenantId: string; repair: RepairFormData }>({
       query: ({ tenantId, repair }) => ({
-        url: `/tenant/${tenantId}/repairs`,
+        url: '/createRepair',
         method: 'POST',
-        body: repair,
+        body: { tenantId, repair },
       }),
       invalidatesTags: ['Repair'],
     }),
-    
     updateRepair: builder.mutation<Repair, { tenantId: string; repairId: string; repair: Partial<RepairFormData> }>({
       query: ({ tenantId, repairId, repair }) => ({
-        url: `/tenant/${tenantId}/repairs/${repairId}`,
-        method: 'PUT',
-        body: repair,
+        url: '/updateRepair',
+        method: 'POST',
+        body: { tenantId, repairId, repair },
       }),
       invalidatesTags: (result, error, { repairId }) => [
         { type: 'Repair', id: repairId },
         'Repair',
       ],
     }),
-    
     deleteRepair: builder.mutation<void, { tenantId: string; repairId: string }>({
       query: ({ tenantId, repairId }) => ({
-        url: `/tenant/${tenantId}/repairs/${repairId}`,
-        method: 'DELETE',
+        url: '/deleteRepair',
+        method: 'POST',
+        body: { tenantId, repairId },
       }),
       invalidatesTags: ['Repair'],
     }),

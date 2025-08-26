@@ -10,12 +10,6 @@ import { repairsApi } from '../../store/api/repairsApi';
 import { inventoryApi } from '../../store/api/inventoryApi';
 import { invoicesApi } from '../../store/api/invoicesApi';
 import { uploadApi } from '../../store/api/uploadApi';
-// Mock partsOrdersApi for tests to avoid import issues
-const partsOrdersApi = {
-  reducerPath: 'partsOrdersApi',
-  reducer: (state = {}) => state,
-  middleware: () => (next: any) => (action: any) => next(action),
-};
 import { AuthProvider } from '../../contexts/AuthContext';
 
 // Create a test store with all API slices
@@ -29,7 +23,6 @@ const createTestStore = () => {
       [inventoryApi.reducerPath]: inventoryApi.reducer,
       [invoicesApi.reducerPath]: invoicesApi.reducer,
       [uploadApi.reducerPath]: uploadApi.reducer,
-      [partsOrdersApi.reducerPath]: partsOrdersApi.reducer,
     },
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware().concat(
@@ -40,31 +33,22 @@ const createTestStore = () => {
         inventoryApi.middleware,
         invoicesApi.middleware,
         uploadApi.middleware,
-        partsOrdersApi.middleware,
       ),
   });
 };
 
-// Mock auth context
-const mockAuthContext = {
-  user: {
-    uid: 'test-user-id',
-    email: 'test@example.com',
-    displayName: 'Test User',
-  } as any, // Firebase User type
-  login: jest.fn(),
-  logout: jest.fn(),
-  loading: false,
-};
-
-// Mock AuthProvider for tests
-const MockAuthProvider = ({ children }: { children: React.ReactNode }) => {
-  return (
-    <div data-testid="mock-auth-provider">
-      {children}
-    </div>
-  );
-};
+// Mock auth context - commented out as it's not currently used
+// const mockAuthContext = {
+//   user: {
+//     id: 'test-user-id',
+//     email: 'test@example.com',
+//     tenantId: 'demo-tenant',
+//     role: 'admin',
+//   },
+//   login: jest.fn(),
+//   logout: jest.fn(),
+//   loading: false,
+// };
 
 // Custom render function that includes providers
 const AllTheProviders = ({ children }: { children: React.ReactNode }) => {
@@ -72,11 +56,11 @@ const AllTheProviders = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <Provider store={store}>
-      <MockAuthProvider>
+      <AuthProvider>
         <BrowserRouter>
           {children}
         </BrowserRouter>
-      </MockAuthProvider>
+      </AuthProvider>
     </Provider>
   );
 };

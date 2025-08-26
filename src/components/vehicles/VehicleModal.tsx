@@ -1,6 +1,6 @@
 import React from 'react';
-import { XMarkIcon, TruckIcon, CalendarIcon, CurrencyDollarIcon } from '@heroicons/react/24/outline';
-import { Vehicle } from '../../types/vehicle';
+import { XMarkIcon, TruckIcon, CalendarIcon } from '@heroicons/react/24/outline';
+import type { Vehicle } from '../../types/index';
 
 interface VehicleModalProps {
   vehicle: Vehicle;

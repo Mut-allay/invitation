@@ -1,53 +1,39 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { UploadedFile } from '../../types/upload';
+import type { UploadFile, UploadMetadata } from '../../types/index';
 
 export const uploadApi = createApi({
   reducerPath: 'uploadApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: '/api/v1',
-    prepareHeaders: (headers, { getState }) => {
+    baseUrl: 'http://localhost:5001/garajiflow-dev/us-central1',
+    prepareHeaders: (headers) => {
       const token = localStorage.getItem('authToken');
-      if (token) {
-        headers.set('authorization', `Bearer ${token}`);
-      }
+      if (token) headers.set('authorization', `Bearer ${token}`);
       return headers;
     },
   }),
   tagTypes: ['Upload'],
   endpoints: (builder) => ({
-    uploadFile: builder.mutation<UploadedFile, { tenantId: string; file: File; metadata?: any }>({
-      query: ({ tenantId, file, metadata }) => {
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('tenantId', tenantId);
-        if (metadata) {
-          formData.append('metadata', JSON.stringify(metadata));
-        }
-        
-        return {
-          url: `/tenant/${tenantId}/upload`,
-          method: 'POST',
-          body: formData,
-        };
-      },
+    uploadFile: builder.mutation<UploadFile, { tenantId: string; file: any; metadata?: UploadMetadata }>({
+      query: ({ tenantId, file, metadata }) => ({
+        url: '/uploadFile',
+        method: 'POST',
+        body: { tenantId, file, metadata },
+      }),
       invalidatesTags: ['Upload'],
     }),
-    
-    getUploadedFiles: builder.query<UploadedFile[], { tenantId: string; type?: string; itemId?: string }>({
-      query: ({ tenantId, type, itemId }) => {
-        const params = new URLSearchParams();
-        if (type) params.append('type', type);
-        if (itemId) params.append('itemId', itemId);
-        
-        return `/tenant/${tenantId}/files?${params.toString()}`;
-      },
+    getUploadedFiles: builder.query<UploadFile[], { tenantId: string; type?: string; itemId?: string }>({
+      query: ({ tenantId, type, itemId }) => ({
+        url: '/getUploadedFiles',
+        method: 'POST',
+        body: { tenantId, type, itemId },
+      }),
       providesTags: ['Upload'],
     }),
-    
     deleteFile: builder.mutation<void, { tenantId: string; fileId: string }>({
       query: ({ tenantId, fileId }) => ({
-        url: `/tenant/${tenantId}/files/${fileId}`,
-        method: 'DELETE',
+        url: '/deleteFile',
+        method: 'POST',
+        body: { tenantId, fileId },
       }),
       invalidatesTags: ['Upload'],
     }),

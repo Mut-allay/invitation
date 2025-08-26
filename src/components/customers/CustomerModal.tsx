@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { XMarkIcon, UserIcon, PhoneIcon, EnvelopeIcon, MapPinIcon } from '@heroicons/react/24/outline';
-import { Customer, CustomerFormData } from '../../types/customer';
-import { useCreateCustomerMutation, useUpdateCustomerMutation } from '../../store/api/customersApi';
-import { useAuth } from '../../contexts/AuthContext';
+import type { Customer, CustomerFormData } from '../../types/index';
 
 interface CustomerModalProps {
   customer: Customer | null;
@@ -17,9 +15,8 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
   isCreating, 
   onClose 
 }) => {
-  const { user } = useAuth();
-  const [createCustomer, { isLoading: creating }] = useCreateCustomerMutation();
-  const [updateCustomer, { isLoading: updating }] = useUpdateCustomerMutation();
+  const [creating, setCreating] = useState(false);
+  const [updating, setUpdating] = useState(false);
 
   const [formData, setFormData] = useState<CustomerFormData>({
     name: '',
@@ -52,29 +49,42 @@ export const CustomerModal: React.FC<CustomerModalProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!user?.tenantId) {
-      alert('No tenant ID found');
-      return;
-    }
-
     try {
       if (isCreating) {
-        await createCustomer({
-          tenantId: user.tenantId,
+        setCreating(true);
+        
+        // Simulate API call delay
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Mock success - in a real app this would create the customer
+        console.log('Mock: Customer created successfully', {
+          tenantId: 'demo-tenant',
           customer: formData,
-        }).unwrap();
+        });
       } else if (customer) {
-        await updateCustomer({
-          tenantId: user.tenantId,
+        setUpdating(true);
+        
+        // Simulate API call delay
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Mock success - in a real app this would update the customer
+        console.log('Mock: Customer updated successfully', {
+          tenantId: 'demo-tenant',
           customerId: customer.id,
           customer: formData,
-        }).unwrap();
+        });
       }
 
       onClose();
+      
+      // Show success message
+      alert(isCreating ? 'Customer created successfully! (Mock)' : 'Customer updated successfully! (Mock)');
     } catch (error) {
       console.error('Error saving customer:', error);
       alert('Failed to save customer. Please try again.');
+    } finally {
+      setCreating(false);
+      setUpdating(false);
     }
   };
 

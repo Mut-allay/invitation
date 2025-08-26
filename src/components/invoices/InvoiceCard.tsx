@@ -1,15 +1,14 @@
 import React from 'react';
 import { 
-  EyeIcon, 
-  PencilIcon, 
-  CurrencyDollarIcon,
-  DocumentTextIcon,
+  DocumentTextIcon, 
+  CurrencyDollarIcon, 
   CalendarIcon,
-  UserIcon,
   CheckCircleIcon,
-  ExclamationTriangleIcon
+  ClockIcon,
+  EyeIcon,
+  PencilIcon
 } from '@heroicons/react/24/outline';
-import { Invoice } from '../../types/invoice';
+import type { Invoice } from '../../types/index';
 
 interface InvoiceCardProps {
   invoice: Invoice;
@@ -41,7 +40,7 @@ export const InvoiceCard: React.FC<InvoiceCardProps> = ({ invoice, onView, onEdi
       case 'paid':
         return <CheckCircleIcon className="h-4 w-4" />;
       case 'overdue':
-        return <ExclamationTriangleIcon className="h-4 w-4" />;
+        return <ClockIcon className="h-4 w-4" />;
       default:
         return <DocumentTextIcon className="h-4 w-4" />;
     }

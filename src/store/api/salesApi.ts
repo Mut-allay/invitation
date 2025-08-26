@@ -1,55 +1,58 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { Sale, SaleFormData } from '../../types/sale';
+import type { Sale, SaleFormData } from '../../types/index';
 
 export const salesApi = createApi({
   reducerPath: 'salesApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: '/api/v1',
-    prepareHeaders: (headers, { getState }) => {
+    baseUrl: 'http://localhost:5001/garajiflow-dev/us-central1',
+    prepareHeaders: (headers) => {
       const token = localStorage.getItem('authToken');
-      if (token) {
-        headers.set('authorization', `Bearer ${token}`);
-      }
+      if (token) headers.set('authorization', `Bearer ${token}`);
       return headers;
     },
   }),
   tagTypes: ['Sale'],
   endpoints: (builder) => ({
     getSales: builder.query<Sale[], string>({
-      query: (tenantId) => `/tenant/${tenantId}/sales`,
+      query: (tenantId) => ({
+        url: '/getSales',
+        method: 'POST',
+        body: { tenantId },
+      }),
       providesTags: ['Sale'],
     }),
-    
     getSale: builder.query<Sale, { tenantId: string; saleId: string }>({
-      query: ({ tenantId, saleId }) => `/tenant/${tenantId}/sales/${saleId}`,
+      query: ({ tenantId, saleId }) => ({
+        url: '/getSale',
+        method: 'POST',
+        body: { tenantId, saleId },
+      }),
       providesTags: (result, error, { saleId }) => [{ type: 'Sale', id: saleId }],
     }),
-    
     createSale: builder.mutation<Sale, { tenantId: string; sale: SaleFormData }>({
       query: ({ tenantId, sale }) => ({
-        url: `/tenant/${tenantId}/sales`,
+        url: '/createSale',
         method: 'POST',
-        body: sale,
+        body: { tenantId, sale },
       }),
       invalidatesTags: ['Sale'],
     }),
-    
     updateSale: builder.mutation<Sale, { tenantId: string; saleId: string; sale: Partial<SaleFormData> }>({
       query: ({ tenantId, saleId, sale }) => ({
-        url: `/tenant/${tenantId}/sales/${saleId}`,
-        method: 'PUT',
-        body: sale,
+        url: '/updateSale',
+        method: 'POST',
+        body: { tenantId, saleId, sale },
       }),
       invalidatesTags: (result, error, { saleId }) => [
         { type: 'Sale', id: saleId },
         'Sale',
       ],
     }),
-    
     deleteSale: builder.mutation<void, { tenantId: string; saleId: string }>({
       query: ({ tenantId, saleId }) => ({
-        url: `/tenant/${tenantId}/sales/${saleId}`,
-        method: 'DELETE',
+        url: '/deleteSale',
+        method: 'POST',
+        body: { tenantId, saleId },
       }),
       invalidatesTags: ['Sale'],
     }),

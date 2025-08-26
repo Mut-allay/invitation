@@ -1,13 +1,12 @@
 import React from 'react';
 import { 
-  EyeIcon, 
   WrenchScrewdriverIcon, 
   ClockIcon,
-  CurrencyDollarIcon,
   UserIcon,
-  TruckIcon
+  TruckIcon,
+  EyeIcon
 } from '@heroicons/react/24/outline';
-import { Repair } from '../../types/repair';
+import type { Repair } from '../../types/index';
 
 interface RepairCardProps {
   repair: Repair;
