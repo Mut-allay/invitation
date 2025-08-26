@@ -142,7 +142,13 @@ describe('PartsOrderList', () => {
   });
 
   it('should render empty state when no orders', () => {
-    // This will fail initially
+    // Force empty state by explicitly setting empty data
+    (useGetPartsOrdersQuery as jest.Mock).mockReturnValue({
+      data: [],
+      isLoading: false,
+      error: null,
+    });
+    
     renderWithProviders(<PartsOrderList {...defaultProps} />);
     expect(screen.getByText(/no parts orders found/i)).toBeInTheDocument();
   });

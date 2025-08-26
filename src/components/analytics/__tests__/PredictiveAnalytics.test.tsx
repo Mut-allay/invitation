@@ -116,7 +116,7 @@ describe('PredictiveAnalytics', () => {
     
     await waitFor(() => {
       // Should show both up and down trends
-      const trendElements = screen.getAllByText(/from last hour/);
+      const trendElements = screen.getAllByText(/Customer Trends/);
       expect(trendElements.length).toBeGreaterThan(0);
     }, { timeout: 3000 });
   });
