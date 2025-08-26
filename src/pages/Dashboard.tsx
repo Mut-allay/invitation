@@ -9,6 +9,7 @@ import {
   UserGroupIcon,
   CubeIcon,
   DocumentTextIcon,
+  ChartBarIcon,
   Cog6ToothIcon,
   ArrowRightOnRectangleIcon,
   ChevronDownIcon,
@@ -25,6 +26,7 @@ import RepairsPage from './RepairsPage';
 import CustomersPage from './CustomersPage';
 import InventoryPage from './InventoryPage';
 import InvoicesPage from './InvoicesPage';
+import BusinessIntelligencePage from './BusinessIntelligencePage';
 import WizardDemo from './WizardDemo';
 
 import SettingsPage from './SettingsPage';
@@ -57,6 +59,7 @@ const Dashboard: React.FC = () => {
       items: [
         { name: 'Inventory', href: '/inventory', icon: CubeIcon, description: 'Parts and supplies' },
         { name: 'Invoices', href: '/invoices', icon: DocumentTextIcon, description: 'Billing and payments' },
+        { name: 'Analytics', href: '/analytics', icon: ChartBarIcon, description: 'Business intelligence' },
         { name: 'Settings', href: '/settings', icon: Cog6ToothIcon, description: 'System configuration' },
       ]
     },
@@ -267,6 +270,7 @@ const Dashboard: React.FC = () => {
                   <Route path="/customers" element={<CustomersPage />} />
                   <Route path="/inventory" element={<InventoryPage />} />
                   <Route path="/invoices" element={<InvoicesPage />} />
+                  <Route path="/analytics" element={<BusinessIntelligencePage />} />
                   <Route path="/wizard" element={<WizardDemo />} />
 
                   <Route path="/settings" element={<SettingsPage />} />
