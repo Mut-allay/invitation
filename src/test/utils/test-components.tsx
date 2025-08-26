@@ -11,26 +11,7 @@ import { invoicesApi } from '../../store/api/invoicesApi';
 import { uploadApi } from '../../store/api/uploadApi';
 import { AuthContext } from '../../contexts/auth-context-definition';
 
-// Mock partsOrdersApi since it has Firebase dependencies
-const mockPartsOrdersApi = {
-  reducerPath: 'partsOrdersApi',
-  reducer: (state = {}) => state,
-  middleware: () => (next: unknown) => (action: unknown) => next(action as unknown),
-  endpoints: {},
-  useGetPartsOrdersQuery: () => ({ data: [], isLoading: false, error: null }),
-  useCreatePartsOrderMutation: () => [
-    jest.fn().mockImplementation(() => Promise.resolve({ data: { id: 'test-order-id' } })),
-    { isLoading: false, error: null }
-  ],
-  useUpdatePartsOrderMutation: () => [
-    jest.fn().mockImplementation(() => Promise.resolve({ data: { id: 'test-order-id' } })),
-    { isLoading: false, error: null }
-  ],
-  useDeletePartsOrderMutation: () => [
-    jest.fn().mockImplementation(() => Promise.resolve({ data: { success: true } })),
-    { isLoading: false, error: null }
-  ],
-};
+
 
 // Create a test store with all API slices
 const createTestStore = () => {
@@ -43,7 +24,6 @@ const createTestStore = () => {
       [inventoryApi.reducerPath]: inventoryApi.reducer,
       [invoicesApi.reducerPath]: invoicesApi.reducer,
       [uploadApi.reducerPath]: uploadApi.reducer,
-      [mockPartsOrdersApi.reducerPath]: mockPartsOrdersApi.reducer,
     },
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware().concat(
@@ -54,7 +34,6 @@ const createTestStore = () => {
         inventoryApi.middleware,
         invoicesApi.middleware,
         uploadApi.middleware,
-        mockPartsOrdersApi.middleware,
       ),
   });
 };
