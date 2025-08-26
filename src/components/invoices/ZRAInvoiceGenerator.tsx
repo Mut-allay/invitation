@@ -96,20 +96,49 @@ const ZRAInvoiceGenerator: React.FC<ZRAInvoiceGeneratorProps> = ({
     return `ZRA-${year}${month}${day}-${random}`;
   };
 
-  // Calculate item totals with VAT
+  // Validate TPIN format on input change
+  const validateTpin = (tpin: string): boolean => {
+    return /^\d{10}$/.test(tpin);
+  };
+
+  // Handle business TPIN change with validation
+  const handleBusinessTpinChange = (value: string) => {
+    const cleanValue = value.replace(/\D/g, '').slice(0, 10);
+    setInvoice({ ...invoice, businessTpin: cleanValue });
+    
+    // Clear error if TPIN is now valid
+    if (cleanValue.length === 10 && validateTpin(cleanValue)) {
+      const { businessTpin, ...otherErrors } = errors;
+      setErrors(otherErrors);
+    }
+  };
+
+  // Handle customer TPIN change with validation
+  const handleCustomerTpinChange = (value: string) => {
+    const cleanValue = value.replace(/\D/g, '').slice(0, 10);
+    setInvoice({ ...invoice, customerTpin: cleanValue });
+    
+    // Clear error if TPIN is now valid
+    if (cleanValue.length === 10 && validateTpin(cleanValue)) {
+      const { customerTpin, ...otherErrors } = errors;
+      setErrors(otherErrors);
+    }
+  };
+
+  // Calculate item totals with VAT (with proper rounding)
   const calculateItemTotals = (item: Partial<InvoiceItem>) => {
-    const subtotal = (item.quantity || 0) * (item.unitPrice || 0);
-    const vatAmount = item.vatExempt ? 0 : subtotal * ((item.vatRate || 0) / 100);
-    const total = subtotal + vatAmount;
+    const subtotal = Math.round(((item.quantity || 0) * (item.unitPrice || 0)) * 100) / 100;
+    const vatAmount = item.vatExempt ? 0 : Math.round(subtotal * ((item.vatRate || 0) / 100) * 100) / 100;
+    const total = Math.round((subtotal + vatAmount) * 100) / 100;
 
     return { subtotal, vatAmount, total };
   };
 
-  // Calculate invoice totals
+  // Calculate invoice totals (with proper rounding)
   const calculateInvoiceTotals = (items: InvoiceItem[]) => {
-    const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
-    const totalVat = items.reduce((sum, item) => sum + item.vatAmount, 0);
-    const totalAmount = subtotal + totalVat;
+    const subtotal = Math.round(items.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0) * 100) / 100;
+    const totalVat = Math.round(items.reduce((sum, item) => sum + item.vatAmount, 0) * 100) / 100;
+    const totalAmount = Math.round((subtotal + totalVat) * 100) / 100;
 
     return { subtotal, totalVat, totalAmount };
   };
@@ -124,7 +153,7 @@ const ZRAInvoiceGenerator: React.FC<ZRAInvoiceGeneratorProps> = ({
 
     if (!invoice.customerTpin?.trim()) {
       newErrors.customerTpin = 'Customer TPIN is required for ZRA compliance';
-    } else if (!/^\d{10}$/.test(invoice.customerTpin)) {
+    } else if (!validateTpin(invoice.customerTpin)) {
       newErrors.customerTpin = 'TPIN must be 10 digits';
     }
 
@@ -134,7 +163,7 @@ const ZRAInvoiceGenerator: React.FC<ZRAInvoiceGeneratorProps> = ({
 
     if (!invoice.businessTpin?.trim()) {
       newErrors.businessTpin = 'Business TPIN is required for ZRA compliance';
-    } else if (!/^\d{10}$/.test(invoice.businessTpin)) {
+    } else if (!validateTpin(invoice.businessTpin)) {
       newErrors.businessTpin = 'Business TPIN must be 10 digits';
     }
 
@@ -325,7 +354,7 @@ const ZRAInvoiceGenerator: React.FC<ZRAInvoiceGeneratorProps> = ({
                 type="text"
                 id="businessTpin"
                 value={invoice.businessTpin || ''}
-                onChange={(e) => setInvoice({ ...invoice, businessTpin: e.target.value.replace(/\D/g, '').slice(0, 10) })}
+                onChange={(e) => handleBusinessTpinChange(e.target.value)}
                 className="input-field"
                 placeholder="1234567890"
                 maxLength={10}
@@ -382,7 +411,7 @@ const ZRAInvoiceGenerator: React.FC<ZRAInvoiceGeneratorProps> = ({
                 type="text"
                 id="customerTpin"
                 value={invoice.customerTpin || ''}
-                onChange={(e) => setInvoice({ ...invoice, customerTpin: e.target.value.replace(/\D/g, '').slice(0, 10) })}
+                onChange={(e) => handleCustomerTpinChange(e.target.value)}
                 className="input-field"
                 placeholder="1234567890"
                 maxLength={10}
@@ -576,7 +605,7 @@ const ZRAInvoiceGenerator: React.FC<ZRAInvoiceGeneratorProps> = ({
                       </td>
                       <td className="border border-gray-300 px-4 py-2 text-right">{formatCurrency(item.vatAmount)}</td>
                       <td className="border border-gray-300 px-4 py-2 text-right font-medium">
-                        {formatCurrency(item.total + item.vatAmount)}
+                        {formatCurrency(item.total)}
                       </td>
                       <td className="border border-gray-300 px-4 py-2 text-center">
                         <button
