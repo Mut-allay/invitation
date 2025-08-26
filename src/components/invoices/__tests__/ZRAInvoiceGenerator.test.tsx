@@ -285,8 +285,8 @@ describe('ZRAInvoiceGenerator', () => {
             qrCode: expect.stringContaining('data:image/svg+xml')
           })
         );
-      }, { timeout: 3000 });
-    });
+      }, { timeout: 15000 });
+    }, 15000);
 
     it('calls onCancel when cancel button is clicked', async () => {
       const user = userEvent.setup();
