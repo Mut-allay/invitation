@@ -1,115 +1,33 @@
-import React, { ReactElement } from 'react';
-import { render, RenderOptions } from '@testing-library/react';
-import { Provider } from 'react-redux';
-import { BrowserRouter } from 'react-router-dom';
-import { configureStore } from '@reduxjs/toolkit';
-import { vehiclesApi } from '../../store/api/vehiclesApi';
-import { customersApi } from '../../store/api/customersApi';
-import { salesApi } from '../../store/api/salesApi';
-import { repairsApi } from '../../store/api/repairsApi';
-import { inventoryApi } from '../../store/api/inventoryApi';
-import { invoicesApi } from '../../store/api/invoicesApi';
-import { uploadApi } from '../../store/api/uploadApi';
-// Mock partsOrdersApi since it has Firebase dependencies
-const mockPartsOrdersApi = {
-  reducerPath: 'partsOrdersApi',
-  reducer: (state = {}, action: any) => state,
-  middleware: () => (next: any) => (action: any) => next(action),
-  endpoints: {},
-  useGetPartsOrdersQuery: () => ({ data: [], isLoading: false, error: null }),
-  useCreatePartsOrderMutation: () => [
-    jest.fn().mockImplementation(() => Promise.resolve({ data: { id: 'test-order-id' } })),
-    { isLoading: false, error: null }
-  ],
-  useUpdatePartsOrderMutation: () => [
-    jest.fn().mockImplementation(() => Promise.resolve({ data: { id: 'test-order-id' } })),
-    { isLoading: false, error: null }
-  ],
-  useDeletePartsOrderMutation: () => [
-    jest.fn().mockImplementation(() => Promise.resolve({ data: { success: true } })),
-    { isLoading: false, error: null }
-  ],
-};
-import { AuthProvider, AuthContext } from '../../contexts/AuthContext';
-
-// Create a test store with all API slices
-const createTestStore = () => {
-  return configureStore({
-    reducer: {
-      [vehiclesApi.reducerPath]: vehiclesApi.reducer,
-      [customersApi.reducerPath]: customersApi.reducer,
-      [salesApi.reducerPath]: salesApi.reducer,
-      [repairsApi.reducerPath]: repairsApi.reducer,
-      [inventoryApi.reducerPath]: inventoryApi.reducer,
-      [invoicesApi.reducerPath]: invoicesApi.reducer,
-      [uploadApi.reducerPath]: uploadApi.reducer,
-      [mockPartsOrdersApi.reducerPath]: mockPartsOrdersApi.reducer,
-    },
-    middleware: (getDefaultMiddleware) =>
-      getDefaultMiddleware().concat(
-        vehiclesApi.middleware,
-        customersApi.middleware,
-        salesApi.middleware,
-        repairsApi.middleware,
-        inventoryApi.middleware,
-        invoicesApi.middleware,
-        uploadApi.middleware,
-        mockPartsOrdersApi.middleware,
-      ),
-  });
-};
-
-// Mock auth context - commented out as it's not currently used
-// const mockAuthContext = {
-//   user: {
-//     id: 'test-user-id',
-//     email: 'test@example.com',
-//     tenantId: 'demo-tenant',
-//     role: 'admin',
-//   },
-//   login: jest.fn(),
-//   logout: jest.fn(),
-//   loading: false,
-// };
-
-// Mock AuthProvider for testing - doesn't depend on Firebase auth state
-const MockAuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const mockAuthContext = {
-    user: null,
-    loading: false, // Always false in tests
-    login: jest.fn(),
-    logout: jest.fn(),
-  };
-
-  return (
-    <AuthContext.Provider value={mockAuthContext}>
-      {children}
-    </AuthContext.Provider>
-  );
-};
-
-// Custom render function that includes providers
-const AllTheProviders = ({ children }: { children: React.ReactNode }) => {
-  const store = createTestStore();
-
-  return (
-    <Provider store={store}>
-      <MockAuthProvider>
-        <BrowserRouter>
-          {children}
-        </BrowserRouter>
-      </MockAuthProvider>
-    </Provider>
-  );
-};
+import { render, type RenderOptions } from '@testing-library/react';
+import type { ReactElement } from 'react';
+import { AllTheProviders } from './test-components';
 
 const customRender = (
   ui: ReactElement,
   options?: Omit<RenderOptions, 'wrapper'>,
 ) => render(ui, { wrapper: AllTheProviders, ...options });
 
-// Re-export everything
-export * from '@testing-library/react';
+// Re-export specific items instead of everything
+export {
+  screen,
+  waitFor,
+  fireEvent,
+  within,
+  getByText,
+  getByLabelText,
+  getByTestId,
+  queryByText,
+  queryByLabelText,
+  queryByTestId,
+  findByText,
+  findByLabelText,
+  findByTestId,
+  waitForElementToBeRemoved,
+  act,
+  cleanup,
+  renderHook,
+
+} from '@testing-library/react';
 export { customRender as render };
 
 // Export test utilities

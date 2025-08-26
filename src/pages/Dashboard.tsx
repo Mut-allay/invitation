@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Routes, Route, Link, useLocation } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import { useToast } from '../contexts/ToastContext';
+import { useAuth } from '../contexts/auth-hooks';
+import { useToast } from '../contexts/toast-hooks';
 import {
   HomeIcon,
   TruckIcon,

@@ -1,11 +1,11 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import PredictiveAnalytics from '../PredictiveAnalytics';
 
 // Mock the MainChart component
 jest.mock('../../organisms/charts/MainChart', () => {
-  return function MockMainChart({ data, type, dataKey, title }: any) {
+  return function MockMainChart({ data, type, dataKey, title }: { data?: unknown[]; type?: string; dataKey?: string; title?: string }) {
     return (
       <div data-testid="main-chart">
         <div data-testid="chart-type">{type}</div>

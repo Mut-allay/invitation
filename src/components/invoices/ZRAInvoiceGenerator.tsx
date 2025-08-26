@@ -1,11 +1,10 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import {
   DocumentTextIcon,
-  PrinterIcon,
-  DocumentArrowDownIcon,
+
   QrCodeIcon,
   CalculatorIcon,
-  CheckCircleIcon,
+
   XCircleIcon,
   ExclamationTriangleIcon,
   PlusIcon,
@@ -108,7 +107,7 @@ const ZRAInvoiceGenerator: React.FC<ZRAInvoiceGeneratorProps> = ({
     
     // Clear error if TPIN is now valid
     if (cleanValue.length === 10 && validateTpin(cleanValue)) {
-      const { businessTpin, ...otherErrors } = errors;
+      const { ...otherErrors } = errors;
       setErrors(otherErrors);
     }
   };
@@ -120,7 +119,7 @@ const ZRAInvoiceGenerator: React.FC<ZRAInvoiceGeneratorProps> = ({
     
     // Clear error if TPIN is now valid
     if (cleanValue.length === 10 && validateTpin(cleanValue)) {
-      const { customerTpin, ...otherErrors } = errors;
+      const { ...otherErrors } = errors;
       setErrors(otherErrors);
     }
   };
@@ -192,7 +191,7 @@ const ZRAInvoiceGenerator: React.FC<ZRAInvoiceGeneratorProps> = ({
       return;
     }
 
-    const { subtotal, vatAmount, total } = calculateItemTotals(currentItem);
+    const { subtotal, vatAmount } = calculateItemTotals(currentItem);
 
     const newItem: InvoiceItem = {
       id: Date.now().toString(),
@@ -224,7 +223,7 @@ const ZRAInvoiceGenerator: React.FC<ZRAInvoiceGeneratorProps> = ({
     });
 
     // Clear item errors
-    const { itemDescription, itemQuantity, itemUnitPrice, ...otherErrors } = errors;
+    const { ...otherErrors } = errors;
     setErrors(otherErrors);
   };
 
@@ -242,13 +241,6 @@ const ZRAInvoiceGenerator: React.FC<ZRAInvoiceGeneratorProps> = ({
 
   // Generate QR code (simplified - in real implementation would use proper QR library)
   const generateQRCode = (invoice: ZRAInvoice): string => {
-    const qrData = {
-      invoiceNumber: invoice.invoiceNumber,
-      businessTpin: invoice.businessTpin,
-      totalAmount: invoice.totalAmount,
-      date: invoice.invoiceDate.toISOString().split('T')[0]
-    };
-    
     // In real implementation, use a proper QR code library
     return `data:image/svg+xml;base64,${btoa(`<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="white"/><text x="50" y="50" text-anchor="middle" font-size="8">QR:${invoice.invoiceNumber}</text></svg>`)}`;
   };
@@ -290,7 +282,7 @@ const ZRAInvoiceGenerator: React.FC<ZRAInvoiceGeneratorProps> = ({
       await new Promise(resolve => setTimeout(resolve, 2000));
 
       onInvoiceGenerated(completeInvoice);
-    } catch (error) {
+    } catch {
       setErrors({ general: 'Failed to generate invoice. Please try again.' });
     } finally {
       setIsGenerating(false);

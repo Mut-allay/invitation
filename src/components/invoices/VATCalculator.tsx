@@ -113,7 +113,7 @@ const VATCalculator: React.FC<VATCalculatorProps> = ({
     if (onCalculationChange) {
       onCalculationChange(calculation);
     }
-  }, [amount, vatRate, calculationType, onCalculationChange]);
+  }, [amount, vatRate, calculationType, onCalculationChange, calculation]);
 
   // Calculate VAT percentage of total
   const getVATPercentageOfTotal = (): number => {

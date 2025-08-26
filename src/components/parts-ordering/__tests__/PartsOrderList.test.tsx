@@ -1,12 +1,11 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { PartsOrderList } from '../PartsOrderList';
 import { useGetPartsOrdersQuery, useDeletePartsOrderMutation } from '../../../store/api/partsOrdersApi';
 
 // Mock the API hooks
-const mockUseGetPartsOrdersQuery = jest.fn();
-const mockUseDeletePartsOrderMutation = jest.fn();
+
 
 jest.mock('../../../store/api/partsOrdersApi', () => ({
   useGetPartsOrdersQuery: jest.fn(),

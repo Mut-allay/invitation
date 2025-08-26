@@ -78,7 +78,7 @@ const BankTransferPayment: React.FC<BankTransferPaymentProps> = ({
   const [selectedBank, setSelectedBank] = useState<string>('');
   const [accountNumber, setAccountNumber] = useState('');
   const [accountName, setAccountName] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
   // Format amount in Zambian Kwacha
@@ -155,9 +155,6 @@ const BankTransferPayment: React.FC<BankTransferPaymentProps> = ({
       });
 
       setPaymentStep('success');
-    } catch (err) {
-      setError('Bank transfer failed. Please try again.');
-      setPaymentStep('error');
     } finally {
       setIsLoading(false);
     }

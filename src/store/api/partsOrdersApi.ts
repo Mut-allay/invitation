@@ -1,23 +1,24 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '../../config/firebase';
-import { PartsOrder, PartsOrderFormData, PartsOrderWithItems, OrderStatusUpdate } from '../../types/partsOrder';
+import type { PartsOrder, PartsOrderFormData, PartsOrderWithItems, OrderStatusUpdate } from '../../types/partsOrder';
 
 // Phase 1: Basic Parts Ordering API using Firebase callable functions
 // Simple CRUD operations without complex supplier integration
 
 // Custom base query for Firebase callable functions
-const firebaseBaseQuery = () => async (args: any) => {
+const firebaseBaseQuery = () => async (args: { functionName: string; data: unknown }) => {
   try {
     const { functionName, data } = args;
     const callable = httpsCallable(functions, functionName);
     const result = await callable(data);
     return { data: result.data };
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorObj = error as { code?: string; message?: string };
     return { 
       error: { 
-        status: error.code || 'UNKNOWN_ERROR',
-        data: error.message || 'An unknown error occurred'
+        status: errorObj.code || 'UNKNOWN_ERROR',
+        data: errorObj.message || 'An unknown error occurred'
       } 
     };
   }

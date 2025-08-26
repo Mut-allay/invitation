@@ -4,7 +4,7 @@ import {
   ChartBarIcon,
   UserGroupIcon,
   CubeIcon,
-  CalendarIcon,
+
   ExclamationTriangleIcon,
   CheckCircleIcon,
   ClockIcon
@@ -148,7 +148,7 @@ const PredictiveAnalytics: React.FC<PredictiveAnalyticsProps> = ({ className = '
 
   const getPredictionChartData = () => {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
-    return months.map((month, index) => ({
+    return months.map((month) => ({
       month,
       actual: Math.floor(Math.random() * 50000) + 30000,
       predicted: Math.floor(Math.random() * 50000) + 35000,
@@ -173,7 +173,7 @@ const PredictiveAnalytics: React.FC<PredictiveAnalyticsProps> = ({ className = '
           <div className="flex items-center space-x-2">
             <select
               value={selectedTimeframe}
-              onChange={(e) => setSelectedTimeframe(e.target.value as any)}
+              onChange={(e) => setSelectedTimeframe(e.target.value as 'week' | 'month' | 'quarter')}
               className="px-3 py-1 bg-white/20 text-white border border-white/30 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-white/50"
             >
               <option value="week">Next Week</option>

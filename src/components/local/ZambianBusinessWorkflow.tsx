@@ -12,7 +12,7 @@ interface WorkflowStep {
   id: string;
   title: string;
   description: string;
-  icon: React.ComponentType<any>;
+  icon: React.ComponentType<{ className?: string }>;
   isCompleted: boolean;
   isRequired: boolean;
   localCustom?: string;
@@ -31,7 +31,7 @@ const ZambianBusinessWorkflow: React.FC<ZambianBusinessWorkflowProps> = ({
   onWorkflowComplete,
   className = ''
 }) => {
-  const [currentStep, setCurrentStep] = useState(0);
+  const [currentStep] = useState(0);
   const [steps, setSteps] = useState<WorkflowStep[]>(() => {
     const baseSteps: WorkflowStep[] = [
       {

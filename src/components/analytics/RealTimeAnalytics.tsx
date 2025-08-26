@@ -61,53 +61,13 @@ const RealTimeAnalytics: React.FC<RealTimeAnalyticsProps> = ({ className = '' })
       lastUpdated: new Date()
     }
   ]);
-  const [isConnected, setIsConnected] = useState(true);
+  const [isConnected] = useState(true);
   const [lastUpdate, setLastUpdate] = useState(new Date());
-
-  // Initial metrics data
-  const initialMetrics = [
-    {
-      id: 'sales',
-      label: 'Sales (Last Hour)',
-      value: 25,
-      change: 5,
-      isPositive: true,
-      trend: 'up' as const,
-      lastUpdated: new Date()
-    },
-    {
-      id: 'repairs',
-      label: 'Active Repairs',
-      value: 12,
-      change: -2,
-      isPositive: false,
-      trend: 'down' as const,
-      lastUpdated: new Date()
-    },
-    {
-      id: 'customers',
-      label: 'New Customers',
-      value: 8,
-      change: 3,
-      isPositive: true,
-      trend: 'up' as const,
-      lastUpdated: new Date()
-    },
-    {
-      id: 'revenue',
-      label: 'Revenue (K)',
-      value: 45000,
-      change: 5000,
-      isPositive: true,
-      trend: 'up' as const,
-      lastUpdated: new Date()
-    }
-  ];
 
   // Simulate real-time data updates
   useEffect(() => {
     // Set initial metrics immediately
-    setMetrics(initialMetrics);
+    setMetrics(prevMetrics => prevMetrics);
     
     const interval = setInterval(() => {
       setMetrics([
