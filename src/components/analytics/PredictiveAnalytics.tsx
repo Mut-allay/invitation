@@ -27,7 +27,48 @@ interface PredictiveAnalyticsProps {
 }
 
 const PredictiveAnalytics: React.FC<PredictiveAnalyticsProps> = ({ className = '' }) => {
-  const [predictions, setPredictions] = useState<Prediction[]>([]);
+  const [predictions, setPredictions] = useState<Prediction[]>([
+    {
+      id: 'sales-forecast',
+      title: 'Sales Forecast',
+      currentValue: 45000,
+      predictedValue: 52000,
+      confidence: 85,
+      trend: 'up',
+      timeframe: 'Next 30 days',
+      factors: ['Seasonal trends', 'Marketing campaigns', 'Customer retention']
+    },
+    {
+      id: 'inventory-prediction',
+      title: 'Inventory Demand',
+      currentValue: 150,
+      predictedValue: 180,
+      confidence: 78,
+      trend: 'up',
+      timeframe: 'Next 30 days',
+      factors: ['Sales velocity', 'Supplier lead times', 'Seasonal demand']
+    },
+    {
+      id: 'customer-acquisition',
+      title: 'New Customers',
+      currentValue: 25,
+      predictedValue: 32,
+      confidence: 82,
+      trend: 'up',
+      timeframe: 'Next 30 days',
+      factors: ['Referral rates', 'Marketing effectiveness', 'Market expansion']
+    },
+    {
+      id: 'repair-volume',
+      title: 'Repair Volume',
+      currentValue: 45,
+      predictedValue: 38,
+      confidence: 75,
+      trend: 'down',
+      timeframe: 'Next 30 days',
+      factors: ['Vehicle age', 'Maintenance schedules', 'Seasonal patterns']
+    }
+  ]);
   const [selectedTimeframe, setSelectedTimeframe] = useState<'week' | 'month' | 'quarter'>('month');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -224,6 +265,27 @@ const PredictiveAnalytics: React.FC<PredictiveAnalyticsProps> = ({ className = '
                 title="Monthly Performance"
                 height={300}
               />
+            </div>
+
+            {/* Trend Indicators */}
+            <div className="bg-white rounded-lg p-6 border border-gray-200">
+              <h4 className="text-lg font-semibold text-gray-900 mb-4">Trend Indicators</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200">
+                  <div className="flex items-center space-x-2">
+                    <ArrowTrendingUpIcon className="h-5 w-5 text-green-500" />
+                    <span className="text-sm font-medium text-green-700">Sales trending up</span>
+                  </div>
+                  <span className="text-xs text-green-600">from last hour</span>
+                </div>
+                <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg border border-red-200">
+                  <div className="flex items-center space-x-2">
+                    <ArrowTrendingUpIcon className="h-5 w-5 text-red-500 transform rotate-180" />
+                    <span className="text-sm font-medium text-red-700">Repair volume down</span>
+                  </div>
+                  <span className="text-xs text-red-600">from last hour</span>
+                </div>
+              </div>
             </div>
 
             {/* Insights */}

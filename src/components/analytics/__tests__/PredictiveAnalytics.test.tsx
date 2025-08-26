@@ -52,10 +52,14 @@ describe('PredictiveAnalytics', () => {
     render(<PredictiveAnalytics />);
     
     await waitFor(() => {
-      expect(screen.getByText('Current')).toBeInTheDocument();
-      expect(screen.getByText('Predicted')).toBeInTheDocument();
-      expect(screen.getByText('Change')).toBeInTheDocument();
-      expect(screen.getByText('Key Factors')).toBeInTheDocument();
+      const currentElements = screen.getAllByText('Current');
+      const predictedElements = screen.getAllByText('Predicted');
+      const changeElements = screen.getAllByText('Change');
+      const keyFactorsElements = screen.getAllByText('Key Factors');
+      expect(currentElements.length).toBeGreaterThan(0);
+      expect(predictedElements.length).toBeGreaterThan(0);
+      expect(changeElements.length).toBeGreaterThan(0);
+      expect(keyFactorsElements.length).toBeGreaterThan(0);
     }, { timeout: 3000 });
   });
 
@@ -102,8 +106,8 @@ describe('PredictiveAnalytics', () => {
     render(<PredictiveAnalytics />);
     
     await waitFor(() => {
-      const revenueElement = screen.getByText(/K \d+,?\d*/);
-      expect(revenueElement).toBeInTheDocument();
+      const revenueElements = screen.getAllByText(/K \d+,?\d*/);
+      expect(revenueElements.length).toBeGreaterThan(0);
     }, { timeout: 3000 });
   });
 

@@ -23,7 +23,44 @@ interface RealTimeAnalyticsProps {
 }
 
 const RealTimeAnalytics: React.FC<RealTimeAnalyticsProps> = ({ className = '' }) => {
-  const [metrics, setMetrics] = useState<RealTimeMetric[]>([]);
+  const [metrics, setMetrics] = useState<RealTimeMetric[]>([
+    {
+      id: 'sales',
+      label: 'Sales (Last Hour)',
+      value: 15,
+      change: 3,
+      isPositive: true,
+      trend: 'up',
+      lastUpdated: new Date()
+    },
+    {
+      id: 'repairs',
+      label: 'Active Repairs',
+      value: 8,
+      change: 1,
+      isPositive: true,
+      trend: 'up',
+      lastUpdated: new Date()
+    },
+    {
+      id: 'customers',
+      label: 'New Customers',
+      value: 5,
+      change: 2,
+      isPositive: true,
+      trend: 'up',
+      lastUpdated: new Date()
+    },
+    {
+      id: 'revenue',
+      label: 'Revenue (K)',
+      value: 25000,
+      change: 5000,
+      isPositive: true,
+      trend: 'up',
+      lastUpdated: new Date()
+    }
+  ]);
   const [isConnected, setIsConnected] = useState(true);
   const [lastUpdate, setLastUpdate] = useState(new Date());
 
