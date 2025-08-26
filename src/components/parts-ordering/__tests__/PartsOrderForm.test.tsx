@@ -1,7 +1,14 @@
 import React from 'react';
-import { screen } from '@testing-library/react';
-import { render as renderWithProviders } from '../../../test/utils/test-utils';
+import { render, screen } from '@testing-library/react';
 import { PartsOrderForm } from '../PartsOrderForm';
+
+// Mock the API hook
+jest.mock('../../../store/api/partsOrdersApi', () => ({
+  useCreatePartsOrderMutation: () => [
+    jest.fn(),
+    { isLoading: false }
+  ],
+}));
 
 describe('PartsOrderForm', () => {
   const defaultProps = {
@@ -15,7 +22,7 @@ describe('PartsOrderForm', () => {
   });
 
   it('should render when isOpen is true', () => {
-    renderWithProviders(<PartsOrderForm {...defaultProps} />);
+    render(<PartsOrderForm {...defaultProps} />);
 
     // Check that the form is rendered
     expect(screen.getByTestId('parts-order-form')).toBeInTheDocument();
@@ -29,7 +36,7 @@ describe('PartsOrderForm', () => {
   });
 
   it('should not render when isOpen is false', () => {
-    renderWithProviders(
+    render(
       <PartsOrderForm {...defaultProps} isOpen={false} />
     );
 

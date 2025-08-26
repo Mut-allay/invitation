@@ -2,7 +2,6 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { PartsOrderList } from '../PartsOrderList';
-import { render as renderWithProviders } from '../../../test/utils/test-utils';
 import { useGetPartsOrdersQuery, useDeletePartsOrderMutation } from '../../../store/api/partsOrdersApi';
 
 // Mock the API hooks
@@ -125,7 +124,7 @@ describe('PartsOrderList', () => {
       error: null,
     });
 
-    renderWithProviders(<PartsOrderList {...defaultProps} />);
+    render(<PartsOrderList {...defaultProps} />);
     expect(screen.getByText(/loading parts orders/i)).toBeInTheDocument();
   });
 
@@ -137,13 +136,13 @@ describe('PartsOrderList', () => {
       error: { message: 'Failed to load' },
     });
 
-    renderWithProviders(<PartsOrderList {...defaultProps} />);
+    render(<PartsOrderList {...defaultProps} />);
     expect(screen.getByText(/failed to load parts orders/i)).toBeInTheDocument();
   });
 
   it('should render empty state when no orders', () => {
     // This will fail initially
-    renderWithProviders(<PartsOrderList {...defaultProps} />);
+    render(<PartsOrderList {...defaultProps} />);
     expect(screen.getByText(/no parts orders found/i)).toBeInTheDocument();
   });
 
@@ -155,7 +154,7 @@ describe('PartsOrderList', () => {
       error: null,
     });
 
-    renderWithProviders(<PartsOrderList {...defaultProps} />);
+    render(<PartsOrderList {...defaultProps} />);
 
     expect(screen.getByText('Test Supplier 1')).toBeInTheDocument();
     expect(screen.getByText('Test Supplier 2')).toBeInTheDocument();
@@ -204,7 +203,7 @@ describe('PartsOrderList', () => {
       error: null,
     });
 
-    renderWithProviders(<PartsOrderList {...defaultProps} />);
+    render(<PartsOrderList {...defaultProps} />);
 
     const statusFilter = screen.getByDisplayValue(/all orders/i);
     await user.selectOptions(statusFilter, 'pending');
@@ -223,7 +222,7 @@ describe('PartsOrderList', () => {
       error: null,
     });
 
-    renderWithProviders(<PartsOrderList {...defaultProps} />);
+    render(<PartsOrderList {...defaultProps} />);
 
     const searchInput = screen.getByPlaceholderText(/search by supplier name/i);
     await user.type(searchInput, 'Supplier 1');
@@ -242,7 +241,7 @@ describe('PartsOrderList', () => {
       error: null,
     });
 
-    renderWithProviders(<PartsOrderList {...defaultProps} />);
+    render(<PartsOrderList {...defaultProps} />);
 
     const viewButton = screen.getAllByTitle(/view details/i)[0];
     await user.click(viewButton);
@@ -260,7 +259,7 @@ describe('PartsOrderList', () => {
       error: null,
     });
 
-    renderWithProviders(<PartsOrderList {...defaultProps} />);
+    render(<PartsOrderList {...defaultProps} />);
 
     const editButton = screen.getAllByTitle(/edit status/i)[0];
     await user.click(editButton);
@@ -286,7 +285,7 @@ describe('PartsOrderList', () => {
     // Mock window.confirm
     window.confirm = jest.fn(() => true);
 
-    renderWithProviders(<PartsOrderList {...defaultProps} />);
+    render(<PartsOrderList {...defaultProps} />);
 
     const deleteButton = screen.getAllByTitle(/delete order/i)[0];
     await user.click(deleteButton);
