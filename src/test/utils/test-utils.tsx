@@ -10,7 +10,27 @@ import { repairsApi } from '../../store/api/repairsApi';
 import { inventoryApi } from '../../store/api/inventoryApi';
 import { invoicesApi } from '../../store/api/invoicesApi';
 import { uploadApi } from '../../store/api/uploadApi';
-import { AuthProvider } from '../../contexts/AuthContext';
+// Mock partsOrdersApi since it has Firebase dependencies
+const mockPartsOrdersApi = {
+  reducerPath: 'partsOrdersApi',
+  reducer: (state = {}, action: any) => state,
+  middleware: () => (next: any) => (action: any) => next(action),
+  endpoints: {},
+  useGetPartsOrdersQuery: () => ({ data: [], isLoading: false, error: null }),
+  useCreatePartsOrderMutation: () => [
+    jest.fn().mockImplementation(() => Promise.resolve({ data: { id: 'test-order-id' } })),
+    { isLoading: false, error: null }
+  ],
+  useUpdatePartsOrderMutation: () => [
+    jest.fn().mockImplementation(() => Promise.resolve({ data: { id: 'test-order-id' } })),
+    { isLoading: false, error: null }
+  ],
+  useDeletePartsOrderMutation: () => [
+    jest.fn().mockImplementation(() => Promise.resolve({ data: { success: true } })),
+    { isLoading: false, error: null }
+  ],
+};
+import { AuthProvider, AuthContext } from '../../contexts/AuthContext';
 
 // Create a test store with all API slices
 const createTestStore = () => {
@@ -23,6 +43,7 @@ const createTestStore = () => {
       [inventoryApi.reducerPath]: inventoryApi.reducer,
       [invoicesApi.reducerPath]: invoicesApi.reducer,
       [uploadApi.reducerPath]: uploadApi.reducer,
+      [mockPartsOrdersApi.reducerPath]: mockPartsOrdersApi.reducer,
     },
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware().concat(
@@ -33,6 +54,7 @@ const createTestStore = () => {
         inventoryApi.middleware,
         invoicesApi.middleware,
         uploadApi.middleware,
+        mockPartsOrdersApi.middleware,
       ),
   });
 };
@@ -50,17 +72,33 @@ const createTestStore = () => {
 //   loading: false,
 // };
 
+// Mock AuthProvider for testing - doesn't depend on Firebase auth state
+const MockAuthProvider = ({ children }: { children: React.ReactNode }) => {
+  const mockAuthContext = {
+    user: null,
+    loading: false, // Always false in tests
+    login: jest.fn(),
+    logout: jest.fn(),
+  };
+
+  return (
+    <AuthContext.Provider value={mockAuthContext}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
 // Custom render function that includes providers
 const AllTheProviders = ({ children }: { children: React.ReactNode }) => {
   const store = createTestStore();
 
   return (
     <Provider store={store}>
-      <AuthProvider>
+      <MockAuthProvider>
         <BrowserRouter>
           {children}
         </BrowserRouter>
-      </AuthProvider>
+      </MockAuthProvider>
     </Provider>
   );
 };

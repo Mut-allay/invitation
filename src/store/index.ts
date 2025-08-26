@@ -6,6 +6,7 @@ import { invoicesApi } from './api/invoicesApi';
 import { repairsApi } from './api/repairsApi';
 import { salesApi } from './api/salesApi';
 import { uploadApi } from './api/uploadApi';
+import { partsOrdersApi } from './api/partsOrdersApi';
 
 // Basic reducer to prevent the "no valid reducer" error
 const initialState = {
@@ -39,6 +40,7 @@ export const store = configureStore({
     [repairsApi.reducerPath]: repairsApi.reducer,
     [salesApi.reducerPath]: salesApi.reducer,
     [uploadApi.reducerPath]: uploadApi.reducer,
+    [partsOrdersApi.reducerPath]: partsOrdersApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
@@ -50,7 +52,8 @@ export const store = configureStore({
       invoicesApi.middleware,
       repairsApi.middleware,
       salesApi.middleware,
-      uploadApi.middleware
+      uploadApi.middleware,
+      partsOrdersApi.middleware
     ),
 });
 

@@ -100,3 +100,7 @@ docs/*.txt
 
 # Generated files
 dataconnect-generated/
+
+
+# Neo 
+docs/Neo.docx.md
