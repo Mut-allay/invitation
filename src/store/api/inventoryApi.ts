@@ -1,15 +1,13 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { Inventory, InventoryFormData } from '../../types/inventory';
+import { Inventory, InventoryFormData } from '../../types/index';
 
 export const inventoryApi = createApi({
   reducerPath: 'inventoryApi',
   baseQuery: fetchBaseQuery({
     baseUrl: '/api/v1',
-    prepareHeaders: (headers, { getState }) => {
+    prepareHeaders: (headers) => {
       const token = localStorage.getItem('authToken');
-      if (token) {
-        headers.set('authorization', `Bearer ${token}`);
-      }
+      if (token) headers.set('authorization', `Bearer ${token}`);
       return headers;
     },
   }),
@@ -19,12 +17,10 @@ export const inventoryApi = createApi({
       query: (tenantId) => `/tenant/${tenantId}/inventory`,
       providesTags: ['Inventory'],
     }),
-    
     getInventoryItem: builder.query<Inventory, { tenantId: string; itemId: string }>({
       query: ({ tenantId, itemId }) => `/tenant/${tenantId}/inventory/${itemId}`,
       providesTags: (result, error, { itemId }) => [{ type: 'Inventory', id: itemId }],
     }),
-    
     createInventoryItem: builder.mutation<Inventory, { tenantId: string; item: InventoryFormData }>({
       query: ({ tenantId, item }) => ({
         url: `/tenant/${tenantId}/inventory`,
@@ -33,7 +29,6 @@ export const inventoryApi = createApi({
       }),
       invalidatesTags: ['Inventory'],
     }),
-    
     updateInventoryItem: builder.mutation<Inventory, { tenantId: string; itemId: string; item: Partial<InventoryFormData> }>({
       query: ({ tenantId, itemId, item }) => ({
         url: `/tenant/${tenantId}/inventory/${itemId}`,
@@ -45,7 +40,6 @@ export const inventoryApi = createApi({
         'Inventory',
       ],
     }),
-    
     deleteInventoryItem: builder.mutation<void, { tenantId: string; itemId: string }>({
       query: ({ tenantId, itemId }) => ({
         url: `/tenant/${tenantId}/inventory/${itemId}`,

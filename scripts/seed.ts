@@ -3,7 +3,7 @@ import { getFirestore } from 'firebase-admin/firestore';
 import { getAuth } from 'firebase-admin/auth';
 
 // Initialize Firebase Admin
-const serviceAccount = require('../service-account-key.json');
+import serviceAccount from '../service-account-key.json';
 initializeApp({
   credential: cert(serviceAccount),
 });

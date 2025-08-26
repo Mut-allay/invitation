@@ -1,5 +1,5 @@
 import React from 'react';
-import { Inventory } from '../../types/inventory';
+import type { Inventory } from '../../types/index';
 
 interface InventoryModalProps {
   item: Inventory | null;

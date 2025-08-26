@@ -1,6 +1,6 @@
 import React from 'react';
 import { EyeIcon, CurrencyDollarIcon, TruckIcon } from '@heroicons/react/24/outline';
-import { Vehicle } from '../../types/vehicle';
+import type { Vehicle } from '../../types/index';
 
 interface VehicleCardProps {
   vehicle: Vehicle;

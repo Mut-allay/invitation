@@ -1,13 +1,11 @@
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import { getFirestore } from 'firebase-admin/firestore';
-import { getAuth } from 'firebase-admin/auth';
 import { initializeApp } from 'firebase-admin/app';
 
 // Initialize Firebase Admin
 initializeApp();
 
 const db = getFirestore();
-const auth = getAuth();
 
 // Get repairs for a tenant
 export const getRepairs = onCall<{ tenantId: string }>(async (request) => {

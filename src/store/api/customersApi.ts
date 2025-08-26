@@ -1,15 +1,13 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { Customer, CustomerFormData } from '../../types/customer';
+import { Customer, CustomerFormData } from '../../types/index';
 
 export const customersApi = createApi({
   reducerPath: 'customersApi',
   baseQuery: fetchBaseQuery({
     baseUrl: '/api/v1',
-    prepareHeaders: (headers, { getState }) => {
+    prepareHeaders: (headers) => {
       const token = localStorage.getItem('authToken');
-      if (token) {
-        headers.set('authorization', `Bearer ${token}`);
-      }
+      if (token) headers.set('authorization', `Bearer ${token}`);
       return headers;
     },
   }),
@@ -19,12 +17,10 @@ export const customersApi = createApi({
       query: (tenantId) => `/tenant/${tenantId}/customers`,
       providesTags: ['Customer'],
     }),
-    
     getCustomer: builder.query<Customer, { tenantId: string; customerId: string }>({
       query: ({ tenantId, customerId }) => `/tenant/${tenantId}/customers/${customerId}`,
       providesTags: (result, error, { customerId }) => [{ type: 'Customer', id: customerId }],
     }),
-    
     createCustomer: builder.mutation<Customer, { tenantId: string; customer: CustomerFormData }>({
       query: ({ tenantId, customer }) => ({
         url: `/tenant/${tenantId}/customers`,
@@ -33,7 +29,6 @@ export const customersApi = createApi({
       }),
       invalidatesTags: ['Customer'],
     }),
-    
     updateCustomer: builder.mutation<Customer, { tenantId: string; customerId: string; customer: Partial<CustomerFormData> }>({
       query: ({ tenantId, customerId, customer }) => ({
         url: `/tenant/${tenantId}/customers/${customerId}`,
@@ -45,7 +40,6 @@ export const customersApi = createApi({
         'Customer',
       ],
     }),
-    
     deleteCustomer: builder.mutation<void, { tenantId: string; customerId: string }>({
       query: ({ tenantId, customerId }) => ({
         url: `/tenant/${tenantId}/customers/${customerId}`,

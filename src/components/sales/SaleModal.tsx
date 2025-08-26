@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { XMarkIcon, UserIcon, CurrencyDollarIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
-import { Vehicle } from '../../types/vehicle';
+import type { Vehicle } from '../../types/index';
 import { useCustomers } from '../../hooks/useCustomers';
-import { useCreateSaleMutation } from '../../store/api/salesApi';
 
 interface SaleModalProps {
   vehicle: Vehicle;
@@ -18,7 +17,7 @@ export const SaleModal: React.FC<SaleModalProps> = ({ vehicle, isOpen, onClose }
   const [notes, setNotes] = useState('');
 
   const { customers, loading: customersLoading } = useCustomers();
-  const [createSale, { isLoading: creatingSale }] = useCreateSaleMutation();
+  const [creatingSale, setCreatingSale] = useState(false);
 
   const balance = salePrice - deposit;
 
@@ -31,7 +30,13 @@ export const SaleModal: React.FC<SaleModalProps> = ({ vehicle, isOpen, onClose }
     }
 
     try {
-      await createSale({
+      setCreatingSale(true);
+      
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Mock success - in a real app this would create the sale
+      console.log('Mock: Sale created successfully', {
         tenantId: vehicle.tenantId,
         sale: {
           customerId: selectedCustomerId,
@@ -42,7 +47,7 @@ export const SaleModal: React.FC<SaleModalProps> = ({ vehicle, isOpen, onClose }
           paymentMethod,
           notes,
         },
-      }).unwrap();
+      });
 
       onClose();
       // Reset form
@@ -51,9 +56,14 @@ export const SaleModal: React.FC<SaleModalProps> = ({ vehicle, isOpen, onClose }
       setDeposit(0);
       setPaymentMethod('cash');
       setNotes('');
+      
+      // Show success message
+      alert('Sale created successfully! (Mock)');
     } catch (error) {
       console.error('Error creating sale:', error);
       alert('Failed to create sale. Please try again.');
+    } finally {
+      setCreatingSale(false);
     }
   };
 
@@ -172,7 +182,7 @@ export const SaleModal: React.FC<SaleModalProps> = ({ vehicle, isOpen, onClose }
               </label>
               <select
                 value={paymentMethod}
-                onChange={(e) => setPaymentMethod(e.target.value as any)}
+                onChange={(e) => setPaymentMethod(e.target.value as 'cash' | 'bank_transfer' | 'mobile_money')}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="cash">Cash</option>

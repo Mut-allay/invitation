@@ -1,15 +1,13 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { Sale, SaleFormData } from '../../types/sale';
+import { Sale, SaleFormData } from '../../types/index';
 
 export const salesApi = createApi({
   reducerPath: 'salesApi',
   baseQuery: fetchBaseQuery({
     baseUrl: '/api/v1',
-    prepareHeaders: (headers, { getState }) => {
+    prepareHeaders: (headers) => {
       const token = localStorage.getItem('authToken');
-      if (token) {
-        headers.set('authorization', `Bearer ${token}`);
-      }
+      if (token) headers.set('authorization', `Bearer ${token}`);
       return headers;
     },
   }),
@@ -19,12 +17,10 @@ export const salesApi = createApi({
       query: (tenantId) => `/tenant/${tenantId}/sales`,
       providesTags: ['Sale'],
     }),
-    
     getSale: builder.query<Sale, { tenantId: string; saleId: string }>({
       query: ({ tenantId, saleId }) => `/tenant/${tenantId}/sales/${saleId}`,
       providesTags: (result, error, { saleId }) => [{ type: 'Sale', id: saleId }],
     }),
-    
     createSale: builder.mutation<Sale, { tenantId: string; sale: SaleFormData }>({
       query: ({ tenantId, sale }) => ({
         url: `/tenant/${tenantId}/sales`,
@@ -33,7 +29,6 @@ export const salesApi = createApi({
       }),
       invalidatesTags: ['Sale'],
     }),
-    
     updateSale: builder.mutation<Sale, { tenantId: string; saleId: string; sale: Partial<SaleFormData> }>({
       query: ({ tenantId, saleId, sale }) => ({
         url: `/tenant/${tenantId}/sales/${saleId}`,
@@ -45,7 +40,6 @@ export const salesApi = createApi({
         'Sale',
       ],
     }),
-    
     deleteSale: builder.mutation<void, { tenantId: string; saleId: string }>({
       query: ({ tenantId, saleId }) => ({
         url: `/tenant/${tenantId}/sales/${saleId}`,

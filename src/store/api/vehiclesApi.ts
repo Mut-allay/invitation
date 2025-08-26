@@ -1,11 +1,11 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { Vehicle, VehicleFormData } from '../../types/vehicle';
+import { Vehicle, VehicleFormData } from '../../types/index';
 
 export const vehiclesApi = createApi({
   reducerPath: 'vehiclesApi',
   baseQuery: fetchBaseQuery({
     baseUrl: '/api/v1',
-    prepareHeaders: (headers, { getState }) => {
+    prepareHeaders: (headers) => {
       // Add auth token to headers
       const token = localStorage.getItem('authToken');
       if (token) {

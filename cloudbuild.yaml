@@ -1,0 +1,79 @@
+# cloudbuild.yaml - GarajiFlow CI/CD Pipeline
+# This file defines the automated checks and deployment process for Pull Requests
+
+steps:
+  # Step 1: Install dependencies
+  - name: 'gcr.io/cloud-builders/npm'
+    args: ['install']
+    id: 'Install Dependencies'
+    waitFor: ['-']
+
+  # Step 2: Run Linting
+  - name: 'gcr.io/cloud-builders/npm'
+    args: ['run', 'lint']
+    id: 'Run Linter'
+    waitFor: ['Install Dependencies']
+
+  # Step 3: Run Type Checking
+  - name: 'gcr.io/cloud-builders/npm'
+    args: ['run', 'type-check']
+    id: 'Check Types'
+    waitFor: ['Install Dependencies']
+
+  # Step 4: Run Unit Tests
+  - name: 'gcr.io/cloud-builders/npm'
+    args: ['run', 'test:ci']
+    id: 'Run Unit Tests'
+    waitFor: ['Install Dependencies']
+
+  # Step 5: Run API Tests (Cloud Functions)
+  - name: 'gcr.io/cloud-builders/npm'
+    args: ['run', 'test:api']
+    id: 'Run API Tests'
+    waitFor: ['Install Dependencies']
+
+  # Step 6: Build the application for production
+  - name: 'gcr.io/cloud-builders/npm'
+    args: ['run', 'build']
+    id: 'Build Production App'
+    waitFor: ['Run Linter', 'Check Types', 'Run Unit Tests']
+
+  # Step 7: Security scan with Trivy
+  - name: 'aquasec/trivy:latest'
+    args: ['fs', '--severity', 'HIGH,CRITICAL', '.']
+    id: 'Security Scan'
+    waitFor: ['Build Production App']
+
+  # Step 8: Deploy to Firebase (only for main branch)
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args: ['auth', 'activate-service-account', '--key-file=/workspace/service-account-key.json']
+    id: 'Authenticate Service Account'
+    waitFor: ['Security Scan']
+
+  - name: 'gcr.io/cloud-builders/npm'
+    args: ['install', '-g', 'firebase-tools']
+    id: 'Install Firebase CLI'
+    waitFor: ['Authenticate Service Account']
+
+  - name: 'gcr.io/cloud-builders/firebase'
+    args: ['deploy', '--only', 'hosting,functions', '--project', 'garaji-flow-dev']
+    id: 'Deploy to Firebase Dev'
+    waitFor: ['Install Firebase CLI']
+
+# Store build artifacts
+artifacts:
+  objects:
+    location: 'gs://garajiflow-build-artifacts/'
+    paths: ['dist/**', 'functions/lib/**']
+
+# Build timeout
+timeout: '1200s'
+
+# Machine type for faster builds
+options:
+  machineType: 'E2_HIGHCPU_8'
+
+# Environment variables
+env:
+  - 'NODE_ENV=production'
+  - 'CI=true' 

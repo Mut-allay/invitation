@@ -2,13 +2,12 @@ import React from 'react';
 import { 
   EyeIcon, 
   PencilIcon, 
-  UserIcon,
   PhoneIcon,
   EnvelopeIcon,
   MapPinIcon,
   TruckIcon
 } from '@heroicons/react/24/outline';
-import { Customer } from '../../types/customer';
+import type { Customer } from '../../types/index';
 
 interface CustomerCardProps {
   customer: Customer;

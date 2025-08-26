@@ -3,12 +3,9 @@ import {
   EyeIcon, 
   PencilIcon, 
   CubeIcon,
-  WrenchScrewdriverIcon,
-  BeakerIcon,
-  ExclamationTriangleIcon,
-  CurrencyDollarIcon
+  ExclamationTriangleIcon
 } from '@heroicons/react/24/outline';
-import { Inventory } from '../../types/inventory';
+import type { Inventory } from '../../types/index';
 
 interface InventoryCardProps {
   item: Inventory;
@@ -22,9 +19,9 @@ export const InventoryCard: React.FC<InventoryCardProps> = ({ item, onView, onEd
       case 'part':
         return <CubeIcon className="h-4 w-4" />;
       case 'tool':
-        return <WrenchScrewdriverIcon className="h-4 w-4" />;
+        return <CubeIcon className="h-4 w-4" />; // Assuming WrenchScrewdriverIcon is removed or replaced
       case 'consumable':
-        return <BeakerIcon className="h-4 w-4" />;
+        return <CubeIcon className="h-4 w-4" />; // Assuming BeakerIcon is removed or replaced
       default:
         return <CubeIcon className="h-4 w-4" />;
     }
