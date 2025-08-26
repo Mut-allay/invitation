@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   UserGroupIcon, 
-  HandshakeIcon, 
+  CurrencyDollarIcon, 
   DocumentTextIcon,
   ClockIcon,
   CheckCircleIcon,
@@ -47,7 +47,7 @@ const ZambianBusinessWorkflow: React.FC<ZambianBusinessWorkflowProps> = ({
         id: 'negotiation',
         title: 'Price Negotiation',
         description: 'Discuss pricing with room for traditional bargaining',
-        icon: HandshakeIcon,
+        icon: CurrencyDollarIcon,
         isCompleted: false,
         isRequired: true,
         localCustom: 'Allow for traditional bargaining practices'

@@ -62,8 +62,8 @@ describe('RealTimeAnalytics', () => {
     render(<RealTimeAnalytics />);
     
     await waitFor(() => {
-      const revenueElement = screen.getByText(/K \d+,?\d*/);
-      expect(revenueElement).toBeInTheDocument();
+      const revenueElements = screen.getAllByText(/K \d+,?\d*/);
+      expect(revenueElements.length).toBeGreaterThan(0);
     }, { timeout: 3000 });
   });
 });
