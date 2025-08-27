@@ -6,7 +6,7 @@ export const AuditEventSchema = z.object({
     action: z.string().min(1),
     entityType: z.string().min(1),
     entityId: z.string().min(1),
-    changes: z.record(z.string(), z.any()).optional()
+    changes: z.record(z.string(), z.unknown()).optional()
 });
 
 export type AuditEvent = z.infer<typeof AuditEventSchema>;
@@ -24,6 +24,7 @@ export class AuditService {
     private collection: FirebaseFirestore.CollectionReference;
 
     constructor() {
+        // Initialize collection reference
         this.collection = db.collection('audit_trail');
     }
 
