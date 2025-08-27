@@ -4,6 +4,7 @@ import { render, screen } from '@testing-library/react';
 import { EqualizationDashboard } from '../EqualizationDashboard';
 import { useGetEqualizationsQuery } from '../../../store/api/paymentEqualizationApi';
 import { PartsEqualization } from '../../../types/partsEqualization';
+import { firestore } from 'firebase-admin';
 
 jest.mock('../../../store/api/paymentEqualizationApi');
 
@@ -30,8 +31,8 @@ describe('EqualizationDashboard', () => {
 
   it('should display a list of equalizations', () => {
     const mockData: PartsEqualization[] = [
-      { id: '1', period: '2025-07', totalAmount: 123.45, status: 'calculated', tenantId: 'demo-tenant', partnerTenantId: 'demo-tenant', createdBy: 'system', createdAt: { toDate: () => new Date() } as any },
-      { id: '2', period: '2025-06', totalAmount: 678.90, status: 'settled', tenantId: 'demo-tenant', partnerTenantId: 'demo-tenant', createdBy: 'system', createdAt: { toDate: () => new Date() } as any },
+      { id: '1', period: '2025-07', totalAmount: 123.45, status: 'calculated', tenantId: 'demo-tenant', partnerTenantId: 'demo-tenant', createdBy: 'system', createdAt: { toDate: () => new Date() } as firestore.Timestamp },
+      { id: '2', period: '2025-06', totalAmount: 678.90, status: 'settled', tenantId: 'demo-tenant', partnerTenantId: 'demo-tenant', createdBy: 'system', createdAt: { toDate: () => new Date() } as firestore.Timestamp },
     ];
     mockUseGetEqualizationsQuery.mockReturnValue({ data: mockData, isLoading: false, error: null });
     render(<EqualizationDashboard />);

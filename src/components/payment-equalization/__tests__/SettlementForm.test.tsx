@@ -4,6 +4,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { SettlementForm } from '../SettlementForm';
 import { useProcessSettlementMutation } from '../../../store/api/paymentEqualizationApi';
 import { PartsEqualization } from '../../../types/partsEqualization';
+import { firestore } from 'firebase-admin';
 
 jest.mock('../../../store/api/paymentEqualizationApi');
 
@@ -19,7 +20,7 @@ describe('SettlementForm', () => {
     tenantId: 'demo-tenant',
     partnerTenantId: 'demo-tenant',
     createdBy: 'system',
-    createdAt: { toDate: () => new Date() } as any,
+    createdAt: { toDate: () => new Date() } as firestore.Timestamp,
   };
 
   beforeEach(() => {

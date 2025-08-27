@@ -39,7 +39,7 @@ export const SettlementForm: React.FC<SettlementFormProps> = ({ equalization, on
         <select
           id="settlementMethod"
           value={settlementMethod}
-          onChange={(e) => setSettlementMethod(e.target.value as any)}
+          onChange={(e) => setSettlementMethod(e.target.value as typeof settlementMethod)}
         >
           <option value="bank_transfer">Bank Transfer</option>
           <option value="mobile_money">Mobile Money</option>
