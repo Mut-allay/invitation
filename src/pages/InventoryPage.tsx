@@ -393,6 +393,72 @@ const InventoryPage: React.FC = () => {
         </div>
       </div>
 
+      import React, { useState, useRef } from 'react';
+import { 
+  PlusIcon, 
+  MagnifyingGlassIcon, 
+  CubeIcon,
+  ExclamationTriangleIcon,
+  CurrencyDollarIcon,
+  WrenchScrewdriverIcon,
+  BeakerIcon,
+  TruckIcon,
+  EyeIcon,
+  PencilIcon,
+  ArrowPathIcon,
+  ShoppingCartIcon
+} from '@heroicons/react/24/outline';
+import { useInventory } from '../hooks/useInventory';
+import { InventoryModal } from '../components/inventory/InventoryModal';
+import { SupplierModal } from '../components/inventory/SupplierModal';
+import { useToast } from '../contexts/toast-hooks';
+import { getErrorMessage } from '@/lib/utils';
+import type { Inventory } from '../types/index';
+import { useVirtualizer } from '@tanstack/react-virtual';
+
+// ... (mock data remains the same)
+
+const InventoryPage: React.FC = () => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedType, setSelectedType] = useState('');
+  const [selectedInventory, setSelectedInventory] = useState<Inventory | null>(null);
+  const [showInventoryModal, setShowInventoryModal] = useState(false);
+  const [showSupplierModal, setShowSupplierModal] = useState(false);
+  const [showRestockModal, setShowRestockModal] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
+
+  const { inventory: apiInventory, loading, error } = useInventory();
+  const { success } = useToast();
+
+  const inventory = apiInventory.length === 0 && !loading ? mockInventory : apiInventory;
+
+  const types = ['part', 'tool', 'consumable'];
+
+  const filteredInventory = inventory.filter(item => {
+    const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         item.sku.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (item.description?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
+    
+    const matchesType = !selectedType || item.type === selectedType;
+    
+    return matchesSearch && matchesType;
+  });
+
+  const parentRef = useRef<HTMLDivElement>(null);
+
+  const rowVirtualizer = useVirtualizer({
+    count: filteredInventory.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 120,
+    overscan: 5,
+  });
+
+  // ... (rest of the functions remain the same)
+
+  return (
+    <div className="space-y-6 responsive-p">
+      {/* ... (header, stats, search remain the same) */}
+
       {/* Inventory List */}
       {loading ? (
         <div className="flex justify-center items-center h-64">
@@ -419,91 +485,81 @@ const InventoryPage: React.FC = () => {
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredInventory.map((item) => (
-            <div key={item.id} className="card-glass p-6 rounded-xl shadow-layered hover:shadow-glow transition-all duration-300">
-              {/* Header */}
-              <div className="flex justify-between items-start mb-4">
-                <div className="flex items-center">
-                  <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-lg mr-3">
-                    {getTypeIcon(item.type)}
-                  </div>
-                  <div>
-                    <h3 className="text-responsive-lg font-semibold text-foreground">{item.name}</h3>
-                    <p className="text-responsive-sm text-muted-foreground">SKU: {item.sku}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Details */}
-              <div className="space-y-3 mb-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-responsive-sm text-muted-foreground">Stock:</span>
-                  <span className={`text-responsive-sm font-medium ${getStockStatusColor(item.currentStock, item.reorderLevel)}`}>
-                    {item.currentStock} {item.unit}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-responsive-sm text-muted-foreground">Status:</span>
-                  <span className={`text-responsive-xs px-2 py-1 rounded-full ${getStockStatusColor(item.currentStock, item.reorderLevel)} bg-opacity-10`}>
-                    {getStockStatusText(item.currentStock, item.reorderLevel)}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-responsive-sm text-muted-foreground">Cost:</span>
-                  <span className="text-responsive-sm font-medium text-foreground">K{item.cost}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-responsive-sm text-muted-foreground">Price:</span>
-                  <span className="text-responsive-sm font-medium text-foreground">K{item.sellingPrice}</span>
-                </div>
-                {item.location && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-responsive-sm text-muted-foreground">Location:</span>
-                    <span className="text-responsive-sm text-foreground">{item.location}</span>
-                  </div>
-                )}
-              </div>
-
-              {/* Actions */}
-              <div className="flex flex-wrap gap-2">
-                <button
-                  onClick={() => handleViewInventory(item)}
-                  className="btn-secondary text-responsive-sm px-3 py-1 flex items-center"
+        <div ref={parentRef} className="relative h-[600px] overflow-auto border rounded-lg">
+          <div
+            style={{
+              height: `${rowVirtualizer.getTotalSize()}px`,
+              width: '100%',
+              position: 'relative',
+            }}
+          >
+            {rowVirtualizer.getVirtualItems().map((virtualItem) => {
+              const item = filteredInventory[virtualItem.index];
+              return (
+                <div
+                  key={item.id}
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: `${virtualItem.size}px`,
+                    transform: `translateY(${virtualItem.start}px)`,
+                  }}
+                  className="p-2 border-b"
                 >
-                  <EyeIcon className="h-4 w-4 mr-1" />
-                  View
-                </button>
-                <button
-                  onClick={() => handleEditInventory(item)}
-                  className="btn-primary text-responsive-sm px-3 py-1 flex items-center"
-                >
-                  <PencilIcon className="h-4 w-4 mr-1" />
-                  Edit
-                </button>
-                <button
-                  onClick={() => handleRestock(item)}
-                  className="btn-ghost text-responsive-sm px-3 py-1 flex items-center"
-                >
-                  <ArrowPathIcon className="h-4 w-4 mr-1" />
-                  Restock
-                </button>
-                
-                {/* Low Stock Alert */}
-                {item.currentStock <= item.reorderLevel && (
-                  <button
-                    onClick={() => handleContactSupplier(item.supplierId)}
-                    className="bg-yellow-600 hover:bg-yellow-700 text-white text-responsive-sm px-3 py-1 rounded-lg transition-all duration-200 flex items-center"
-                  >
-                    <ShoppingCartIcon className="h-4 w-4 mr-1" />
-                    Order
-                  </button>
-                )}
-              </div>
-            </div>
-          ))}
+                  <div className="card-glass p-4 rounded-xl h-full flex items-center justify-between">
+                    <div className="flex items-center">
+                      <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-lg mr-3">
+                        {getTypeIcon(item.type)}
+                      </div>
+                      <div>
+                        <h3 className="text-responsive-lg font-semibold text-foreground">{item.name}</h3>
+                        <p className="text-responsive-sm text-muted-foreground">SKU: {item.sku}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-4">
+                      <div className="text-center">
+                        <p className="text-responsive-sm text-muted-foreground">Stock</p>
+                        <p className={`text-responsive-sm font-medium ${getStockStatusColor(item.currentStock, item.reorderLevel)}`}>
+                          {item.currentStock} {item.unit}
+                        </p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-responsive-sm text-muted-foreground">Price</p>
+                        <p className="text-responsive-sm font-medium text-foreground">K{item.sellingPrice}</p>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          onClick={() => handleViewInventory(item)}
+                          className="btn-secondary text-responsive-sm px-3 py-1 flex items-center"
+                        >
+                          <EyeIcon className="h-4 w-4 mr-1" />
+                          View
+                        </button>
+                        <button
+                          onClick={() => handleEditInventory(item)}
+                          className="btn-primary text-responsive-sm px-3 py-1 flex items-center"
+                        >
+                          <PencilIcon className="h-4 w-4 mr-1" />
+                          Edit
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
+
+      {/* ... (modals remain the same) */}
+    </div>
+  );
+};
+
+export default InventoryPage;
 
       {/* Modals */}
       <InventoryModal
