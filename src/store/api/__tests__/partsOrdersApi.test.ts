@@ -49,9 +49,9 @@ describe('partsOrdersApi', () => {
     });
   });
 
-  describe('deletePartsOrder', () => {
-    it('should have deletePartsOrder endpoint', () => {
-      expect(partsOrdersApi.endpoints.deletePartsOrder).toBeDefined();
+  describe('processOrderFulfillment', () => {
+    it('should have processOrderFulfillment endpoint', () => {
+      expect(partsOrdersApi.endpoints.processOrderFulfillment).toBeDefined();
     });
   });
 
@@ -72,8 +72,8 @@ describe('partsOrdersApi', () => {
       expect(partsOrdersApi.useUpdateOrderStatusMutation).toBeDefined();
     });
 
-    it('should export useDeletePartsOrderMutation hook', () => {
-      expect(partsOrdersApi.useDeletePartsOrderMutation).toBeDefined();
+    it('should export useProcessOrderFulfillmentMutation hook', () => {
+      expect(partsOrdersApi.useProcessOrderFulfillmentMutation).toBeDefined();
     });
   });
 });

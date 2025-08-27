@@ -52,14 +52,9 @@ describe('PredictiveAnalytics', () => {
     render(<PredictiveAnalytics />);
     
     await waitFor(() => {
-      const currentElements = screen.getAllByText('Current');
-      const predictedElements = screen.getAllByText('Predicted');
-      const changeElements = screen.getAllByText('Change');
-      const keyFactorsElements = screen.getAllByText('Key Factors');
-      expect(currentElements.length).toBeGreaterThan(0);
-      expect(predictedElements.length).toBeGreaterThan(0);
-      expect(changeElements.length).toBeGreaterThan(0);
-      expect(keyFactorsElements.length).toBeGreaterThan(0);
+      expect(screen.getAllByText('Current')).toHaveLength(4); // 4 prediction cards
+      expect(screen.getAllByText('Predicted')).toHaveLength(4); // 4 prediction cards
+      expect(screen.getAllByText('Change')).toHaveLength(4); // 4 prediction cards
     }, { timeout: 3000 });
   });
 

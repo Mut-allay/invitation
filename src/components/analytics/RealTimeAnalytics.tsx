@@ -27,8 +27,8 @@ const RealTimeAnalytics: React.FC<RealTimeAnalyticsProps> = ({ className = '' })
     {
       id: 'sales',
       label: 'Sales (Last Hour)',
-      value: 15,
-      change: 3,
+      value: 25,
+      change: 5,
       isPositive: true,
       trend: 'up',
       lastUpdated: new Date()
@@ -36,8 +36,8 @@ const RealTimeAnalytics: React.FC<RealTimeAnalyticsProps> = ({ className = '' })
     {
       id: 'repairs',
       label: 'Active Repairs',
-      value: 8,
-      change: 1,
+      value: 12,
+      change: 2,
       isPositive: true,
       trend: 'up',
       lastUpdated: new Date()
@@ -45,8 +45,8 @@ const RealTimeAnalytics: React.FC<RealTimeAnalyticsProps> = ({ className = '' })
     {
       id: 'customers',
       label: 'New Customers',
-      value: 5,
-      change: 2,
+      value: 8,
+      change: 3,
       isPositive: true,
       trend: 'up',
       lastUpdated: new Date()
@@ -54,7 +54,7 @@ const RealTimeAnalytics: React.FC<RealTimeAnalyticsProps> = ({ className = '' })
     {
       id: 'revenue',
       label: 'Revenue (K)',
-      value: 25000,
+      value: 45000,
       change: 5000,
       isPositive: true,
       trend: 'up',

@@ -8,14 +8,18 @@ import {
   XCircleIcon,
   UserIcon,
   DocumentTextIcon,
-  CurrencyDollarIcon
+  CurrencyDollarIcon,
+  CogIcon,
+  ClipboardDocumentCheckIcon
 } from '@heroicons/react/24/outline';
 import { useRepairs } from '../hooks/useRepairs';
 import { RepairModal } from '../components/repairs/RepairModal';
 import { JobCardModal } from '../components/repairs/JobCardModal';
+import SmartWorkflowEngine from '../components/workflows/SmartWorkflowEngine';
+import QualityControlSystem from '../components/quality/QualityControlSystem';
 import { useToast } from '../contexts/toast-hooks';
 import { getErrorMessage } from '@/lib/utils';
-import type { Repair } from '../types/index';
+import type { Repair, Mechanic, Bay } from '../types/index';
 
 // Mock technicians data
 const mockTechnicians = [
@@ -23,6 +27,66 @@ const mockTechnicians = [
   { id: 'tech2', name: 'Mike Johnson', specialization: 'Electrical Systems', rating: 4.6 },
   { id: 'tech3', name: 'Sarah Wilson', specialization: 'Brake Systems', rating: 4.9 },
   { id: 'tech4', name: 'David Brown', specialization: 'Transmission', rating: 4.7 },
+];
+
+// Mock mechanics data for workflow engine
+const mockMechanics: Mechanic[] = [
+  {
+    id: 'tech1',
+    tenantId: 'tenant1',
+    name: 'John Smith',
+    specialization: ['Engine Repair', 'Diagnostics'],
+    hourlyRate: 45,
+    availability: 'available',
+    createdAt: new Date(),
+    updatedAt: new Date()
+  },
+  {
+    id: 'tech2',
+    tenantId: 'tenant1',
+    name: 'Mike Johnson',
+    specialization: ['Electrical Systems', 'AC Repair'],
+    hourlyRate: 42,
+    availability: 'available',
+    createdAt: new Date(),
+    updatedAt: new Date()
+  },
+  {
+    id: 'tech3',
+    tenantId: 'tenant1',
+    name: 'Sarah Wilson',
+    specialization: ['Brake Systems', 'Suspension'],
+    hourlyRate: 48,
+    availability: 'busy',
+    createdAt: new Date(),
+    updatedAt: new Date()
+  }
+];
+
+// Mock bays data for workflow engine
+const mockBays: Bay[] = [
+  {
+    id: 'bay1',
+    tenantId: 'tenant1',
+    name: 'Bay A - Engine',
+    type: 'standard',
+    status: 'available',
+    capacity: 1,
+    equipment: ['Lift', 'Diagnostic Tool', 'Air Compressor'],
+    createdAt: new Date(),
+    updatedAt: new Date()
+  },
+  {
+    id: 'bay2',
+    tenantId: 'tenant1',
+    name: 'Bay B - Electrical',
+    type: 'diagnostic',
+    status: 'occupied',
+    capacity: 1,
+    equipment: ['Electrical Tester', 'Oscilloscope', 'Battery Charger'],
+    createdAt: new Date(),
+    updatedAt: new Date()
+  }
 ];
 
 // Mock repairs data for when the API returns empty
@@ -113,6 +177,9 @@ const RepairsPage: React.FC = () => {
   const [showRepairModal, setShowRepairModal] = useState(false);
   const [showJobCardModal, setShowJobCardModal] = useState(false);
   const [assignedTechnicians, setAssignedTechnicians] = useState<Record<string, string>>({});
+  const [showWorkflowEngine, setShowWorkflowEngine] = useState(false);
+  const [showQualityControl, setShowQualityControl] = useState(false);
+  const [selectedRepairForWorkflow, setSelectedRepairForWorkflow] = useState<Repair | null>(null);
 
   const { repairs: apiRepairs, loading, error } = useRepairs();
   const { success } = useToast();
@@ -167,6 +234,27 @@ const RepairsPage: React.FC = () => {
   const handleGeneratePDF = (repairId: string) => {
     // Mock PDF generation
     success(`PDF generated for repair #${repairId}`);
+  };
+
+  const handleOpenWorkflowEngine = (repair: Repair) => {
+    setSelectedRepairForWorkflow(repair);
+    setShowWorkflowEngine(true);
+  };
+
+  const handleOpenQualityControl = (repair: Repair) => {
+    setSelectedRepairForWorkflow(repair);
+    setShowQualityControl(true);
+  };
+
+  const handleWorkflowUpdate = (repairId: string) => {
+    success(`Workflow updated for repair #${repairId}`);
+    // In a real app, this would update the repair in the database
+  };
+
+  const handleQualityUpdate = (repairId: string, qualityData: unknown) => {
+    const score = (qualityData as { qualityScore?: number })?.qualityScore || 0;
+    success(`Quality metrics updated for repair #${repairId}: ${score}% score`);
+    // In a real app, this would update the quality data in the database
   };
 
   const getStatusColor = (status: string) => {
@@ -385,6 +473,22 @@ const RepairsPage: React.FC = () => {
                   Generate PDF
                 </button>
                 
+                {/* Advanced Workflow & Quality Buttons */}
+                <button
+                  onClick={() => handleOpenWorkflowEngine(repair)}
+                  className="bg-purple-600 hover:bg-purple-700 text-white text-responsive-sm px-3 py-1 rounded-lg transition-all duration-200 flex items-center space-x-1"
+                >
+                  <CogIcon className="w-4 h-4" />
+                  <span>Workflow</span>
+                </button>
+                <button
+                  onClick={() => handleOpenQualityControl(repair)}
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white text-responsive-sm px-3 py-1 rounded-lg transition-all duration-200 flex items-center space-x-1"
+                >
+                  <ClipboardDocumentCheckIcon className="w-4 h-4" />
+                  <span>Quality</span>
+                </button>
+                
                 {/* Status Update Buttons */}
                 {repair.status === 'pending' && (
                   <button
@@ -421,6 +525,31 @@ const RepairsPage: React.FC = () => {
             isOpen={showJobCardModal}
             onClose={() => setShowJobCardModal(false)}
           />
+        </>
+      )}
+
+      {/* Advanced Workflow & Quality Modals */}
+      {selectedRepairForWorkflow && (
+        <>
+          {/* Workflow Engine Modal */}
+          {showWorkflowEngine && (
+            <SmartWorkflowEngine
+              repair={selectedRepairForWorkflow}
+              mechanics={mockMechanics}
+              bays={mockBays}
+              onWorkflowUpdate={handleWorkflowUpdate}
+              onClose={() => setShowWorkflowEngine(false)}
+            />
+          )}
+
+          {/* Quality Control Modal */}
+          {showQualityControl && (
+            <QualityControlSystem
+              repair={selectedRepairForWorkflow}
+              onQualityUpdate={handleQualityUpdate}
+              onClose={() => setShowQualityControl(false)}
+            />
+          )}
         </>
       )}
     </div>

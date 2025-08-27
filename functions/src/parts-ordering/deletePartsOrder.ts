@@ -1,60 +1,39 @@
-import { onCall, HttpsError } from 'firebase-functions/v2/https';
+import { onCall } from 'firebase-functions/v2/https';
+import { logger } from 'firebase-functions';
 import { getFirestore } from 'firebase-admin/firestore';
 
 const db = getFirestore();
 
-/**
- * Delete a parts order
- * Phase 1: Basic delete functionality
- */
-export const deletePartsOrder = onCall<{ tenantId: string; orderId: string }>(async (request) => {
-  if (!request.auth) {
-    throw new HttpsError('unauthenticated', 'User must be authenticated');
-  }
-
-  const { tenantId, orderId } = request.data;
-  const userClaims = request.auth.token;
-
-  // Verify user belongs to the tenant
-  if (userClaims.tenantId !== tenantId) {
-    throw new HttpsError('permission-denied', 'Access denied to this tenant');
-  }
-
+export const deletePartsOrder = onCall(async (request) => {
   try {
-    const orderRef = db.collection('partsOrders').doc(orderId);
-    const orderDoc = await orderRef.get();
+    const { tenantId, orderId } = request.data;
 
-    if (!orderDoc.exists) {
-      throw new HttpsError('not-found', 'Parts order not found');
+    if (!tenantId || !orderId) {
+      throw new Error('Missing required parameters: tenantId and orderId');
     }
 
-    const orderData = orderDoc.data();
+    logger.info(`Deleting parts order ${orderId} for tenant ${tenantId}`);
+
+    // Delete the order document
+    const orderRef = db.collection('tenants').doc(tenantId).collection('partsOrders').doc(orderId);
+    await orderRef.delete();
+
+    // Delete all order items
+    const itemsRef = db.collection('tenants').doc(tenantId).collection('partsOrders').doc(orderId).collection('items');
+    const itemsSnapshot = await itemsRef.get();
     
-    // Verify the order belongs to the tenant
-    if (orderData?.tenantId !== tenantId) {
-      throw new HttpsError('permission-denied', 'Access denied to this order');
-    }
+    const deletePromises = itemsSnapshot.docs.map(doc => doc.ref.delete());
+    await Promise.all(deletePromises);
 
-    // Use a batch to delete order and all its items
-    const batch = db.batch();
-    
-    // Delete all items first
-    const itemsSnapshot = await orderRef.collection('items').get();
-    itemsSnapshot.docs.forEach(itemDoc => {
-      batch.delete(itemDoc.ref);
-    });
+    logger.info(`Successfully deleted parts order ${orderId} and all its items`);
 
-    // Delete the order
-    batch.delete(orderRef);
+    return {
+      success: true,
+      message: 'Parts order deleted successfully'
+    };
 
-    await batch.commit();
-
-    return { success: true };
   } catch (error) {
-    if (error instanceof HttpsError) {
-      throw error;
-    }
-    console.error('Error deleting parts order:', error);
-    throw new HttpsError('internal', 'Failed to delete parts order');
+    logger.error('Error deleting parts order:', error);
+    throw new Error(`Failed to delete parts order: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
-});
+}); 

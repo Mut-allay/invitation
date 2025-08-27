@@ -2,14 +2,14 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { PartsOrderList } from '../PartsOrderList';
-import { useGetPartsOrdersQuery, useDeletePartsOrderMutation } from '../../../store/api/partsOrdersApi';
+import { useGetPartsOrdersQuery, useProcessOrderFulfillmentMutation } from '../../../store/api/partsOrdersApi';
 
 // Mock the API hooks
 
 
 jest.mock('../../../store/api/partsOrdersApi', () => ({
   useGetPartsOrdersQuery: jest.fn(),
-  useDeletePartsOrderMutation: jest.fn(),
+  useProcessOrderFulfillmentMutation: jest.fn(),
 }));
 
 describe('PartsOrderList', () => {
@@ -91,14 +91,12 @@ describe('PartsOrderList', () => {
     onEditOrder: jest.fn(),
   };
 
-  // Create reusable mock for the delete trigger function
-  const mockDeleteOrderTrigger = jest.fn();
+  
 
   beforeEach(() => {
     // Reset mocks before each test to ensure isolation
     (useGetPartsOrdersQuery as jest.Mock).mockClear();
-    (useDeletePartsOrderMutation as jest.Mock).mockClear();
-    mockDeleteOrderTrigger.mockClear();
+    (useProcessOrderFulfillmentMutation as jest.Mock).mockClear();
     jest.clearAllMocks();
 
     // Set default mock return values
@@ -107,12 +105,7 @@ describe('PartsOrderList', () => {
       isLoading: false,
       error: null,
     });
-
-    // Provide the mock return value for the mutation hook (an array)
-    (useDeletePartsOrderMutation as jest.Mock).mockReturnValue([
-      mockDeleteOrderTrigger,
-      { isLoading: false },
-    ]);
+    (useProcessOrderFulfillmentMutation as jest.Mock).mockReturnValue([jest.fn(), { isLoading: false }]);
   });
 
   it('should render loading state', () => {
@@ -266,34 +259,7 @@ describe('PartsOrderList', () => {
     expect(defaultProps.onEditOrder).toHaveBeenCalledWith(mockOrders[0]);
   });
 
-  it('should delete order when delete button clicked and confirmed', async () => {
-    const user = userEvent.setup();
-
-    // Set orders data
-    (useGetPartsOrdersQuery as jest.Mock).mockReturnValue({
-      data: mockOrders,
-      isLoading: false,
-      error: null,
-    });
-
-    // Mock the delete trigger to return a promise with unwrap method
-    mockDeleteOrderTrigger.mockResolvedValue({
-      unwrap: () => Promise.resolve({})
-    });
-
-    // Mock window.confirm
-    window.confirm = jest.fn(() => true);
-
-    render(<PartsOrderList {...defaultProps} />);
-
-    const deleteButton = screen.getAllByTitle(/delete order/i)[0];
-    await user.click(deleteButton);
-
-    expect(mockDeleteOrderTrigger).toHaveBeenCalledWith({
-      tenantId: 'demo-tenant',
-      orderId: 'order-1',
-    });
-  });
+  
 
   it('should display summary statistics', () => {
     // Set up mock data

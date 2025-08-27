@@ -1,82 +1,58 @@
-import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { getFirestore, FieldValue } from 'firebase-admin/firestore';
+import { getFirestore, Timestamp } from 'firebase-admin/firestore';
+import { onCall, HttpsError, CallableRequest } from 'firebase-functions/v2/https';
 
 const db = getFirestore();
 
-interface OrderStatusUpdateData {
-  orderId: string;
-  status: 'pending' | 'confirmed' | 'delivered' | 'cancelled';
-  notes?: string;
+// --- 1. Manual Validation Function ---
+const validateUpdateStatusData = (data: any) => {
+  if (!data) {
+    throw new HttpsError('invalid-argument', 'Request data is missing.');
+  }
+  if (typeof data.tenantId !== 'string' || data.tenantId.length === 0) {
+    throw new HttpsError('invalid-argument', 'A valid tenantId is required.');
+  }
+  if (typeof data.orderId !== 'string' || data.orderId.length === 0) {
+    throw new HttpsError('invalid-argument', 'A valid orderId is required.');
+  }
+  const validStatuses = ['pending', 'confirmed', 'delivered', 'cancelled'];
+  if (typeof data.status !== 'string' || !validStatuses.includes(data.status)) {
+    throw new HttpsError('invalid-argument', 'A valid status is required.');
+  }
+  return data;
+};
+
+// --- 2. Core Business Logic ---
+export async function updateOrderStatusLogic(request: CallableRequest) {
+  if (!request.auth) {
+    throw new HttpsError('unauthenticated', 'You must be logged in to update an order.');
+  }
+
+  const { tenantId, orderId, status, notes } = validateUpdateStatusData(request.data);
+
+  if (request.auth.token.tenantId !== tenantId) {
+    throw new HttpsError('permission-denied', 'You are not authorized to update orders for this tenant.');
+  }
+
+  const orderRef = db.collection('partsOrders').doc(orderId);
+  const orderDoc = await orderRef.get();
+
+  if (!orderDoc.exists || orderDoc.data()?.tenantId !== tenantId) {
+    throw new HttpsError('not-found', 'The specified order was not found.');
+  }
+
+  const updateData: { status: string, updatedAt: Timestamp, notes?: string } = {
+    status,
+    updatedAt: Timestamp.now(),
+  };
+
+  if (notes) {
+    updateData.notes = notes;
+  }
+
+  await orderRef.update(updateData);
+
+  return { status: 'success', message: 'Order status updated successfully.' };
 }
 
-/**
- * Update parts order status
- * Phase 1: Basic status update functionality
- */
-export const updateOrderStatus = onCall<{ 
-  tenantId: string; 
-  data: OrderStatusUpdateData
-}>(async (request) => {
-  if (!request.auth) {
-    throw new HttpsError('unauthenticated', 'User must be authenticated');
-  }
-
-  const { tenantId, data } = request.data;
-  const { orderId, status, notes } = data;
-  const userClaims = request.auth.token;
-
-  // Verify user belongs to the tenant
-  if (userClaims.tenantId !== tenantId) {
-    throw new HttpsError('permission-denied', 'Access denied to this tenant');
-  }
-
-  // Validate status
-  const validStatuses = ['pending', 'confirmed', 'delivered', 'cancelled'];
-  if (!validStatuses.includes(status)) {
-    throw new HttpsError('invalid-argument', 'Invalid order status');
-  }
-
-  try {
-    const orderRef = db.collection('partsOrders').doc(orderId);
-    const orderDoc = await orderRef.get();
-
-    if (!orderDoc.exists) {
-      throw new HttpsError('not-found', 'Parts order not found');
-    }
-
-    const orderData = orderDoc.data();
-    
-    // Verify the order belongs to the tenant
-    if (orderData?.tenantId !== tenantId) {
-      throw new HttpsError('permission-denied', 'Access denied to this order');
-    }
-
-    // Update the order
-    const updateData: any = {
-      status,
-      updatedAt: FieldValue.serverTimestamp(),
-    };
-
-    if (notes !== undefined) {
-      updateData.notes = notes;
-    }
-
-    await orderRef.update(updateData);
-
-    // Return the updated order (without items for status updates)
-    const updatedOrder = {
-      id: orderId,
-      ...orderData,
-      ...updateData,
-      updatedAt: new Date(),
-    };
-
-    return { order: updatedOrder };
-  } catch (error) {
-    if (error instanceof HttpsError) {
-      throw error;
-    }
-    console.error('Error updating parts order status:', error);
-    throw new HttpsError('internal', 'Failed to update parts order status');
-  }
-});
+// --- 3. Thin Firebase Wrapper ---
+export const updateOrderStatus = onCall(updateOrderStatusLogic);
