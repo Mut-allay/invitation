@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { OrderStatusTracker } from '../OrderStatusTracker';
 import { render as renderWithProviders } from '../../../test/utils/test-utils';
