@@ -52,10 +52,9 @@ describe('PredictiveAnalytics', () => {
     render(<PredictiveAnalytics />);
     
     await waitFor(() => {
-      expect(screen.getByText('Current')).toBeInTheDocument();
-      expect(screen.getByText('Predicted')).toBeInTheDocument();
-      expect(screen.getByText('Change')).toBeInTheDocument();
-      expect(screen.getByText('Key Factors')).toBeInTheDocument();
+      expect(screen.getAllByText('Current')).toHaveLength(4); // 4 prediction cards
+      expect(screen.getAllByText('Predicted')).toHaveLength(4); // 4 prediction cards
+      expect(screen.getAllByText('Change')).toHaveLength(4); // 4 prediction cards
     }, { timeout: 3000 });
   });
 

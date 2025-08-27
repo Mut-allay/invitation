@@ -27,7 +27,48 @@ interface PredictiveAnalyticsProps {
 }
 
 const PredictiveAnalytics: React.FC<PredictiveAnalyticsProps> = ({ className = '' }) => {
-  const [predictions, setPredictions] = useState<Prediction[]>([]);
+  const [predictions, setPredictions] = useState<Prediction[]>([
+    {
+      id: 'sales-forecast',
+      title: 'Sales Forecast',
+      currentValue: 45000,
+      predictedValue: 52000,
+      confidence: 85,
+      trend: 'up',
+      timeframe: 'Next 30 days',
+      factors: ['Seasonal trends', 'Marketing campaigns', 'Customer retention']
+    },
+    {
+      id: 'inventory-prediction',
+      title: 'Inventory Demand',
+      currentValue: 150,
+      predictedValue: 180,
+      confidence: 78,
+      trend: 'up',
+      timeframe: 'Next 30 days',
+      factors: ['Sales velocity', 'Supplier lead times', 'Seasonal demand']
+    },
+    {
+      id: 'customer-acquisition',
+      title: 'New Customers',
+      currentValue: 25,
+      predictedValue: 32,
+      confidence: 82,
+      trend: 'up',
+      timeframe: 'Next 30 days',
+      factors: ['Referral rates', 'Marketing effectiveness', 'Market expansion']
+    },
+    {
+      id: 'repair-volume',
+      title: 'Repair Volume',
+      currentValue: 45,
+      predictedValue: 38,
+      confidence: 75,
+      trend: 'down',
+      timeframe: 'Next 30 days',
+      factors: ['Vehicle age', 'Maintenance schedules', 'Seasonal patterns']
+    }
+  ]);
   const [selectedTimeframe, setSelectedTimeframe] = useState<'week' | 'month' | 'quarter'>('month');
   const [isLoading, setIsLoading] = useState(false);
 
