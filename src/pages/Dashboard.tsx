@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense, lazy } from 'react';
 import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/auth-hooks';
 import { useToast } from '../contexts/toast-hooks';
@@ -19,18 +19,18 @@ import {
   Bars3Icon
 } from '@heroicons/react/24/outline';
 
-// Import actual page components
-import DashboardHome from './DashboardHome';
-import SalesPage from './SalesPage';
-import RepairsPage from './RepairsPage';
-import CustomersPage from './CustomersPage';
-import InventoryPage from './InventoryPage';
-import InvoicesPage from './InvoicesPage';
-import BusinessIntelligencePage from './BusinessIntelligencePage';
-import WizardDemo from './WizardDemo';
+// Lazy load page components
+const DashboardHome = lazy(() => import('./DashboardHome'));
+const SalesPage = lazy(() => import('./SalesPage'));
+const RepairsPage = lazy(() => import('./RepairsPage'));
+const CustomersPage = lazy(() => import('./CustomersPage'));
+const InventoryPage = lazy(() => import('./InventoryPage'));
+const InvoicesPage = lazy(() => import('./InvoicesPage'));
+const BusinessIntelligencePage = lazy(() => import('./BusinessIntelligencePage'));
+const WizardDemo = lazy(() => import('./WizardDemo'));
+const SettingsPage = lazy(() => import('./SettingsPage'));
+const ZambianMarketDemo = lazy(() => import('./ZambianMarketDemo'));
 
-import SettingsPage from './SettingsPage';
-import ZambianMarketDemo from './ZambianMarketDemo';
 import CommandMenu from '../components/ui/CommandMenu';
 import ThemeToggle from '@/components/ui/theme-toggle';
 import MobileNav from '@/components/ui/mobile-nav';
@@ -263,48 +263,8 @@ const Dashboard: React.FC = () => {
         <main className="flex-1">
           <div className="py-6">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-              import React, { useState, Suspense, lazy } from 'react';
-import { Routes, Route, Link, useLocation } from 'react-router-dom';
-import { useAuth } from '../contexts/auth-hooks';
-import { useToast } from '../contexts/toast-hooks';
-import {
-  HomeIcon,
-  TruckIcon,
-  WrenchScrewdriverIcon,
-  UserGroupIcon,
-  CubeIcon,
-  DocumentTextIcon,
-  ChartBarIcon,
-  Cog6ToothIcon,
-  ArrowRightOnRectangleIcon,
-  ChevronDownIcon,
-  ChevronRightIcon,
-  MagnifyingGlassIcon,
-  BellIcon,
-  Bars3Icon
-} from '@heroicons/react/24/outline';
-
-// Lazy load page components
-const DashboardHome = lazy(() => import('./DashboardHome'));
-const SalesPage = lazy(() => import('./SalesPage'));
-const RepairsPage = lazy(() => import('./RepairsPage'));
-const CustomersPage = lazy(() => import('./CustomersPage'));
-const InventoryPage = lazy(() => import('./InventoryPage'));
-const InvoicesPage = lazy(() => import('./InvoicesPage'));
-const BusinessIntelligencePage = lazy(() => import('./BusinessIntelligencePage'));
-const WizardDemo = lazy(() => import('./WizardDemo'));
-const SettingsPage = lazy(() => import('./SettingsPage'));
-const ZambianMarketDemo = lazy(() => import('./ZambianMarketDemo'));
-
-import CommandMenu from '../components/ui/CommandMenu';
-import ThemeToggle from '@/components/ui/theme-toggle';
-import MobileNav from '@/components/ui/mobile-nav';
-import PageTransition from '@/components/ui/page-transition';
-
-// ... (rest of the component is unchanged until the Routes)
-
               <PageTransition>
-                <Suspense fallback={<div className="p-4">Loading page...</div>}>
+                <Suspense fallback={<div className="p-4 text-center">Loading...</div>}>
                   <Routes>
                     <Route path="/" element={<DashboardHome />} />
                     <Route path="/sales" element={<SalesPage />} />
