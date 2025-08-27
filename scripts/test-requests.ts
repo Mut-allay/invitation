@@ -50,12 +50,13 @@ const testData = {
     auditLog: analyticsData.audit
 };
 
-async function makeRequest(functionName: string, data?: any) {
+async function makeRequest(functionName: string, data?: Record<string, unknown>) {
     try {
         console.log(`\n📡 Calling function ${functionName}...`);
         console.log('Request Data:', data || 'No data');
 
         // Get the function from the test environment
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
         const functionsModule = require('../functions/lib/index');
         const wrapped = testEnv.wrap(functionsModule[functionName]);
 
@@ -65,7 +66,10 @@ async function makeRequest(functionName: string, data?: any) {
         console.log('\n✅ Response received:');
         console.log(JSON.stringify(result, null, 2));
         return result;
-    } catch (error: any) {
+    } catch (error) {
+        if (!(error instanceof Error)) {
+            throw error;
+        }
         console.error('\n❌ Error:', error.message);
         if (error.details) {
             console.error('Details:', error.details);
