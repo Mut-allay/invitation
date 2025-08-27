@@ -1,19 +1,11 @@
-import { initializeApp } from 'firebase-admin/app';
-
-// Initialize Firebase Admin for testing
-if (!process.env.FIREBASE_CONFIG) {
-  process.env.FIREBASE_CONFIG = JSON.stringify({
-    projectId: 'garaji-flow-dev',
-    storageBucket: 'garaji-flow-dev.appspot.com',
-  });
-}
-
-// Initialize Firebase Admin SDK
-initializeApp();
+// Mock Firebase Admin SDK
+jest.mock('firebase-admin/app', () => ({
+  initializeApp: jest.fn(),
+}));
 
 // Simple test to make this a valid test suite
 describe('Setup', () => {
-  it('should initialize Firebase Admin', () => {
+  it('should be a valid test suite', () => {
     expect(true).toBe(true);
   });
-}); 
+});

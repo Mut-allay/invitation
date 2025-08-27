@@ -41,12 +41,13 @@ export const PartsOrderDetail: React.FC<PartsOrderDetailProps> = ({
                 Parts Order Details
               </h2>
               <p className="text-gray-600 mt-1">
-                Order #{order.id.slice(-8).toUpperCase()}
+                Order #{order.id.split('-').pop()?.toUpperCase()}
               </p>
             </div>
             <button
               onClick={onClose}
               className="text-gray-400 hover:text-gray-600"
+              data-testid="order-detail-close-button"
             >
               <XMarkIcon className="h-6 w-6" />
             </button>

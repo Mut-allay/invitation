@@ -96,10 +96,10 @@ export const partsOrdersApi = createApi({
       ],
     }),
 
-    // Delete a parts order
-    deletePartsOrder: builder.mutation<{ success: boolean }, { tenantId: string; orderId: string }>({
+    // Process parts order fulfillment
+    processOrderFulfillment: builder.mutation<{ success: boolean }, { tenantId: string; orderId: string }>({
       query: ({ tenantId, orderId }) => ({
-        functionName: 'deletePartsOrder',
+        functionName: 'processOrderFulfillment',
         data: { tenantId, orderId },
       }),
       invalidatesTags: ['PartsOrder'],
@@ -112,5 +112,5 @@ export const {
   useGetPartsOrderQuery,
   useCreatePartsOrderMutation,
   useUpdateOrderStatusMutation,
-  useDeletePartsOrderMutation,
+  useProcessOrderFulfillmentMutation,
 } = partsOrdersApi;
