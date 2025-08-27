@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { PartnerInvitation } from '../PartnerInvitation';
 import { useInvitePartnerMutation } from '../../../store/api/partnerBusinessApi';
 
@@ -20,28 +20,32 @@ describe('PartnerInvitation', () => {
     expect(screen.getByText('Invite Partner')).toBeInTheDocument();
   });
 
-  it('should allow user to enter a partner tenant ID and change permissions', () => {
+  it('should allow user to enter a partner tenant ID and change permissions', async () => {
     render(<PartnerInvitation />);
     const tenantIdInput = screen.getByLabelText('Partner Tenant ID');
     const viewInventoryCheckbox = screen.getByLabelText('Can View Inventory');
     const placeOrdersCheckbox = screen.getByLabelText('Can Place Orders');
 
-    fireEvent.change(tenantIdInput, { target: { value: 'partner-tenant' } });
-    fireEvent.click(viewInventoryCheckbox);
-    fireEvent.click(placeOrdersCheckbox);
+    await act(async () => {
+      fireEvent.change(tenantIdInput, { target: { value: 'partner-tenant' } });
+      fireEvent.click(viewInventoryCheckbox);
+      fireEvent.click(placeOrdersCheckbox);
+    });
 
     expect(tenantIdInput).toHaveValue('partner-tenant');
     expect(viewInventoryCheckbox).not.toBeChecked();
     expect(placeOrdersCheckbox).not.toBeChecked();
   });
 
-  it('should call invitePartner on form submission', () => {
+  it('should call invitePartner on form submission', async () => {
     render(<PartnerInvitation />);
     const tenantIdInput = screen.getByLabelText('Partner Tenant ID');
     const submitButton = screen.getByText('Send Invitation');
 
-    fireEvent.change(tenantIdInput, { target: { value: 'partner-tenant' } });
-    fireEvent.click(submitButton);
+    await act(async () => {
+      fireEvent.change(tenantIdInput, { target: { value: 'partner-tenant' } });
+      fireEvent.click(submitButton);
+    });
 
     expect(mockInvitePartner).toHaveBeenCalledWith({
       tenantId: 'demo-tenant',
