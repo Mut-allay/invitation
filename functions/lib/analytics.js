@@ -1,62 +1,25 @@
-import { z } from 'zod';
-
-
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.AnalyticsService = exports.PredictiveAnalyticsSchema = exports.BusinessMetricsSchema = void 0;
+const zod_1 = require("zod");
 // Business metrics types
-export const BusinessMetricsSchema = z.object({
-    dateRange: z.object({
-        start: z.string().datetime(),
-        end: z.string().datetime()
+exports.BusinessMetricsSchema = zod_1.z.object({
+    dateRange: zod_1.z.object({
+        start: zod_1.z.string().datetime(),
+        end: zod_1.z.string().datetime()
     }),
-    metrics: z.array(z.enum(['sales', 'profit', 'inventory']))
+    metrics: zod_1.z.array(zod_1.z.enum(['sales', 'profit', 'inventory']))
 });
-
-export type BusinessMetricsRequest = z.infer<typeof BusinessMetricsSchema>;
-
-export interface BusinessMetricsResponse {
-    sales?: {
-        total: number;
-        count: number;
-        average: number;
-    };
-    inventory?: {
-        total: number;
-        value: number;
-        lowStock: number;
-    };
-    profit?: {
-        gross: number;
-        margin: number;
-    };
-}
-
 // Predictive analytics types
-export const PredictiveAnalyticsSchema = z.object({
-    category: z.string().min(1),
-    timeFrame: z.number().positive() // in days
+exports.PredictiveAnalyticsSchema = zod_1.z.object({
+    category: zod_1.z.string().min(1),
+    timeFrame: zod_1.z.number().positive() // in days
 });
-
-export type PredictiveAnalyticsRequest = z.infer<typeof PredictiveAnalyticsSchema>;
-
-export interface PredictiveAnalyticsResponse {
-    category: string;
-    timeFrame: number;
-    currentStock: number;
-    metrics: {
-        avgDailySales: number | null;
-        projectedSales: number | null;
-        recommendedOrder: number | null;
-        daysUntilStockout: number | null;
-    };
-    confidence: number | null;
-}
-
-export class AnalyticsService {
-    constructor() {}
-
-    public async getBusinessMetrics(request: BusinessMetricsRequest): Promise<BusinessMetricsResponse> {
+class AnalyticsService {
+    constructor() { }
+    async getBusinessMetrics(request) {
         // Validate request
-        BusinessMetricsSchema.parse(request);
-
+        exports.BusinessMetricsSchema.parse(request);
         if (process.env.NODE_ENV !== 'production') {
             // Return mock data in sandbox mode
             return {
@@ -76,7 +39,6 @@ export class AnalyticsService {
                 }
             };
         }
-
         // In real implementation, this would:
         // 1. Query sales collection for date range
         // 2. Query inventory collection for current status
@@ -84,11 +46,9 @@ export class AnalyticsService {
         // 4. Aggregate and return results
         throw new Error('Business metrics calculation not implemented for production');
     }
-
-    public async predictInventoryNeeds(request: PredictiveAnalyticsRequest): Promise<PredictiveAnalyticsResponse> {
+    async predictInventoryNeeds(request) {
         // Validate request
-        PredictiveAnalyticsSchema.parse(request);
-
+        exports.PredictiveAnalyticsSchema.parse(request);
         if (process.env.NODE_ENV !== 'production') {
             // Return mock data in sandbox mode
             return {
@@ -104,7 +64,6 @@ export class AnalyticsService {
                 confidence: null
             };
         }
-
         // In real implementation, this would:
         // 1. Get historical sales data
         // 2. Apply time series analysis
@@ -113,3 +72,5 @@ export class AnalyticsService {
         throw new Error('Predictive analytics not implemented for production');
     }
 }
+exports.AnalyticsService = AnalyticsService;
+//# sourceMappingURL=analytics.js.map
