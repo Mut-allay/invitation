@@ -1,0 +1,14 @@
+{
+  "name": "garagiflow-scripts",
+  "version": "1.0.0",
+  "description": "Test scripts for GarajiFlow",
+  "scripts": {
+    "test": "ts-node test-requests.ts"
+  },
+  "dependencies": {
+    "firebase-admin": "^11.0.0",
+    "firebase-functions-test": "^3.0.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.0.0"
+  }
+}
