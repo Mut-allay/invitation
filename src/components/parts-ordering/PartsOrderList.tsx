@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { PartsOrderWithItems } from '../../types/partsOrder';
-import { useGetPartsOrdersQuery, useDeletePartsOrderMutation } from '../../store/api/partsOrdersApi';
+import { useGetPartsOrdersQuery, useProcessOrderFulfillmentMutation } from '../../store/api/partsOrdersApi';
 
 interface PartsOrderListProps {
   tenantId: string;
@@ -18,7 +18,7 @@ export const PartsOrderList: React.FC<PartsOrderListProps> = ({
 
   // Use RTK Query to fetch orders
   const { data: orders = [], isLoading, error } = useGetPartsOrdersQuery(tenantId);
-  const [deleteOrder] = useDeletePartsOrderMutation();
+  const [processOrderFulfillment, { isLoading: isFulfilling }] = useProcessOrderFulfillmentMutation();
 
   // Filter orders based on search term and status
   const filteredOrders = useMemo(() => {
@@ -40,12 +40,12 @@ export const PartsOrderList: React.FC<PartsOrderListProps> = ({
     return filtered;
   }, [orders, searchTerm, statusFilter]);
 
-  const handleDeleteOrder = async (order: PartsOrderWithItems) => {
-    if (window.confirm(`Are you sure you want to delete order from ${order.supplierName}?`)) {
+  const handleFulfillOrder = async (order: PartsOrderWithItems) => {
+    if (window.confirm(`Are you sure you want to mark order from ${order.supplierName} as fulfilled? This will update your inventory.`)) {
       try {
-        await deleteOrder({ tenantId, orderId: order.id }).unwrap();
+        await processOrderFulfillment({ tenantId, orderId: order.id }).unwrap();
       } catch (error) {
-        console.error('Failed to delete order:', error);
+        console.error('Failed to fulfill order:', error);
       }
     }
   };
@@ -86,7 +86,7 @@ export const PartsOrderList: React.FC<PartsOrderListProps> = ({
       {/* Orders List */}
       <div>
         {filteredOrders.map((order) => (
-          <div key={order.id}>
+          <div key={order.id} data-testid={`order-row-${order.id}`}>
             <div>
               <h3>{order.supplierName}</h3>
               <p>Status: <span className={`status-${order.status}`}>{order.status}</span></p>
@@ -110,10 +110,11 @@ export const PartsOrderList: React.FC<PartsOrderListProps> = ({
                 Edit
               </button>
               <button
-                title="Delete Order"
-                onClick={() => handleDeleteOrder(order)}
+                title="Fulfill Order"
+                onClick={() => handleFulfillOrder(order)}
+                disabled={isFulfilling || order.status === 'delivered' || order.status === 'cancelled'}
               >
-                Delete
+                {isFulfilling ? 'Fulfilling...' : 'Fulfill'}
               </button>
             </div>
           </div>
