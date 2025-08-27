@@ -61,18 +61,51 @@ describe('ZRAInvoiceGenerator', () => {
       const user = userEvent.setup();
       render(<ZRAInvoiceGenerator {...defaultProps} />);
       
-      // Test TPIN input filtering (only digits)
+      // Fill in all required fields first
+      const businessNameInput = screen.getByLabelText(/Business Name/);
+      const customerNameInput = screen.getByLabelText(/Customer Name/);
+      const customerTpinInput = screen.getByLabelText(/Customer TPIN/);
       const businessTpinInput = screen.getByLabelText(/Business TPIN/);
+      
+      await user.type(businessNameInput, 'Test Business');
+      await user.type(customerNameInput, 'Test Customer');
+      await user.type(customerTpinInput, '1234567890');
+      
+      // Test TPIN input filtering - should only accept digits
+      await user.click(businessTpinInput);
+      await user.keyboard('{Control>}a{/Control}');
+      await user.keyboard('{Backspace}');
       await user.type(businessTpinInput, '123abc456');
       
-      // Should only accept digits
+      // Should only accept digits and be limited to 10 characters
       expect(businessTpinInput).toHaveValue('123456');
       
-      // Test length limit
-      await user.clear(businessTpinInput);
-      await user.type(businessTpinInput, '12345678901234567890');
-      expect(businessTpinInput).toHaveValue('1234567890');
-    }, 5000);
+      // Add an item to satisfy the items requirement
+      const descriptionInput = screen.getByLabelText(/Description/);
+      const quantityInput = screen.getByLabelText(/Quantity/);
+      const unitPriceInput = screen.getByLabelText(/Unit Price/);
+      
+      await user.type(descriptionInput, 'Test Service');
+      await user.click(quantityInput);
+      await user.keyboard('{Control>}a{/Control}');
+      await user.keyboard('{Backspace}');
+      await user.type(quantityInput, '1');
+      await user.click(unitPriceInput);
+      await user.keyboard('{Control>}a{/Control}');
+      await user.keyboard('{Backspace}');
+      await user.type(unitPriceInput, '100');
+      
+      const addItemButton = screen.getByText('Add Item');
+      await user.click(addItemButton);
+      
+      // Try to generate invoice with invalid TPIN
+      const generateButton = screen.getByText('Generate Invoice');
+      await user.click(generateButton);
+      
+      await waitFor(() => {
+        expect(screen.getByText('Business TPIN must be 10 digits')).toBeInTheDocument();
+      });
+    });
 
     it('handles item addition correctly', async () => {
       const user = userEvent.setup();
@@ -84,9 +117,13 @@ describe('ZRAInvoiceGenerator', () => {
       const unitPriceInput = screen.getByLabelText(/Unit Price/);
       
       await user.type(descriptionInput, 'Test Service');
-      await user.clear(quantityInput);
+      await user.click(quantityInput);
+      await user.keyboard('{Control>}a{/Control}');
+      await user.keyboard('{Backspace}');
       await user.type(quantityInput, '2');
-      await user.clear(unitPriceInput);
+      await user.click(unitPriceInput);
+      await user.keyboard('{Control>}a{/Control}');
+      await user.keyboard('{Backspace}');
       await user.type(unitPriceInput, '100');
       
       const addItemButton = screen.getByText('Add Item');
@@ -110,9 +147,13 @@ describe('ZRAInvoiceGenerator', () => {
       const unitPriceInput = screen.getByLabelText(/Unit Price/);
       
       await user.type(descriptionInput, 'Taxable Item');
-      await user.clear(quantityInput);
+      await user.click(quantityInput);
+      await user.keyboard('{Control>}a{/Control}');
+      await user.keyboard('{Backspace}');
       await user.type(quantityInput, '1');
-      await user.clear(unitPriceInput);
+      await user.click(unitPriceInput);
+      await user.keyboard('{Control>}a{/Control}');
+      await user.keyboard('{Backspace}');
       await user.type(unitPriceInput, '100');
       
       // Check real-time calculation
@@ -144,9 +185,13 @@ describe('ZRAInvoiceGenerator', () => {
       const vatSelect = screen.getByLabelText(/VAT Rate/);
       
       await user.type(descriptionInput, 'Exempt Item');
-      await user.clear(quantityInput);
+      await user.click(quantityInput);
+      await user.keyboard('{Control>}a{/Control}');
+      await user.keyboard('{Backspace}');
       await user.type(quantityInput, '1');
-      await user.clear(unitPriceInput);
+      await user.click(unitPriceInput);
+      await user.keyboard('{Control>}a{/Control}');
+      await user.keyboard('{Backspace}');
       await user.type(unitPriceInput, '100');
       await user.selectOptions(vatSelect, '0');
       
@@ -175,9 +220,13 @@ describe('ZRAInvoiceGenerator', () => {
       const unitPriceInput = screen.getByLabelText(/Unit Price/);
       
       await user.type(descriptionInput, 'Test Item');
-      await user.clear(quantityInput);
+      await user.click(quantityInput);
+      await user.keyboard('{Control>}a{/Control}');
+      await user.keyboard('{Backspace}');
       await user.type(quantityInput, '1');
-      await user.clear(unitPriceInput);
+      await user.click(unitPriceInput);
+      await user.keyboard('{Control>}a{/Control}');
+      await user.keyboard('{Backspace}');
       await user.type(unitPriceInput, '100');
       
       const addItemButton = screen.getByText('Add Item');
@@ -226,9 +275,13 @@ describe('ZRAInvoiceGenerator', () => {
       
       // Add an item
       await user.type(screen.getByLabelText(/Description/), 'Professional Service');
-      await user.clear(screen.getByLabelText(/Quantity/));
+      await user.click(screen.getByLabelText(/Quantity/));
+      await user.keyboard('{Control>}a{/Control}');
+      await user.keyboard('{Backspace}');
       await user.type(screen.getByLabelText(/Quantity/), '1');
-      await user.clear(screen.getByLabelText(/Unit Price/));
+      await user.click(screen.getByLabelText(/Unit Price/));
+      await user.keyboard('{Control>}a{/Control}');
+      await user.keyboard('{Backspace}');
       await user.type(screen.getByLabelText(/Unit Price/), '500');
       
       await user.click(screen.getByText('Add Item'));
@@ -237,11 +290,30 @@ describe('ZRAInvoiceGenerator', () => {
       const generateButton = screen.getByText('Generate Invoice');
       await user.click(generateButton);
       
-      // Wait for generation to complete
+      // Check loading state
       await waitFor(() => {
-        expect(mockOnInvoiceGenerated).toHaveBeenCalled();
+        expect(screen.getByText('Generating...')).toBeInTheDocument();
+      });
+      
+      // Wait for generation to complete with increased timeout
+      await waitFor(() => {
+        expect(mockOnInvoiceGenerated).toHaveBeenCalledWith(
+          expect.objectContaining({
+            invoiceNumber: expect.stringMatching(/^ZRA-\d{8}-\d{3}$/),
+            businessName: 'Test Business Ltd',
+            businessTpin: '1234567890',
+            customerName: 'Test Customer',
+            customerTpin: '0987654321',
+            currency: 'ZMW',
+            subtotal: 500,
+            totalVat: 80, // 16% of 500
+            totalAmount: 580,
+            zraReference: expect.stringMatching(/^ZRA-REF-\d+$/),
+            qrCode: expect.stringContaining('data:image/svg+xml')
+          })
+        );
       }, { timeout: 10000 });
-    }, 10000);
+    }, 12000);
 
     it('calls onCancel when cancel button is clicked', async () => {
       const user = userEvent.setup();
@@ -287,15 +359,14 @@ describe('ZRAInvoiceGenerator', () => {
       const user = userEvent.setup();
       render(<ZRAInvoiceGenerator {...defaultProps} />);
       
-      // Focus the first input manually
-      const businessNameInput = screen.getByLabelText(/Business Name/);
-      businessNameInput.focus();
-      expect(businessNameInput).toHaveFocus();
+      // Tab through form elements - the actual tab order is Business Name first
+      await user.tab();
+      expect(screen.getByLabelText(/Business Name/)).toHaveFocus();
       
       // Tab to next element - check that we can tab through the form
       await user.tab();
       // Don't check specific focus, just verify tabbing works
-      expect(document.activeElement).not.toBe(businessNameInput);
+      expect(document.activeElement).not.toBe(screen.getByLabelText(/Business Name/));
     });
 
     it('has proper color contrast for text elements', () => {
@@ -316,8 +387,17 @@ describe('ZRAInvoiceGenerator', () => {
       
       const businessTpinInput = screen.getByLabelText(/Business TPIN/);
       
+      // Test input filtering (only digits)
+      await user.click(businessTpinInput);
+      await user.keyboard('{Control>}a{/Control}');
+      await user.keyboard('{Backspace}');
+      await user.type(businessTpinInput, 'abc123def456ghi');
+      expect(businessTpinInput).toHaveValue('123456');
+      
       // Test length limit
-      await user.clear(businessTpinInput);
+      await user.click(businessTpinInput);
+      await user.keyboard('{Control>}a{/Control}');
+      await user.keyboard('{Backspace}');
       await user.type(businessTpinInput, '12345678901234567890');
       expect(businessTpinInput).toHaveValue('1234567890');
     });
@@ -344,9 +424,13 @@ describe('ZRAInvoiceGenerator', () => {
       
       // Add an item
       await user.type(screen.getByLabelText(/Description/), 'Service');
-      await user.clear(screen.getByLabelText(/Quantity/));
+      await user.click(screen.getByLabelText(/Quantity/));
+      await user.keyboard('{Control>}a{/Control}');
+      await user.keyboard('{Backspace}');
       await user.type(screen.getByLabelText(/Quantity/), '1');
-      await user.clear(screen.getByLabelText(/Unit Price/));
+      await user.click(screen.getByLabelText(/Unit Price/));
+      await user.keyboard('{Control>}a{/Control}');
+      await user.keyboard('{Backspace}');
       await user.type(screen.getByLabelText(/Unit Price/), '100');
       await user.click(screen.getByText('Add Item'));
       
@@ -359,8 +443,8 @@ describe('ZRAInvoiceGenerator', () => {
             zraReference: expect.stringMatching(/^ZRA-REF-\d+$/)
           })
         );
-      }, { timeout: 3000 });
-    }, 15000);
+      }, { timeout: 8000 });
+    }, 10000);
 
     it('includes QR code for ZRA compliance', async () => {
       const user = userEvent.setup();
@@ -374,17 +458,25 @@ describe('ZRAInvoiceGenerator', () => {
       
       // Add an item
       await user.type(screen.getByLabelText(/Description/), 'Service');
-      await user.clear(screen.getByLabelText(/Quantity/));
+      await user.click(screen.getByLabelText(/Quantity/));
+      await user.keyboard('{Control>}a{/Control}');
+      await user.keyboard('{Backspace}');
       await user.type(screen.getByLabelText(/Quantity/), '1');
-      await user.clear(screen.getByLabelText(/Unit Price/));
+      await user.click(screen.getByLabelText(/Unit Price/));
+      await user.keyboard('{Control>}a{/Control}');
+      await user.keyboard('{Backspace}');
       await user.type(screen.getByLabelText(/Unit Price/), '100');
       await user.click(screen.getByText('Add Item'));
       
       await user.click(screen.getByText('Generate Invoice'));
       
       await waitFor(() => {
-        expect(mockOnInvoiceGenerated).toHaveBeenCalled();
-      }, { timeout: 10000 });
+        expect(mockOnInvoiceGenerated).toHaveBeenCalledWith(
+          expect.objectContaining({
+            qrCode: expect.stringContaining('data:image/svg+xml')
+          })
+        );
+      }, { timeout: 8000 });
     }, 10000);
 
     it('calculates correct VAT amounts', async () => {
@@ -393,9 +485,13 @@ describe('ZRAInvoiceGenerator', () => {
       
       // Add item with 16% VAT
       await user.type(screen.getByLabelText(/Description/), 'Taxable Service');
-      await user.clear(screen.getByLabelText(/Quantity/));
+      await user.click(screen.getByLabelText(/Quantity/));
+      await user.keyboard('{Control>}a{/Control}');
+      await user.keyboard('{Backspace}');
       await user.type(screen.getByLabelText(/Quantity/), '2');
-      await user.clear(screen.getByLabelText(/Unit Price/));
+      await user.click(screen.getByLabelText(/Unit Price/));
+      await user.keyboard('{Control>}a{/Control}');
+      await user.keyboard('{Backspace}');
       await user.type(screen.getByLabelText(/Unit Price/), '250');
       
       await user.click(screen.getByText('Add Item'));
@@ -416,9 +512,13 @@ describe('ZRAInvoiceGenerator', () => {
       
       // Add an item to see currency formatting
       await user.type(screen.getByLabelText(/Description/), 'Test Item');
-      await user.clear(screen.getByLabelText(/Quantity/));
+      await user.click(screen.getByLabelText(/Quantity/));
+      await user.keyboard('{Control>}a{/Control}');
+      await user.keyboard('{Backspace}');
       await user.type(screen.getByLabelText(/Quantity/), '1');
-      await user.clear(screen.getByLabelText(/Unit Price/));
+      await user.click(screen.getByLabelText(/Unit Price/));
+      await user.keyboard('{Control>}a{/Control}');
+      await user.keyboard('{Backspace}');
       await user.type(screen.getByLabelText(/Unit Price/), '1234.56');
       
       // Check real-time formatting shows Zambian Kwacha
@@ -433,9 +533,13 @@ describe('ZRAInvoiceGenerator', () => {
       
       // Add item with decimal values
       await user.type(screen.getByLabelText(/Description/), 'Decimal Test');
-      await user.clear(screen.getByLabelText(/Quantity/));
+      await user.click(screen.getByLabelText(/Quantity/));
+      await user.keyboard('{Control>}a{/Control}');
+      await user.keyboard('{Backspace}');
       await user.type(screen.getByLabelText(/Quantity/), '1.5');
-      await user.clear(screen.getByLabelText(/Unit Price/));
+      await user.click(screen.getByLabelText(/Unit Price/));
+      await user.keyboard('{Control>}a{/Control}');
+      await user.keyboard('{Backspace}');
       await user.type(screen.getByLabelText(/Unit Price/), '33.33');
       
       await user.click(screen.getByText('Add Item'));

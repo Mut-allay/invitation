@@ -94,13 +94,18 @@ temp/
 # Documentation files (ignore all except technical design docs and README)
 docs/*.md
 docs/*.txt
-!docs/Design\ and\ Techinical\ Document.txt
-!docs/design_techinical\ _doc.md
+docs/*.docx
+docs/*.pdf
+!docs/README.md
+!docs/README.txt
+!docs/*design*.md
+!docs/*design*.txt
+!docs/*technical*.md
+!docs/*technical*.txt
+!docs/*techinical*.md
+!docs/*techinical*.txt
 !README.md
+!README.txt
 
 # Generated files
 dataconnect-generated/
-
-
-# Neo 
-docs/Neo.docx.md
