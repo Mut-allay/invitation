@@ -1,22 +1,12 @@
 import React, { useState, useRef } from 'react';
 import { 
-  PlusIcon, 
-  MagnifyingGlassIcon, 
   CubeIcon,
-  ExclamationTriangleIcon,
-  CurrencyDollarIcon,
   WrenchScrewdriverIcon,
   BeakerIcon,
-  TruckIcon,
   EyeIcon,
-  PencilIcon,
-  ArrowPathIcon,
-  ShoppingCartIcon
+  PencilIcon
 } from '@heroicons/react/24/outline';
 import { useInventory } from '../hooks/useInventory';
-import { InventoryModal } from '../components/inventory/InventoryModal';
-import { SupplierModal } from '../components/inventory/SupplierModal';
-import { useToast } from '../contexts/toast-hooks';
 import { getErrorMessage } from '@/lib/utils';
 import type { Inventory } from '../types/index';
 import { useVirtualizer } from '@tanstack/react-virtual';
@@ -26,27 +16,17 @@ const mockInventory: Inventory[] = [
   // ... (mock data is unchanged)
 ];
 
-// Mock suppliers data
-const mockSuppliers = [
-  // ... (mock data is unchanged)
-];
-
 const InventoryPage: React.FC = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedType, setSelectedType] = useState('');
-  const [selectedInventory, setSelectedInventory] = useState<Inventory | null>(null);
-  const [showInventoryModal, setShowInventoryModal] = useState(false);
-  const [showSupplierModal, setShowSupplierModal] = useState(false);
-  const [showRestockModal, setShowRestockModal] = useState(false);
-  const [isCreating, setIsCreating] = useState(false);
+  const [searchTerm] = useState('');
+  const [selectedType] = useState('');
+  const [, setSelectedInventory] = useState<Inventory | null>(null);
+  const [, setShowInventoryModal] = useState(false);
+  const [, setIsCreating] = useState(false);
 
   const { inventory: apiInventory, loading, error } = useInventory();
-  const { success } = useToast();
 
   // Use mock data if API returns empty
   const inventory = apiInventory.length === 0 && !loading ? mockInventory : apiInventory;
-
-  const types = ['part', 'tool', 'consumable'];
 
   const filteredInventory = inventory.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -67,20 +47,6 @@ const InventoryPage: React.FC = () => {
     overscan: 5,
   });
 
-  const getInventoryStats = () => {
-    const totalItems = inventory.length;
-    const lowStockItems = inventory.filter(item => item.currentStock <= item.reorderLevel).length;
-    const totalValue = inventory.reduce((sum, item) => sum + (item.currentStock * item.cost), 0);
-    const parts = inventory.filter(item => item.type === 'part').length;
-    const tools = inventory.filter(item => item.type === 'tool').length;
-    const consumables = inventory.filter(item => item.type === 'consumable').length;
-    const outOfStockItems = inventory.filter(item => item.currentStock === 0).length;
-
-    return { totalItems, lowStockItems, totalValue, parts, tools, consumables, outOfStockItems };
-  };
-
-  const stats = getInventoryStats();
-
   const handleCreateInventory = () => {
     setIsCreating(true);
     setSelectedInventory(null);
@@ -97,24 +63,6 @@ const InventoryPage: React.FC = () => {
     setIsCreating(false);
     setSelectedInventory(item);
     setShowInventoryModal(true);
-  };
-
-  const handleRestock = (item: Inventory) => {
-    setSelectedInventory(item);
-    setShowRestockModal(true);
-  };
-
-  const handleRestockSubmit = (itemId: string, quantity: number) => {
-    // In a real app, this would update the API
-    success(`Restocked ${quantity} units for item #${itemId}`);
-    setShowRestockModal(false);
-  };
-
-  const handleContactSupplier = (supplierId: string) => {
-    const supplier = mockSuppliers.find(s => s.id === supplierId);
-    if (supplier) {
-      success(`Contacting ${supplier.name} at ${supplier.phone}`);
-    }
   };
 
   const getTypeIcon = (type: string) => {
@@ -134,12 +82,6 @@ const InventoryPage: React.FC = () => {
     if (currentStock === 0) return 'text-red-600 dark:text-red-300';
     if (currentStock <= reorderLevel) return 'text-yellow-600 dark:text-yellow-300';
     return 'text-green-600 dark:text-green-300';
-  };
-
-  const getStockStatusText = (currentStock: number, reorderLevel: number) => {
-    if (currentStock === 0) return 'Out of Stock';
-    if (currentStock <= reorderLevel) return 'Low Stock';
-    return 'In Stock';
   };
 
   return (
