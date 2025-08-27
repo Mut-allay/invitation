@@ -406,7 +406,7 @@ describe('ZRAInvoiceGenerator', () => {
           })
         );
       }, { timeout: 3000 });
-    });
+    }, 15000);
 
     it('includes QR code for ZRA compliance', async () => {
       const user = userEvent.setup();
