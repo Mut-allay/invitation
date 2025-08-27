@@ -13,7 +13,7 @@ const SalesReport: React.FC<SalesReportProps> = ({ salesData }) => {
       <h2 className="text-xl font-bold">Sales Report</h2>
       {salesData ? (
         <div>
-          <p className="text-lg">Total Sales: <span className="font-bold">${salesData.sales.toFixed(2)}</span></p>
+          <p className="text-lg">Total Sales: <span data-testid="total-sales" className="font-bold">${salesData.sales.toFixed(2)}</span></p>
           {/* TODO: Add charts for sales data visualization */}
         </div>
       ) : (

@@ -46,9 +46,12 @@ service cloud.firestore {
       return resource.data.status != request.resource.data.status;
     }
 
-    // Notifications can only be read by the assigned user
+    // Notifications security rules - strict user-level access control
     match /notifications/{notificationId} {
-      allow read, write: if isUserInTenant(resource.data.tenantId) && request.auth.uid == resource.data.userId;
+      // Individual document access - user must be in the same tenant AND be the assigned user
+      allow read, write: if request.auth != null && 
+                           request.auth.token.tenantId == resource.data.tenantId && 
+                           request.auth.uid == resource.data.userId;
     }
   }
 } 

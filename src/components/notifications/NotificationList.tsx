@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { collection, query, where, onSnapshot, orderBy, Timestamp } from 'firebase/firestore';
 import { db } from '../../config/firebase'; // Assuming you have a firebase config file
-import { useAuth } from '../../contexts/AuthContext'; // Assuming you have an AuthContext
+import { useAuth } from '../../contexts/auth-hooks'; // Assuming you have an AuthContext
 
 interface Notification {
   id: string;
@@ -14,15 +14,15 @@ interface Notification {
 }
 
 const NotificationList: React.FC = () => {
-  const { currentUser } = useAuth();
+  const { user } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
   useEffect(() => {
-    if (!currentUser) return;
+    if (!user) return;
 
     const q = query(
       collection(db, 'notifications'),
-      where('userId', '==', currentUser.uid),
+      where('userId', '==', user.uid),
       orderBy('createdAt', 'desc')
     );
 
@@ -35,7 +35,7 @@ const NotificationList: React.FC = () => {
     });
 
     return () => unsubscribe();
-  }, [currentUser]);
+  }, [user]);
 
   return (
     <div className="absolute right-0 w-80 mt-2 py-2 bg-white border rounded shadow-xl">

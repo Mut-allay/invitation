@@ -1,14 +1,6 @@
 import { onCall, HttpsError, CallableRequest } from 'firebase-functions/v2/https';
 import { onDocumentCreated } from 'firebase-functions/v2/firestore';
-import { getAuth } from 'firebase-admin/auth';
-import { getFirestore } from 'firebase-admin/firestore';
-import { initializeApp } from 'firebase-admin/app';
-
-// Initialize Firebase Admin
-initializeApp();
-
-const auth = getAuth();
-const db = getFirestore();
+import { auth, db } from './firebase-admin';
 
 // Type definitions
 interface UserData {

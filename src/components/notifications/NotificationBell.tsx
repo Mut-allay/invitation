@@ -2,18 +2,18 @@
 import React, { useEffect, useState } from 'react';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { db } from '../../config/firebase'; // Assuming you have a firebase config file
-import { useAuth } from '../../contexts/AuthContext'; // Assuming you have an AuthContext
+import { useAuth } from '../../contexts/auth-hooks'; // Assuming you have an AuthContext
 
 const NotificationBell: React.FC = () => {
-  const { currentUser } = useAuth();
+  const { user } = useAuth();
   const [hasNewNotifications, setHasNewNotifications] = useState(false);
 
   useEffect(() => {
-    if (!currentUser) return;
+    if (!user) return;
 
     const q = query(
       collection(db, 'notifications'),
-      where('userId', '==', currentUser.uid),
+      where('userId', '==', user.uid),
       where('isRead', '==', false)
     );
 
@@ -22,14 +22,14 @@ const NotificationBell: React.FC = () => {
     });
 
     return () => unsubscribe();
-  }, [currentUser]);
+  }, [user]);
 
   return (
     <div className="relative">
       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
       </svg>
-      {hasNewNotifications && <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full" />}
+      {hasNewNotifications && <span data-testid="notification-dot" className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full" />}
     </div>
   );
 };

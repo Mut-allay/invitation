@@ -13,7 +13,7 @@ const InventoryReport: React.FC<InventoryReportProps> = ({ inventoryData }) => {
       <h2 className="text-xl font-bold">Inventory Report</h2>
       {inventoryData ? (
         <div>
-          <p className="text-lg">Inventory Turnover: <span className="font-bold">{inventoryData.inventoryTurnover.toFixed(2)}</span></p>
+          <p className="text-lg">Inventory Turnover: <span data-testid="inventory-turnover" className="font-bold">{inventoryData.inventoryTurnover.toFixed(2)}</span></p>
           {/* TODO: Add charts for inventory data visualization */}
         </div>
       ) : (
