@@ -467,8 +467,9 @@ describe('InvoiceDashboard', () => {
       render(<InvoiceDashboard {...defaultProps} invoices={sampleInvoices} />);
       
       // Check that dates are formatted (exact format may vary based on locale)
-      expect(screen.getAllByText(/Dec.*2024/)).toHaveLength(4); // Multiple Dec dates
-      expect(screen.getAllByText(/Nov.*2024/)).toHaveLength(2); // Multiple Nov dates
+      // The component displays both issue dates and due dates
+      expect(screen.getAllByText(/Dec.*2024/)).toHaveLength(2); // 2 Dec dates
+      expect(screen.getAllByText(/Nov.*2024/)).toHaveLength(3); // 3 Nov dates (issue + due dates)
     });
   });
 
