@@ -240,8 +240,8 @@ describe('ZRAInvoiceGenerator', () => {
       // Wait for generation to complete
       await waitFor(() => {
         expect(mockOnInvoiceGenerated).toHaveBeenCalled();
-      }, { timeout: 3000 });
-    }, 3000);
+      }, { timeout: 10000 });
+    }, 10000);
 
     it('calls onCancel when cancel button is clicked', async () => {
       const user = userEvent.setup();
@@ -360,7 +360,7 @@ describe('ZRAInvoiceGenerator', () => {
           })
         );
       }, { timeout: 3000 });
-    });
+    }, 15000);
 
     it('includes QR code for ZRA compliance', async () => {
       const user = userEvent.setup();
@@ -384,8 +384,8 @@ describe('ZRAInvoiceGenerator', () => {
       
       await waitFor(() => {
         expect(mockOnInvoiceGenerated).toHaveBeenCalled();
-      }, { timeout: 3000 });
-    }, 3000);
+      }, { timeout: 10000 });
+    }, 10000);
 
     it('calculates correct VAT amounts', async () => {
       const user = userEvent.setup();

@@ -15,8 +15,8 @@ import {
 import { useRepairs } from '../hooks/useRepairs';
 import { RepairModal } from '../components/repairs/RepairModal';
 import { JobCardModal } from '../components/repairs/JobCardModal';
-import { SmartWorkflowEngine } from '../components/workflows/SmartWorkflowEngine';
-import { QualityControlSystem } from '../components/quality/QualityControlSystem';
+import SmartWorkflowEngine from '../components/workflows/SmartWorkflowEngine';
+import QualityControlSystem from '../components/quality/QualityControlSystem';
 import { useToast } from '../contexts/toast-hooks';
 import { getErrorMessage } from '@/lib/utils';
 import type { Repair, Mechanic, Bay } from '../types/index';
@@ -246,12 +246,15 @@ const RepairsPage: React.FC = () => {
     setShowQualityControl(true);
   };
 
-  const handleWorkflowUpdate = (workflowState: { repairId: string }) => {
-    success(`Workflow updated for repair #${workflowState.repairId}`);
+  const handleWorkflowUpdate = (repairId: string) => {
+    success(`Workflow updated for repair #${repairId}`);
+    // In a real app, this would update the repair in the database
   };
 
-  const handleQualityUpdate = (metrics: { overallScore: number }) => {
-    success(`Quality metrics updated: ${metrics.overallScore}% overall score`);
+  const handleQualityUpdate = (repairId: string, qualityData: unknown) => {
+    const score = (qualityData as { qualityScore?: number })?.qualityScore || 0;
+    success(`Quality metrics updated for repair #${repairId}: ${score}% score`);
+    // In a real app, this would update the quality data in the database
   };
 
   const getStatusColor = (status: string) => {
@@ -530,56 +533,22 @@ const RepairsPage: React.FC = () => {
         <>
           {/* Workflow Engine Modal */}
           {showWorkflowEngine && (
-            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-              <div className="bg-white dark:bg-slate-800 rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-                <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
-                  <h2 className="text-responsive-xl font-semibold flex items-center space-x-2">
-                    <CogIcon className="w-6 h-6 text-purple-600" />
-                    <span>Smart Workflow Engine</span>
-                  </h2>
-                  <button
-                    onClick={() => setShowWorkflowEngine(false)}
-                    className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
-                  >
-                    <XCircleIcon className="w-6 h-6" />
-                  </button>
-                </div>
-                <div className="p-6">
-                  <SmartWorkflowEngine
-                    repair={selectedRepairForWorkflow}
-                    mechanics={mockMechanics}
-                    bays={mockBays}
-                    onWorkflowUpdate={handleWorkflowUpdate}
-                  />
-                </div>
-              </div>
-            </div>
+            <SmartWorkflowEngine
+              repair={selectedRepairForWorkflow}
+              mechanics={mockMechanics}
+              bays={mockBays}
+              onWorkflowUpdate={handleWorkflowUpdate}
+              onClose={() => setShowWorkflowEngine(false)}
+            />
           )}
 
           {/* Quality Control Modal */}
           {showQualityControl && (
-            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-              <div className="bg-white dark:bg-slate-800 rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-                <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
-                  <h2 className="text-responsive-xl font-semibold flex items-center space-x-2">
-                    <ClipboardDocumentCheckIcon className="w-6 h-6 text-indigo-600" />
-                    <span>Quality Control System</span>
-                  </h2>
-                  <button
-                    onClick={() => setShowQualityControl(false)}
-                    className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
-                  >
-                    <XCircleIcon className="w-6 h-6" />
-                  </button>
-                </div>
-                <div className="p-6">
-                  <QualityControlSystem
-                    repair={selectedRepairForWorkflow}
-                    onQualityUpdate={handleQualityUpdate}
-                  />
-                </div>
-              </div>
-            </div>
+            <QualityControlSystem
+              repair={selectedRepairForWorkflow}
+              onQualityUpdate={handleQualityUpdate}
+              onClose={() => setShowQualityControl(false)}
+            />
           )}
         </>
       )}

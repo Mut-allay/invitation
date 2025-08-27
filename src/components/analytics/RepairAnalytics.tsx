@@ -1,545 +1,451 @@
 import React, { useState, useMemo } from 'react';
 import { 
-  ChartBarIcon, 
-  ClockIcon, 
+  ChartBarIcon,
   CurrencyDollarIcon,
-  UserGroupIcon,
   StarIcon,
-  ArrowTrendingUpIcon,
-  ExclamationTriangleIcon,
+  WrenchScrewdriverIcon,
   CheckCircleIcon
 } from '@heroicons/react/24/outline';
-import { Card } from '@/components/ui/card';
-
-import type { Repair, Mechanic } from '../../types/repair';
-
-// Recharts components
-import {
-  LineChart,
-  Line,
-  PieChart,
-  Pie,
-  Cell,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  Radar
+import { 
+  LineChart, 
+  Line, 
+  BarChart, 
+  Bar, 
+  PieChart, 
+  Pie, 
+  Cell, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  Legend, 
+  ResponsiveContainer 
 } from 'recharts';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 
-interface RepairAnalyticsProps {
-  repairs: Repair[];
-  mechanics?: Mechanic[];
-  dateRange?: { start: Date; end: Date };
-}
-
-interface EfficiencyMetrics {
-  averageRepairTime: number;
-  onTimeCompletionRate: number;
-  firstTimeFixRate: number;
-  reworkRate: number;
-  bayUtilization: number;
-}
+import type { Repair } from '../../types/index';
 
 interface MechanicPerformance {
   id: string;
   name: string;
-  repairsCompleted: number;
+  completedRepairs: number;
   averageTime: number;
   customerSatisfaction: number;
-  revenueGenerated: number;
-  specialization: string[];
+  revenue: number;
+  efficiency: number;
 }
 
-interface RevenueAnalytics {
-  totalRevenue: number;
-  averageRepairCost: number;
-  revenueByMonth: Array<{ month: string; revenue: number }>;
-  revenueByCategory: Array<{ category: string; revenue: number }>;
-  profitMargin: number;
+interface RepairAnalyticsProps {
+  repairs: Repair[];
+  onClose?: () => void;
 }
 
-interface PredictiveInsights {
-  expectedRepairs: number;
-  capacityUtilization: number;
-  recommendedStaffing: number;
-  seasonalTrends: string[];
-  riskFactors: string[];
-}
-
-// Mock data for when API returns empty
-const mockMechanics: Mechanic[] = [
-  {
-    id: 'tech1',
-    tenantId: 'tenant1',
-    name: 'John Smith',
-    specialization: ['Engine Repair', 'Diagnostics'],
-    hourlyRate: 45,
-    availability: 'available',
-    createdAt: new Date(),
-    updatedAt: new Date()
-  },
-  {
-    id: 'tech2',
-    tenantId: 'tenant1',
-    name: 'Mike Johnson',
-    specialization: ['Electrical Systems', 'AC Repair'],
-    hourlyRate: 42,
-    availability: 'available',
-    createdAt: new Date(),
-    updatedAt: new Date()
-  },
-  {
-    id: 'tech3',
-    tenantId: 'tenant1',
-    name: 'Sarah Wilson',
-    specialization: ['Brake Systems', 'Suspension'],
-    hourlyRate: 48,
-    availability: 'busy',
-    createdAt: new Date(),
-    updatedAt: new Date()
-  },
-  {
-    id: 'tech4',
-    tenantId: 'tenant1',
-    name: 'David Brown',
-    specialization: ['Transmission', 'Clutch'],
-    hourlyRate: 50,
-    availability: 'available',
-    createdAt: new Date(),
-    updatedAt: new Date()
-  }
-];
-
-// Mock satisfaction scores
-const mockSatisfactionScores = {
-  'tech1': 4.8,
-  'tech2': 4.6,
-  'tech3': 4.9,
-  'tech4': 4.7
-};
-
-export const RepairAnalytics: React.FC<RepairAnalyticsProps> = ({
-  repairs = [],
-  mechanics = mockMechanics
+const RepairAnalytics: React.FC<RepairAnalyticsProps> = ({
+  repairs,
+  onClose
 }) => {
+  const [selectedMetric, setSelectedMetric] = useState<'efficiency' | 'revenue' | 'satisfaction'>('efficiency');
+  // Note: success and showError are available but not used in this component
+  // const { success, error: showError } = useToast();
 
-  const [selectedTimeframe, setSelectedTimeframe] = useState<'week' | 'month' | 'quarter' | 'year'>('month');
-
-  // Calculate efficiency metrics
-  const efficiencyMetrics = useMemo((): EfficiencyMetrics => {
-    if (repairs.length === 0) {
-      return {
-        averageRepairTime: 0,
-        onTimeCompletionRate: 0,
-        firstTimeFixRate: 0,
-        reworkRate: 0,
-        bayUtilization: 0
-      };
+  // Mock mechanics data for analytics
+  const mockMechanics = useMemo((): MechanicPerformance[] => [
+    {
+      id: 'tech1',
+      name: 'John Smith',
+      completedRepairs: 45,
+      averageTime: 2.5,
+      customerSatisfaction: 4.8,
+      revenue: 12500,
+      efficiency: 92
+    },
+    {
+      id: 'tech2',
+      name: 'Mike Johnson',
+      completedRepairs: 38,
+      averageTime: 2.8,
+      customerSatisfaction: 4.6,
+      revenue: 10800,
+      efficiency: 88
+    },
+    {
+      id: 'tech3',
+      name: 'Sarah Wilson',
+      completedRepairs: 52,
+      averageTime: 2.2,
+      customerSatisfaction: 4.9,
+      revenue: 14200,
+      efficiency: 95
+    },
+    {
+      id: 'tech4',
+      name: 'David Brown',
+      completedRepairs: 41,
+      averageTime: 2.6,
+      customerSatisfaction: 4.7,
+      revenue: 11800,
+      efficiency: 90
     }
+  ], []);
 
-    const completedRepairs = repairs.filter(repair => repair.status === 'completed');
-    const onTimeRepairs = completedRepairs.filter(r => 
-      r.actualCompletion && r.estimatedCompletion && 
-      r.actualCompletion <= r.estimatedCompletion
-    );
-
-    // Calculate average repair time (mock calculation)
-    const averageRepairTime = completedRepairs.length > 0 ? 
-      Math.round(completedRepairs.reduce((sum) => sum + (Math.random() * 8 + 2), 0) / completedRepairs.length * 10) / 10 : 0;
-
-    const onTimeCompletionRate = completedRepairs.length > 0 ? 
-      Math.round((onTimeRepairs.length / completedRepairs.length) * 100) : 0;
-
-    const firstTimeFixRate = Math.round(85 + Math.random() * 10); // Mock 85-95%
-    const reworkRate = Math.round(5 + Math.random() * 10); // Mock 5-15%
-    const bayUtilization = Math.round(70 + Math.random() * 25); // Mock 70-95%
-
-    return {
-      averageRepairTime,
-      onTimeCompletionRate,
-      firstTimeFixRate,
-      reworkRate,
-      bayUtilization
-    };
-  }, [repairs]);
-
-  // Calculate mechanic performance
-  const mechanicPerformance = useMemo((): MechanicPerformance[] => {
-    return mechanics.map(mechanic => {
-      const repairsCompleted = Math.floor(Math.random() * 20) + 5; // Mock 5-25 repairs
-      const averageTime = Math.round((Math.random() * 6 + 2) * 10) / 10; // Mock 2-8 hours
-      const customerSatisfaction = mockSatisfactionScores[mechanic.id as keyof typeof mockSatisfactionScores] || 4.5;
-      const revenueGenerated = repairsCompleted * (mechanic.hourlyRate * averageTime);
-
-      return {
-        id: mechanic.id,
-        name: mechanic.name,
-        repairsCompleted,
-        averageTime,
-        customerSatisfaction,
-        revenueGenerated,
-        specialization: mechanic.specialization
-      };
-    });
-  }, [mechanics]);
-
-  // Calculate revenue analytics
-  const revenueAnalytics = useMemo((): RevenueAnalytics => {
+  // Calculate analytics metrics
+  const analyticsMetrics = useMemo(() => {
+    const totalRepairs = repairs.length;
+    const completedRepairs = repairs.filter(r => r.status === 'completed').length;
+    const pendingRepairs = repairs.filter(r => r.status === 'pending').length;
+    const inProgressRepairs = repairs.filter(r => r.status === 'in_progress').length;
+    
     const totalRevenue = repairs.reduce((sum, r) => sum + r.totalCost, 0);
-    const averageRepairCost = repairs.length > 0 ? totalRevenue / repairs.length : 0;
+    const averageRepairCost = totalRepairs > 0 ? totalRevenue / totalRepairs : 0;
+    
+    const averageCompletionTime = completedRepairs > 0 ? 
+      repairs.filter(r => r.status === 'completed' && r.actualCompletion && r.createdAt)
+        .reduce((sum, r) => {
+          const start = new Date(r.createdAt);
+          const end = new Date(r.actualCompletion!);
+          return sum + (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24); // Days
+        }, 0) / completedRepairs : 0;
 
-    // Mock monthly revenue data
-    const revenueByMonth = Array.from({ length: 12 }, (_, i) => ({
-      month: new Date(2024, i).toLocaleDateString('en-US', { month: 'short' }),
-      revenue: Math.floor(Math.random() * 50000) + 20000
-    }));
+    // Calculate efficiency score
+    const efficiencyScore = completedRepairs > 0 ? 
+      Math.min(100, (completedRepairs / totalRepairs) * 100 + (averageCompletionTime < 3 ? 20 : 0)) : 0;
 
-    // Mock category revenue
-    const revenueByCategory = [
-      { category: 'Engine Repair', revenue: Math.floor(Math.random() * 30000) + 15000 },
-      { category: 'Electrical', revenue: Math.floor(Math.random() * 25000) + 12000 },
-      { category: 'Brake Systems', revenue: Math.floor(Math.random() * 20000) + 10000 },
-      { category: 'Transmission', revenue: Math.floor(Math.random() * 18000) + 8000 },
-      { category: 'AC/Heating', revenue: Math.floor(Math.random() * 15000) + 7000 }
-    ];
-
-    const profitMargin = Math.round(25 + Math.random() * 15); // Mock 25-40%
+    // Calculate customer satisfaction (simulated)
+    const satisfactionScore = Math.min(5, 4.2 + (efficiencyScore / 100) * 0.8);
 
     return {
+      totalRepairs,
+      completedRepairs,
+      pendingRepairs,
+      inProgressRepairs,
       totalRevenue,
       averageRepairCost,
-      revenueByMonth,
-      revenueByCategory,
-      profitMargin
+      averageCompletionTime,
+      efficiencyScore,
+      satisfactionScore,
+      completionRate: totalRepairs > 0 ? (completedRepairs / totalRepairs) * 100 : 0
     };
   }, [repairs]);
 
-  // Calculate predictive insights
-  const predictiveInsights = useMemo((): PredictiveInsights => {
-    const expectedRepairs = Math.floor(repairs.length * (1 + Math.random() * 0.3)); // 0-30% growth
-    const capacityUtilization = Math.round(75 + Math.random() * 20); // 75-95%
-    const recommendedStaffing = Math.ceil(mechanics.length * (capacityUtilization / 100));
+  // Generate chart data
+  const chartData = useMemo(() => {
+    // Weekly repair trends
+    const weeklyData = [];
+    const now = new Date();
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date(now);
+      date.setDate(date.getDate() - i);
+      const dayRepairs = repairs.filter(r => {
+        const repairDate = new Date(r.createdAt);
+        return repairDate.toDateString() === date.toDateString();
+      });
+      
+      weeklyData.push({
+        date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        repairs: dayRepairs.length,
+        revenue: dayRepairs.reduce((sum, r) => sum + r.totalCost, 0),
+        completed: dayRepairs.filter(r => r.status === 'completed').length
+      });
+    }
 
-    const seasonalTrends = [
-      'AC repairs peak in summer months',
-      'Brake system demand increases in winter',
-      'Engine diagnostics higher in spring',
-      'Pre-holiday maintenance surge expected'
-    ];
+    // Monthly revenue data
+    const monthlyData = [];
+    for (let i = 5; i >= 0; i--) {
+      const date = new Date(now);
+      date.setMonth(date.getMonth() - i);
+      const monthRepairs = repairs.filter(r => {
+        const repairDate = new Date(r.createdAt);
+        return repairDate.getMonth() === date.getMonth() && 
+               repairDate.getFullYear() === date.getFullYear();
+      });
+      
+      monthlyData.push({
+        month: date.toLocaleDateString('en-US', { month: 'short' }),
+        revenue: monthRepairs.reduce((sum, r) => sum + r.totalCost, 0),
+        repairs: monthRepairs.length
+      });
+    }
 
-    const riskFactors = [
-      'Parts supply chain delays',
-      'Technician skill gaps in new technologies',
-      'Equipment maintenance requirements',
-      'Customer satisfaction fluctuations'
-    ];
+    // Repair type distribution
+    const repairTypes = repairs.reduce((acc, repair) => {
+      const type = repair.reportedIssues.toLowerCase().includes('engine') ? 'Engine' :
+                  repair.reportedIssues.toLowerCase().includes('brake') ? 'Brake' :
+                  repair.reportedIssues.toLowerCase().includes('electrical') ? 'Electrical' :
+                  repair.reportedIssues.toLowerCase().includes('ac') ? 'AC' : 'Other';
+      
+      acc[type] = (acc[type] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    const pieData = Object.entries(repairTypes).map(([name, value]) => ({ name, value }));
 
     return {
-      expectedRepairs,
-      capacityUtilization,
-      recommendedStaffing,
-      seasonalTrends,
-      riskFactors
+      weeklyData,
+      monthlyData,
+      pieData
     };
-  }, [repairs, mechanics]);
+  }, [repairs]);
 
-  // Chart colors
-  const chartColors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+  // Mechanic performance data for charts
+  const mechanicChartData = useMemo(() => {
+    return mockMechanics.map(mechanic => ({
+      name: mechanic.name,
+      efficiency: mechanic.efficiency,
+      revenue: mechanic.revenue,
+      satisfaction: mechanic.customerSatisfaction * 20, // Convert to percentage
+      completed: mechanic.completedRepairs
+    }));
+  }, [mockMechanics]);
 
-
+  // COLORS for charts
+  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 
   return (
     <div className="space-y-6">
-      {/* Efficiency Metrics Overview */}
-      <Card className="card-glass">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center space-x-2">
-            <ChartBarIcon className="w-6 h-6 text-primary" />
-            <h3 className="text-responsive-lg font-semibold">Repair Efficiency Analytics</h3>
-          </div>
-          <select
-            value={selectedTimeframe}
-            onChange={(e) => setSelectedTimeframe(e.target.value as 'week' | 'month' | 'quarter' | 'year')}
-            className="input-field text-responsive-sm"
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <ChartBarIcon className="w-6 h-6 text-primary" />
+          <h2 className="text-responsive-xl font-semibold text-slate-900 dark:text-slate-100">
+            Repair Analytics Dashboard
+          </h2>
+        </div>
+        {onClose && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onClose}
+            className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
           >
-            <option value="week">This Week</option>
-            <option value="month">This Month</option>
-            <option value="quarter">This Quarter</option>
-            <option value="year">This Year</option>
-          </select>
-        </div>
+            ✕
+          </Button>
+        )}
+      </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-          <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-lg">
-            <ClockIcon className="w-8 h-8 text-blue-600 mx-auto mb-2" />
-            <div className="text-responsive-lg font-bold text-blue-600">
-              {efficiencyMetrics.averageRepairTime}h
+      {/* Key Metrics Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card className="card-glass">
+          <div className="flex items-center space-x-3">
+            <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
+              <WrenchScrewdriverIcon className="w-6 h-6 text-blue-600 dark:text-blue-400" />
             </div>
-            <div className="text-responsive-xs text-blue-700 dark:text-blue-300">Avg Repair Time</div>
-          </div>
-
-          <div className="text-center p-4 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-lg">
-            <CheckCircleIcon className="w-8 h-8 text-green-600 mx-auto mb-2" />
-            <div className="text-responsive-lg font-bold text-green-600">
-              {efficiencyMetrics.onTimeCompletionRate}%
+            <div>
+              <p className="text-sm text-slate-600 dark:text-slate-400">Total Repairs</p>
+              <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+                {analyticsMetrics.totalRepairs}
+              </p>
             </div>
-            <div className="text-responsive-xs text-green-700 dark:text-green-300">On-Time Rate</div>
           </div>
+        </Card>
 
-          <div className="text-center p-4 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 rounded-lg">
-            <StarIcon className="w-8 h-8 text-purple-600 mx-auto mb-2" />
-            <div className="text-responsive-lg font-bold text-purple-600">
-              {efficiencyMetrics.firstTimeFixRate}%
+        <Card className="card-glass">
+          <div className="flex items-center space-x-3">
+            <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
+              <CheckCircleIcon className="w-6 h-6 text-green-600 dark:text-green-400" />
             </div>
-            <div className="text-responsive-xs text-purple-700 dark:text-purple-300">First-Time Fix</div>
-          </div>
-
-          <div className="text-center p-4 bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 rounded-lg">
-            <ExclamationTriangleIcon className="w-8 h-8 text-orange-600 mx-auto mb-2" />
-            <div className="text-responsive-lg font-bold text-orange-600">
-              {efficiencyMetrics.reworkRate}%
+            <div>
+              <p className="text-sm text-slate-600 dark:text-slate-400">Completion Rate</p>
+              <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+                {analyticsMetrics.completionRate.toFixed(1)}%
+              </p>
             </div>
-            <div className="text-responsive-xs text-orange-700 dark:text-orange-300">Rework Rate</div>
           </div>
+        </Card>
 
-          <div className="text-center p-4 bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 rounded-lg">
-            <ArrowTrendingUpIcon className="w-8 h-8 text-red-600 mx-auto mb-2" />
-            <div className="text-responsive-lg font-bold text-red-600">
-              {efficiencyMetrics.bayUtilization}%
+        <Card className="card-glass">
+          <div className="flex items-center space-x-3">
+            <div className="p-2 bg-yellow-100 dark:bg-yellow-900 rounded-lg">
+              <CurrencyDollarIcon className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
             </div>
-            <div className="text-responsive-xs text-red-700 dark:text-red-300">Bay Utilization</div>
+            <div>
+              <p className="text-sm text-slate-600 dark:text-slate-400">Total Revenue</p>
+              <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+                ${analyticsMetrics.totalRevenue.toLocaleString()}
+              </p>
+            </div>
           </div>
-        </div>
-      </Card>
+        </Card>
 
-      {/* Revenue Analytics Chart */}
-      <Card className="card-glass">
-        <h4 className="text-responsive-base font-semibold mb-4 flex items-center space-x-2">
-          <CurrencyDollarIcon className="w-5 h-5 text-green-600" />
-          <span>Revenue Trends</span>
-        </h4>
-        
-        <div className="h-64">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={revenueAnalytics.revenueByMonth}>
+        <Card className="card-glass">
+          <div className="flex items-center space-x-3">
+            <div className="p-2 bg-purple-100 dark:bg-purple-900 rounded-lg">
+              <StarIcon className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+            </div>
+            <div>
+              <p className="text-sm text-slate-600 dark:text-slate-400">Satisfaction</p>
+              <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+                {analyticsMetrics.satisfactionScore.toFixed(1)}/5
+              </p>
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      {/* Charts Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Weekly Repair Trends */}
+        <Card className="card-glass">
+          <h3 className="text-responsive-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">
+            Weekly Repair Trends
+          </h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={chartData.weeklyData}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
+              <XAxis dataKey="date" />
               <YAxis />
-              <Tooltip formatter={(value) => [`$${value.toLocaleString()}`, 'Revenue']} />
+              <Tooltip />
               <Legend />
               <Line 
                 type="monotone" 
-                dataKey="revenue" 
-                stroke="#10b981" 
-                strokeWidth={3}
-                dot={{ fill: '#10b981', strokeWidth: 2, r: 4 }}
+                dataKey="repairs" 
+                stroke="#8884d8" 
+                strokeWidth={2}
+                name="Total Repairs"
+              />
+              <Line 
+                type="monotone" 
+                dataKey="completed" 
+                stroke="#82ca9d" 
+                strokeWidth={2}
+                name="Completed"
               />
             </LineChart>
           </ResponsiveContainer>
-        </div>
+        </Card>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-          <div className="text-center">
-            <div className="text-responsive-lg font-bold text-green-600">
-              ${revenueAnalytics.totalRevenue.toLocaleString()}
-            </div>
-            <div className="text-responsive-xs text-muted-foreground">Total Revenue</div>
-          </div>
-          <div className="text-center">
-            <div className="text-responsive-lg font-bold text-blue-600">
-              ${revenueAnalytics.averageRepairCost.toLocaleString()}
-            </div>
-            <div className="text-responsive-xs text-muted-foreground">Avg Repair Cost</div>
-          </div>
-          <div className="text-center">
-            <div className="text-responsive-lg font-bold text-purple-600">
-              {revenueAnalytics.profitMargin}%
-            </div>
-            <div className="text-responsive-xs text-muted-foreground">Profit Margin</div>
-          </div>
-        </div>
-      </Card>
+        {/* Monthly Revenue */}
+        <Card className="card-glass">
+          <h3 className="text-responsive-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">
+            Monthly Revenue
+          </h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={chartData.monthlyData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="month" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Bar dataKey="revenue" fill="#8884d8" name="Revenue ($)" />
+            </BarChart>
+          </ResponsiveContainer>
+        </Card>
 
-      {/* Mechanic Performance */}
+        {/* Repair Type Distribution */}
+        <Card className="card-glass">
+          <h3 className="text-responsive-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">
+            Repair Type Distribution
+          </h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <PieChart>
+              <Pie
+                data={chartData.pieData}
+                cx="50%"
+                cy="50%"
+                labelLine={false}
+                label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
+                outerRadius={80}
+                fill="#8884d8"
+                dataKey="value"
+              >
+                {chartData.pieData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                ))}
+              </Pie>
+              <Tooltip />
+            </PieChart>
+          </ResponsiveContainer>
+        </Card>
+
+        {/* Mechanic Performance */}
+        <Card className="card-glass">
+          <h3 className="text-responsive-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">
+            Mechanic Performance
+          </h3>
+          <div className="space-y-4">
+            <div className="flex space-x-2 mb-4">
+              {(['efficiency', 'revenue', 'satisfaction'] as const).map((metric) => (
+                <Button
+                  key={metric}
+                  onClick={() => setSelectedMetric(metric)}
+                  variant={selectedMetric === metric ? 'default' : 'outline'}
+                  size="sm"
+                  className="capitalize"
+                >
+                  {metric}
+                </Button>
+              ))}
+            </div>
+            <ResponsiveContainer width="100%" height={250}>
+              <BarChart data={mechanicChartData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Bar 
+                  dataKey={selectedMetric} 
+                  fill={selectedMetric === 'efficiency' ? '#82ca9d' : 
+                        selectedMetric === 'revenue' ? '#8884d8' : '#ffc658'} 
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
+      </div>
+
+      {/* Mechanic Performance Table */}
       <Card className="card-glass">
-        <h4 className="text-responsive-base font-semibold mb-4 flex items-center space-x-2">
-          <UserGroupIcon className="w-5 h-5 text-blue-600" />
-          <span>Mechanic Performance</span>
-        </h4>
-
+        <h3 className="text-responsive-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">
+          Mechanic Performance Details
+        </h3>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="border-b border-slate-200 dark:border-slate-700">
-                <th className="text-left p-3 text-responsive-sm font-medium">Mechanic</th>
-                <th className="text-left p-3 text-responsive-sm font-medium">Repairs</th>
-                <th className="text-left p-3 text-responsive-sm font-medium">Avg Time</th>
-                <th className="text-left p-3 text-responsive-sm font-medium">Satisfaction</th>
-                <th className="text-left p-3 text-responsive-sm font-medium">Revenue</th>
-                <th className="text-left p-3 text-responsive-sm font-medium">Specialization</th>
+                <th className="text-left p-3 text-sm font-medium text-slate-600 dark:text-slate-400">Mechanic</th>
+                <th className="text-left p-3 text-sm font-medium text-slate-600 dark:text-slate-400">Completed</th>
+                <th className="text-left p-3 text-sm font-medium text-slate-600 dark:text-slate-400">Avg Time (hrs)</th>
+                <th className="text-left p-3 text-sm font-medium text-slate-600 dark:text-slate-400">Satisfaction</th>
+                <th className="text-left p-3 text-sm font-medium text-slate-600 dark:text-slate-400">Revenue</th>
+                <th className="text-left p-3 text-sm font-medium text-slate-600 dark:text-slate-400">Efficiency</th>
               </tr>
             </thead>
             <tbody>
-              {mechanicPerformance.map((mechanic) => (
-                <tr key={mechanic.id} className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                  <td className="p-3 text-responsive-sm font-medium">{mechanic.name}</td>
-                  <td className="p-3 text-responsive-sm">{mechanic.repairsCompleted}</td>
-                  <td className="p-3 text-responsive-sm">{mechanic.averageTime}h</td>
-                  <td className="p-3 text-responsive-sm">
+              {mockMechanics.map((mechanic) => (
+                <tr key={mechanic.id} className="border-b border-slate-100 dark:border-slate-800">
+                  <td className="p-3 text-sm font-medium text-slate-900 dark:text-slate-100">
+                    {mechanic.name}
+                  </td>
+                  <td className="p-3 text-sm text-slate-600 dark:text-slate-400">
+                    {mechanic.completedRepairs}
+                  </td>
+                  <td className="p-3 text-sm text-slate-600 dark:text-slate-400">
+                    {mechanic.averageTime}
+                  </td>
+                  <td className="p-3 text-sm text-slate-600 dark:text-slate-400">
                     <div className="flex items-center space-x-1">
-                      <StarIcon className="w-4 h-4 text-yellow-500 fill-current" />
                       <span>{mechanic.customerSatisfaction}</span>
+                      <StarIcon className="w-4 h-4 text-yellow-400" />
                     </div>
                   </td>
-                  <td className="p-3 text-responsive-sm">${mechanic.revenueGenerated.toLocaleString()}</td>
-                  <td className="p-3 text-responsive-sm">
-                    <div className="flex flex-wrap gap-1">
-                      {mechanic.specialization.slice(0, 2).map((spec, index) => (
-                        <span
-                          key={index}
-                          className="px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-responsive-xs rounded-full"
-                        >
-                          {spec}
-                        </span>
-                      ))}
+                  <td className="p-3 text-sm text-slate-600 dark:text-slate-400">
+                    ${mechanic.revenue.toLocaleString()}
+                  </td>
+                  <td className="p-3 text-sm text-slate-600 dark:text-slate-400">
+                    <div className="flex items-center space-x-2">
+                      <span>{mechanic.efficiency}%</span>
+                      <div className="w-16 bg-slate-200 dark:bg-slate-700 rounded-full h-2">
+                        <div 
+                          className="bg-green-500 h-2 rounded-full"
+                          style={{ width: `${mechanic.efficiency}%` }}
+                        />
+                      </div>
                     </div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-        </div>
-      </Card>
-
-      {/* Revenue by Category */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="card-glass">
-          <h4 className="text-responsive-base font-semibold mb-4">Revenue by Category</h4>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={revenueAnalytics.revenueByCategory}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="revenue"
-                >
-                  {revenueAnalytics.revenueByCategory.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={chartColors[index % chartColors.length]} />
-                  ))}
-                </Pie>
-                <Tooltip formatter={(value) => [`$${value.toLocaleString()}`, 'Revenue']} />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </Card>
-
-        {/* Predictive Insights */}
-        <Card className="card-glass">
-          <h4 className="text-responsive-base font-semibold mb-4 flex items-center space-x-2">
-            <ArrowTrendingUpIcon className="w-5 h-5 text-purple-600" />
-            <span>Predictive Insights</span>
-          </h4>
-          
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="text-center p-3 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 rounded-lg">
-                <div className="text-responsive-lg font-bold text-purple-600">
-                  {predictiveInsights.expectedRepairs}
-                </div>
-                <div className="text-responsive-xs text-purple-700 dark:text-purple-300">Expected Repairs</div>
-              </div>
-              <div className="text-center p-3 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-lg">
-                <div className="text-responsive-lg font-bold text-blue-600">
-                  {predictiveInsights.recommendedStaffing}
-                </div>
-                <div className="text-responsive-xs text-blue-700 dark:text-blue-300">Staffing Needed</div>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <h5 className="text-responsive-sm font-medium">Seasonal Trends</h5>
-              <div className="space-y-2">
-                {predictiveInsights.seasonalTrends.map((trend, index) => (
-                  <div key={index} className="flex items-center space-x-2 text-responsive-xs text-muted-foreground">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                    <span>{trend}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <h5 className="text-responsive-sm font-medium">Risk Factors</h5>
-              <div className="space-y-2">
-                {predictiveInsights.riskFactors.map((risk, index) => (
-                  <div key={index} className="flex items-center space-x-2 text-responsive-xs text-muted-foreground">
-                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                    <span>{risk}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </Card>
-      </div>
-
-      {/* Performance Radar Chart */}
-      <Card className="card-glass">
-        <h4 className="text-responsive-base font-semibold mb-4">Performance Overview</h4>
-        <div className="h-64">
-          <ResponsiveContainer width="100%" height="100%">
-            <RadarChart data={[
-              {
-                metric: 'Efficiency',
-                value: efficiencyMetrics.onTimeCompletionRate,
-                fullMark: 100
-              },
-              {
-                metric: 'Quality',
-                value: efficiencyMetrics.firstTimeFixRate,
-                fullMark: 100
-              },
-              {
-                metric: 'Utilization',
-                value: efficiencyMetrics.bayUtilization,
-                fullMark: 100
-              },
-              {
-                metric: 'Satisfaction',
-                value: Math.round(mechanicPerformance.reduce((sum, m) => sum + m.customerSatisfaction, 0) / mechanicPerformance.length * 20),
-                fullMark: 100
-              },
-              {
-                metric: 'Revenue',
-                value: Math.min(100, Math.round((revenueAnalytics.totalRevenue / 500000) * 100)),
-                fullMark: 100
-              }
-            ]}>
-              <PolarGrid />
-              <PolarAngleAxis dataKey="metric" />
-              <PolarRadiusAxis angle={90} domain={[0, 100]} />
-              <Radar
-                name="Performance"
-                dataKey="value"
-                stroke="#3b82f6"
-                fill="#3b82f6"
-                fillOpacity={0.3}
-              />
-              <Tooltip />
-            </RadarChart>
-          </ResponsiveContainer>
         </div>
       </Card>
     </div>

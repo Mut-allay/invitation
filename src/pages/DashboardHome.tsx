@@ -303,7 +303,6 @@ const DashboardHome: React.FC = () => {
         </div>
         <RepairAnalytics
           repairs={repairs}
-          dateRange={dateRange}
         />
       </div>
 

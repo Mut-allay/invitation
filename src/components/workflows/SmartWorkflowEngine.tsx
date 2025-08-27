@@ -1,613 +1,437 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { 
   CogIcon, 
-  ClockIcon, 
-  ExclamationTriangleIcon,
-  UserIcon,
   ArrowPathIcon,
   PlayIcon,
-  PauseIcon,
-  StopIcon
+  PauseIcon
 } from '@heroicons/react/24/outline';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { useToast } from '../../contexts/toast-hooks';
-import { getErrorMessage } from '@/lib/utils';
-import type { Repair, WorkflowStep, Mechanic, Bay } from '../../types/repair';
+
+import type { Repair, Mechanic, Bay } from '../../types/index';
 
 interface WorkflowRule {
   id: string;
   name: string;
-  condition: {
-    field: keyof Repair;
-    operator: 'equals' | 'not_equals' | 'contains' | 'greater_than' | 'less_than';
-    value: string | number | boolean;
-  };
-  actions: WorkflowAction[];
+  condition: string;
+  action: string;
   priority: number;
   isActive: boolean;
-}
-
-interface WorkflowAction {
-  type: 'assign_mechanic' | 'change_status' | 'send_notification' | 'escalate' | 'schedule_bay';
-  params: Record<string, string | number | boolean | undefined>;
+  createdAt: Date;
 }
 
 interface WorkflowState {
   repairId: string;
-  currentStep: number;
-  steps: WorkflowStep[];
+  currentState: string;
   assignedMechanic?: string;
   assignedBay?: string;
-  status: 'running' | 'paused' | 'completed' | 'error' | 'stopped';
+  startTime?: Date;
+  estimatedDuration?: number;
+  escalationLevel: number;
   lastUpdated: Date;
-  escalations: Escalation[];
-}
-
-interface Escalation {
-  id: string;
-  type: 'overdue' | 'quality_issue' | 'parts_delay' | 'customer_complaint';
-  severity: 'low' | 'medium' | 'high' | 'critical';
-  message: string;
-  createdAt: Date;
-  resolvedAt?: Date;
-  assignedTo?: string;
 }
 
 interface SmartWorkflowEngineProps {
   repair: Repair;
   mechanics: Mechanic[];
   bays: Bay[];
-  onWorkflowUpdate: (workflowState: WorkflowState) => void;
+  onWorkflowUpdate: (repairId: string, updates: Partial<Repair>) => void;
+  onClose: () => void;
 }
 
-// Mock data for when API returns empty
-const mockMechanics: Mechanic[] = [
-  {
-    id: 'tech1',
-    tenantId: 'tenant1',
-    name: 'John Smith',
-    specialization: ['Engine Repair', 'Diagnostics'],
-    hourlyRate: 45,
-    availability: 'available',
-    createdAt: new Date(),
-    updatedAt: new Date()
-  },
-  {
-    id: 'tech2',
-    tenantId: 'tenant1',
-    name: 'Mike Johnson',
-    specialization: ['Electrical Systems', 'AC Repair'],
-    hourlyRate: 42,
-    availability: 'available',
-    createdAt: new Date(),
-    updatedAt: new Date()
-  },
-  {
-    id: 'tech3',
-    tenantId: 'tenant1',
-    name: 'Sarah Wilson',
-    specialization: ['Brake Systems', 'Suspension'],
-    hourlyRate: 48,
-    availability: 'busy',
-    createdAt: new Date(),
-    updatedAt: new Date()
-  }
-];
-
-const mockBays: Bay[] = [
-  {
-    id: 'bay1',
-    tenantId: 'tenant1',
-    name: 'Bay A - Engine',
-    type: 'standard',
-    status: 'available',
-    capacity: 1,
-    equipment: ['Lift', 'Diagnostic Tool', 'Air Compressor'],
-    createdAt: new Date(),
-    updatedAt: new Date()
-  },
-  {
-    id: 'bay2',
-    tenantId: 'tenant1',
-    name: 'Bay B - Electrical',
-    type: 'diagnostic',
-    status: 'occupied',
-    capacity: 1,
-    equipment: ['Electrical Tester', 'Oscilloscope', 'Battery Charger'],
-    createdAt: new Date(),
-    updatedAt: new Date()
-  }
-];
-
-// Default workflow rules
-const defaultWorkflowRules: WorkflowRule[] = [
-  {
-    id: 'rule1',
-    name: 'Auto-assign Engine Repairs',
-    condition: {
-      field: 'reportedIssues',
-      operator: 'contains',
-      value: 'engine'
-    },
-    actions: [
-      {
-        type: 'assign_mechanic',
-        params: { specialization: 'Engine Repair' }
-      }
-    ],
-    priority: 1,
-    isActive: true
-  },
-  {
-    id: 'rule2',
-    name: 'Escalate Overdue Repairs',
-    condition: {
-      field: 'estimatedCompletion',
-      operator: 'less_than',
-      value: new Date().toISOString()
-    },
-    actions: [
-      {
-        type: 'escalate',
-        params: { type: 'overdue', severity: 'high' }
-      }
-    ],
-    priority: 2,
-    isActive: true
-  },
-  {
-    id: 'rule3',
-    name: 'Assign Available Bay',
-    condition: {
-      field: 'status',
-      operator: 'equals',
-      value: 'pending'
-    },
-    actions: [
-      {
-        type: 'schedule_bay',
-        params: { type: 'standard' }
-      }
-    ],
-    priority: 3,
-    isActive: true
-  }
-];
-
-export const SmartWorkflowEngine: React.FC<SmartWorkflowEngineProps> = ({
+const SmartWorkflowEngine: React.FC<SmartWorkflowEngineProps> = ({
   repair,
-  mechanics = mockMechanics,
-  bays = mockBays,
-  onWorkflowUpdate
+  mechanics,
+  bays,
+  onWorkflowUpdate,
+  onClose
 }) => {
-  const { success: showSuccess, error: showError } = useToast();
-  const [workflowState, setWorkflowState] = useState<WorkflowState>(() => ({
+  const [workflowState, setWorkflowState] = useState<WorkflowState>({
     repairId: repair.id,
-    currentStep: 0,
-    steps: generateDefaultWorkflowSteps(repair),
-    status: 'running',
-    lastUpdated: new Date(),
-    escalations: []
-  }));
+    currentState: repair.status,
+    escalationLevel: 0,
+    lastUpdated: new Date()
+  });
   
-  const rules = defaultWorkflowRules;
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [rules] = useState<WorkflowRule[]>([
+    {
+      id: 'rule1',
+      name: 'Auto-assign Pending Repairs',
+      condition: 'status === "pending" && !assignedMechanic',
+      action: 'assignMechanic',
+      priority: 1,
+      isActive: true,
+      createdAt: new Date()
+    },
+    {
+      id: 'rule2',
+      name: 'Escalate Overdue Repairs',
+      condition: 'estimatedCompletion < now && status === "in_progress"',
+      action: 'escalate',
+      priority: 2,
+      isActive: true,
+      createdAt: new Date()
+    },
+    {
+      id: 'rule3',
+      name: 'Auto-complete Quality Check',
+      condition: 'status === "quality_check" && qualityScore >= 8',
+      action: 'complete',
+      priority: 3,
+      isActive: true,
+      createdAt: new Date()
+    }
+  ]);
 
-  // Memoized workflow steps
-  const workflowSteps = useMemo(() => {
-    return generateDefaultWorkflowSteps(repair);
-  }, [repair]);
+  const [isRunning, setIsRunning] = useState(false);
+  const [executionLog, setExecutionLog] = useState<string[]>([]);
 
-  // Auto-assign mechanic based on rules
-  const autoAssignMechanic = useCallback((repair: Repair): string | undefined => {
-    const applicableRules = rules.filter(rule => 
-      rule.isActive && evaluateCondition(repair, rule.condition)
+  // Memoized available mechanics
+  const availableMechanics = useMemo(() => 
+    mechanics.filter((m: Mechanic) => m.availability === 'available'), 
+    [mechanics]
+  );
+
+  // Memoized available bays
+  const availableBays = useMemo(() => 
+    bays.filter((b: Bay) => b.status === 'available'), 
+    [bays]
+  );
+
+  // Auto-assign mechanic based on specialization and availability
+  const autoAssignMechanic = useCallback((repair: Repair) => {
+    if (availableMechanics.length === 0) return null;
+
+    // Simple logic: assign based on specialization match or first available
+    const specializedMechanic = availableMechanics.find((m: Mechanic) => 
+      m.specialization.some(s => 
+        repair.reportedIssues.toLowerCase().includes(s.toLowerCase())
+      )
     );
 
-    for (const rule of applicableRules.sort((a, b) => a.priority - b.priority)) {
-      for (const action of rule.actions) {
-        if (action.type === 'assign_mechanic') {
-          const availableMechanics = mechanics.filter(m => 
-            m.availability === 'available' && 
-            m.specialization.some(spec => 
-              action.params.specialization && typeof action.params.specialization === 'string' ? 
-                spec.toLowerCase().includes(action.params.specialization.toLowerCase()) : 
-                true
-            )
-          );
+    return specializedMechanic || availableMechanics[0];
+  }, [availableMechanics]);
 
-          if (availableMechanics.length > 0) {
-            // Assign to mechanic with highest rating or lowest hourly rate
-            const selectedMechanic = availableMechanics.sort((a, b) => 
-              (b.hourlyRate || 0) - (a.hourlyRate || 0)
-            )[0];
-            return selectedMechanic.id;
-          }
-        }
-      }
-    }
-    return undefined;
-  }, [rules, mechanics]);
+  // Auto-assign bay based on repair type
+  const autoAssignBay = useCallback((repair: Repair) => {
+    if (availableBays.length === 0) return null;
 
-  // Auto-assign bay based on rules
-  const autoAssignBay = useCallback((repair: Repair): string | undefined => {
-    const applicableRules = rules.filter(rule => 
-      rule.isActive && evaluateCondition(repair, rule.condition)
+    // Simple logic: assign diagnostic bay for electrical issues, standard for others
+    const isElectrical = repair.reportedIssues.toLowerCase().includes('electrical') || 
+                        repair.reportedIssues.toLowerCase().includes('ac');
+    
+    const preferredBay = availableBays.find((b: Bay) => 
+      isElectrical ? b.type === 'diagnostic' : b.type === 'standard'
     );
 
-    for (const rule of applicableRules.sort((a, b) => a.priority - b.priority)) {
-      for (const action of rule.actions) {
-        if (action.type === 'schedule_bay') {
-          const availableBays = bays.filter(bay => 
-            bay.status === 'available' && 
-            (action.params.type ? bay.type === action.params.type : true)
-          );
+    return preferredBay || availableBays[0];
+  }, [availableBays]);
 
-          if (availableBays.length > 0) {
-            return availableBays[0].id;
-          }
-        }
-      }
-    }
-    return undefined;
-  }, [rules, bays]);
+  // Execute workflow rules
+  const executeWorkflowRules = useCallback(async () => {
+    if (!isRunning) return;
 
-  // Check for escalations
-  const checkEscalations = useCallback((repair: Repair): Escalation[] => {
-    const newEscalations: Escalation[] = [];
-
-    // Check for overdue repairs
-    if (repair.estimatedCompletion && repair.estimatedCompletion < new Date()) {
-      newEscalations.push({
-        id: `esc_${Date.now()}`,
-        type: 'overdue',
-        severity: 'high',
-        message: `Repair ${repair.id} is overdue by ${Math.ceil((new Date().getTime() - repair.estimatedCompletion.getTime()) / (1000 * 60 * 60 * 24))} days`,
-        createdAt: new Date()
-      });
-    }
-
-    // Check for long-running repairs
-    const daysSinceCreation = Math.ceil((new Date().getTime() - repair.createdAt.getTime()) / (1000 * 60 * 60 * 24));
-    if (daysSinceCreation > 7 && repair.status === 'in_progress') {
-      newEscalations.push({
-        id: `esc_${Date.now()}_1`,
-        type: 'parts_delay',
-        severity: 'medium',
-        message: `Repair ${repair.id} has been in progress for ${daysSinceCreation} days`,
-        createdAt: new Date()
-      });
-    }
-
-    return newEscalations;
-  }, []);
-
-  // Process workflow rules
-  const processWorkflowRules = useCallback(async () => {
-    setIsProcessing(true);
     try {
-      const assignedMechanic = autoAssignMechanic(repair);
-      const assignedBay = autoAssignBay(repair);
-      const escalations = checkEscalations(repair);
+      const log: string[] = [];
+      let hasUpdates = false;
 
-      const updatedState: WorkflowState = {
-        ...workflowState,
-        assignedMechanic,
-        assignedBay,
-        escalations: [...workflowState.escalations, ...escalations],
-        lastUpdated: new Date()
-      };
-
-      setWorkflowState(updatedState);
-      onWorkflowUpdate(updatedState);
-
-      if (assignedMechanic) {
-        showSuccess(`Automatically assigned mechanic to repair ${repair.id}`);
+      // Rule 1: Auto-assign pending repairs
+      if (workflowState.currentState === 'pending' && !workflowState.assignedMechanic) {
+        const mechanic = autoAssignMechanic(repair);
+        const bay = autoAssignBay(repair);
+        
+        if (mechanic && bay) {
+          setWorkflowState((prev: WorkflowState) => ({
+            ...prev,
+            assignedMechanic: mechanic.id,
+            assignedBay: bay.id,
+            currentState: 'in_progress',
+            startTime: new Date()
+          }));
+          
+          onWorkflowUpdate(repair.id, {
+            status: 'in_progress'
+          });
+          
+          log.push(`✅ Auto-assigned ${mechanic.name} to ${bay.name}`);
+          hasUpdates = true;
+        }
       }
 
-      if (escalations.length > 0) {
-        showError(`${escalations.length} new escalation(s) created`);
+      // Rule 2: Escalate overdue repairs
+      if (repair.estimatedCompletion && 
+          new Date() > repair.estimatedCompletion && 
+          workflowState.currentState === 'in_progress') {
+        
+        setWorkflowState((prev: WorkflowState) => ({
+          ...prev,
+          escalationLevel: prev.escalationLevel + 1
+        }));
+        
+        log.push(`⚠️ Escalated overdue repair (Level ${workflowState.escalationLevel + 1})`);
+        hasUpdates = true;
       }
-    } catch (error) {
-      showError(getErrorMessage(error));
-    } finally {
-      setIsProcessing(false);
+
+      // Rule 3: Auto-complete quality check (simplified)
+      if (workflowState.currentState === 'quality_check') {
+        // Simulate quality score
+        const qualityScore = Math.random() * 10;
+        if (qualityScore >= 8) {
+          setWorkflowState((prev: WorkflowState) => ({
+            ...prev,
+            currentState: 'completed'
+          }));
+          
+          onWorkflowUpdate(repair.id, {
+            status: 'completed',
+            actualCompletion: new Date()
+          });
+          
+          log.push(`✅ Auto-completed quality check (Score: ${qualityScore.toFixed(1)})`);
+          hasUpdates = true;
+        }
+      }
+
+      if (hasUpdates) {
+        setExecutionLog(prev => [...prev, ...log]);
+      } else {
+        log.push('ℹ️ No workflow rules triggered');
+      }
+
+      setExecutionLog(prev => [...prev, ...log]);
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Unknown error';
+      setExecutionLog(prev => [...prev, `❌ Error: ${errorMsg}`]);
     }
-  }, [repair, workflowState, autoAssignMechanic, autoAssignBay, checkEscalations, onWorkflowUpdate, showSuccess, showError]);
+  }, [isRunning, workflowState, repair, autoAssignMechanic, autoAssignBay, onWorkflowUpdate]);
 
-  // Control workflow execution
-  const controlWorkflow = useCallback((action: 'start' | 'pause' | 'stop') => {
-    setWorkflowState(prev => ({
-      ...prev,
-      status: action === 'start' ? 'running' : action === 'pause' ? 'paused' : 'stopped'
-    }));
-  }, []);
+  // Start/stop workflow engine
+  const toggleWorkflow = useCallback(() => {
+    setIsRunning(!isRunning);
+    if (!isRunning) {
+      setExecutionLog((prev: string[]) => [...prev, '🚀 Workflow engine started']);
+    } else {
+      setExecutionLog((prev: string[]) => [...prev, '⏹️ Workflow engine stopped']);
+    }
+  }, [isRunning]);
 
-  // Auto-process rules when repair status changes
+  // Reset workflow state
+  const resetWorkflow = useCallback(() => {
+    setWorkflowState({
+      repairId: repair.id,
+      currentState: repair.status,
+      escalationLevel: 0,
+      lastUpdated: new Date()
+    });
+    setExecutionLog([]);
+  }, [repair.id, repair.status]);
+
+  // Execute rules periodically when running
   useEffect(() => {
-    if (workflowState.status === 'running') {
-      processWorkflowRules();
-    }
-  }, [repair.status, workflowState.status]);
+    if (!isRunning) return;
 
-  // Auto-process every 5 minutes when running
-  useEffect(() => {
-    if (workflowState.status === 'running') {
-      const interval = setInterval(() => {
-        processWorkflowRules();
-      }, 5 * 60 * 1000);
+    const interval = setInterval(executeWorkflowRules, 5000); // Every 5 seconds
+    return () => clearInterval(interval);
+  }, [isRunning, executeWorkflowRules]);
 
-      return () => clearInterval(interval);
-    }
-  }, [workflowState.status]);
+  // Get current mechanic name
+  const currentMechanic = useMemo(() => 
+    workflowState.assignedMechanic ? 
+    mechanics.find(m => m.id === workflowState.assignedMechanic) : null,
+    [workflowState.assignedMechanic, mechanics]
+  );
+
+  // Get current bay name
+  const currentBay = useMemo(() => 
+    workflowState.assignedBay ? 
+    bays.find(b => b.id === workflowState.assignedBay) : null,
+    [workflowState.assignedBay, bays]
+  );
 
   return (
-    <div className="space-y-4">
-      <Card className="card-glass">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center space-x-2">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
+          <div className="flex items-center space-x-3">
             <CogIcon className="w-6 h-6 text-primary" />
-            <h3 className="text-responsive-lg font-semibold">Smart Workflow Engine</h3>
+            <h2 className="text-responsive-xl font-semibold text-slate-900 dark:text-slate-100">
+              Smart Workflow Engine
+            </h2>
           </div>
-          <div className="flex space-x-2">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => controlWorkflow('start')}
-              disabled={workflowState.status === 'running'}
-              className="btn-ghost"
-            >
-              <PlayIcon className="w-4 h-4 mr-1" />
-              Start
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => controlWorkflow('pause')}
-              disabled={workflowState.status !== 'running'}
-              className="btn-ghost"
-            >
-              <PauseIcon className="w-4 h-4 mr-1" />
-              Pause
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => controlWorkflow('stop')}
-              className="btn-ghost"
-            >
-              <StopIcon className="w-4 h-4 mr-1" />
-              Stop
-            </Button>
-          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onClose}
+            className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+          >
+            ✕
+          </Button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-          <div className="space-y-2">
-            <div className="flex items-center space-x-2">
-              <UserIcon className="w-4 h-4 text-muted-foreground" />
-              <span className="text-responsive-sm">Assigned Mechanic:</span>
-            </div>
-            <div className="font-medium">
-              {workflowState.assignedMechanic ? 
-                mechanics.find(m => m.id === workflowState.assignedMechanic)?.name || 'Unknown' :
-                'Not assigned'
-              }
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex items-center space-x-2">
-              <ClockIcon className="w-4 h-4 text-muted-foreground" />
-              <span className="text-responsive-sm">Status:</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className={`w-2 h-2 rounded-full ${
-                workflowState.status === 'running' ? 'bg-green-500' :
-                workflowState.status === 'paused' ? 'bg-yellow-500' :
-                'bg-red-500'
-              }`} />
-              <span className="font-medium capitalize">{workflowState.status}</span>
-            </div>
-          </div>
-        </div>
-
-        <Button
-          onClick={processWorkflowRules}
-          disabled={isProcessing}
-          className="btn-primary w-full"
-        >
-          {isProcessing ? (
-            <>
-              <ArrowPathIcon className="w-4 h-4 mr-2 animate-spin" />
-              Processing...
-            </>
-          ) : (
-            <>
-              <CogIcon className="w-4 h-4 mr-2" />
-              Process Rules
-            </>
-          )}
-        </Button>
-      </Card>
-
-      {/* Workflow Steps */}
-      <Card className="card-glass">
-        <h4 className="text-responsive-base font-semibold mb-3">Workflow Steps</h4>
-        <div className="space-y-2">
-          {workflowSteps.map((step, index) => (
-            <div
-              key={step.id}
-              className={`flex items-center justify-between p-3 rounded-lg border ${
-                index === workflowState.currentStep ? 'border-primary bg-primary/5' :
-                step.status === 'completed' ? 'border-green-200 bg-green-50' :
-                'border-slate-200 bg-slate-50'
-              }`}
-            >
-              <div className="flex items-center space-x-3">
-                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${
-                  step.status === 'completed' ? 'bg-green-500 text-white' :
-                  index === workflowState.currentStep ? 'bg-primary text-white' :
-                  'bg-slate-300 text-slate-600'
-                }`}>
-                  {step.status === 'completed' ? '✓' : index + 1}
-                </div>
-                <div>
-                  <div className="font-medium text-responsive-sm">{step.stepName}</div>
-                  <div className="text-responsive-xs text-muted-foreground">{step.description}</div>
-                </div>
-              </div>
-              <div className="text-right">
-                <div className="text-responsive-xs text-muted-foreground">
-                  {step.estimatedDuration} min
-                </div>
-                <div className="text-responsive-xs font-medium capitalize">{step.status}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </Card>
-
-      {/* Escalations */}
-      {workflowState.escalations.length > 0 && (
-        <Card className="card-glass">
-          <h4 className="text-responsive-base font-semibold mb-3 flex items-center space-x-2">
-            <ExclamationTriangleIcon className="w-5 h-5 text-yellow-500" />
-            <span>Escalations ({workflowState.escalations.length})</span>
-          </h4>
-          <div className="space-y-2">
-            {workflowState.escalations.map(escalation => (
-              <div
-                key={escalation.id}
-                className={`p-3 rounded-lg border-l-4 ${
-                  escalation.severity === 'critical' ? 'border-red-500 bg-red-50' :
-                  escalation.severity === 'high' ? 'border-orange-500 bg-orange-50' :
-                  escalation.severity === 'medium' ? 'border-yellow-500 bg-yellow-50' :
-                  'border-blue-500 bg-blue-50'
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="font-medium text-responsive-sm">{escalation.type.replace('_', ' ')}</div>
-                    <div className="text-responsive-xs text-muted-foreground">{escalation.message}</div>
-                  </div>
-                  <div className="text-right">
-                    <div className={`text-responsive-xs px-2 py-1 rounded-full ${
-                      escalation.severity === 'critical' ? 'bg-red-100 text-red-800' :
-                      escalation.severity === 'high' ? 'bg-orange-100 text-orange-800' :
-                      escalation.severity === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                      'bg-blue-100 text-blue-800'
+        <div className="flex h-[calc(90vh-120px)]">
+          {/* Left Panel - Workflow State */}
+          <div className="w-1/2 p-6 border-r border-slate-200 dark:border-slate-700 overflow-y-auto">
+            <div className="space-y-6">
+              {/* Current State */}
+              <Card className="card-glass">
+                <h3 className="text-responsive-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">
+                  Current Workflow State
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-600 dark:text-slate-400">Status:</span>
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      workflowState.currentState === 'completed' ? 'bg-green-100 text-green-800' :
+                      workflowState.currentState === 'in_progress' ? 'bg-blue-100 text-blue-800' :
+                      workflowState.currentState === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                      'bg-red-100 text-red-800'
                     }`}>
-                      {escalation.severity}
-                    </div>
+                      {workflowState.currentState.replace('_', ' ').toUpperCase()}
+                    </span>
                   </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-600 dark:text-slate-400">Escalation Level:</span>
+                    <span className="text-responsive-base font-medium text-slate-900 dark:text-slate-100">
+                      {workflowState.escalationLevel}
+                    </span>
+                  </div>
+
+                  {currentMechanic && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-600 dark:text-slate-400">Assigned Mechanic:</span>
+                      <span className="text-responsive-base font-medium text-slate-900 dark:text-slate-100">
+                        {currentMechanic.name}
+                      </span>
+                    </div>
+                  )}
+
+                  {currentBay && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-600 dark:text-slate-400">Assigned Bay:</span>
+                      <span className="text-responsive-base font-medium text-slate-900 dark:text-slate-100">
+                        {currentBay.name}
+                      </span>
+                    </div>
+                  )}
+
+                  {workflowState.startTime && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-600 dark:text-slate-400">Start Time:</span>
+                      <span className="text-responsive-sm text-slate-900 dark:text-slate-100">
+                        {workflowState.startTime.toLocaleTimeString()}
+                      </span>
+                    </div>
+                  )}
                 </div>
-              </div>
-            ))}
+              </Card>
+
+              {/* Workflow Rules */}
+              <Card className="card-glass">
+                <h3 className="text-responsive-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">
+                  Active Rules
+                </h3>
+                <div className="space-y-3">
+                  {rules.filter(rule => rule.isActive).map(rule => (
+                    <div key={rule.id} className="p-3 bg-slate-50 dark:bg-slate-700 rounded-lg">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-medium text-slate-900 dark:text-slate-100">
+                          {rule.name}
+                        </span>
+                        <span className="text-xs bg-primary/20 text-primary px-2 py-1 rounded-full">
+                          P{rule.priority}
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-600 dark:text-slate-400 mb-1">
+                        If: {rule.condition}
+                      </p>
+                      <p className="text-xs text-slate-600 dark:text-slate-400">
+                        Then: {rule.action}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            </div>
           </div>
-        </Card>
-      )}
+
+          {/* Right Panel - Controls & Logs */}
+          <div className="w-1/2 p-6 overflow-y-auto">
+            <div className="space-y-6">
+              {/* Controls */}
+              <Card className="card-glass">
+                <h3 className="text-responsive-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">
+                  Workflow Controls
+                </h3>
+                <div className="flex space-x-3 mb-4">
+                  <Button
+                    onClick={toggleWorkflow}
+                    className={`flex-1 ${
+                      isRunning ? 'btn-secondary' : 'btn-primary'
+                    }`}
+                  >
+                    {isRunning ? (
+                      <>
+                        <PauseIcon className="w-4 h-4 mr-2" />
+                        Pause
+                      </>
+                    ) : (
+                      <>
+                        <PlayIcon className="w-4 h-4 mr-2" />
+                        Start
+                      </>
+                    )}
+                  </Button>
+                  
+                  <Button
+                    onClick={resetWorkflow}
+                    variant="ghost"
+                    className="flex-1"
+                  >
+                    <ArrowPathIcon className="w-4 h-4 mr-2" />
+                    Reset
+                  </Button>
+                </div>
+
+                <div className="flex items-center space-x-2 text-sm text-slate-600 dark:text-slate-400">
+                  <div className={`w-3 h-3 rounded-full ${
+                    isRunning ? 'bg-green-500 animate-pulse' : 'bg-slate-400'
+                  }`} />
+                  <span>{isRunning ? 'Running' : 'Stopped'}</span>
+                </div>
+              </Card>
+
+              {/* Execution Log */}
+              <Card className="card-glass">
+                <h3 className="text-responsive-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">
+                  Execution Log
+                </h3>
+                <div className="bg-slate-50 dark:bg-slate-700 rounded-lg p-3 h-64 overflow-y-auto">
+                  {executionLog.length === 0 ? (
+                    <p className="text-slate-500 dark:text-slate-400 text-center py-8">
+                      No execution logs yet. Start the workflow to see activity.
+                    </p>
+                  ) : (
+                    <div className="space-y-2">
+                      {executionLog.map((log, index) => (
+                        <div key={index} className="text-sm font-mono text-slate-700 dark:text-slate-300">
+                          <span className="text-slate-500 dark:text-slate-400">
+                            {new Date().toLocaleTimeString()}
+                          </span>
+                          {' '}{log}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </Card>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
-
-// Helper functions
-function generateDefaultWorkflowSteps(repair: Repair): WorkflowStep[] {
-  return [
-    {
-      id: 'step1',
-      repairId: repair.id,
-      stepNumber: 1,
-      stepName: 'Initial Assessment',
-      description: 'Review reported issues and create diagnostic plan',
-      status: 'completed',
-      estimatedDuration: 30,
-      dependencies: [],
-      createdAt: new Date(),
-      updatedAt: new Date()
-    },
-    {
-      id: 'step2',
-      repairId: repair.id,
-      stepNumber: 2,
-      stepName: 'Diagnostics',
-      description: 'Run diagnostic tests and identify root cause',
-      status: repair.status === 'pending' ? 'pending' : 'in_progress',
-      estimatedDuration: 60,
-      dependencies: ['step1'],
-      createdAt: new Date(),
-      updatedAt: new Date()
-    },
-    {
-      id: 'step3',
-      repairId: repair.id,
-      stepNumber: 3,
-      stepName: 'Parts Ordering',
-      description: 'Order required parts and materials',
-      status: 'pending',
-      estimatedDuration: 45,
-      dependencies: ['step2'],
-      createdAt: new Date(),
-      updatedAt: new Date()
-    },
-    {
-      id: 'step4',
-      repairId: repair.id,
-      stepNumber: 4,
-      stepName: 'Repair Execution',
-      description: 'Perform the actual repair work',
-      status: 'pending',
-      estimatedDuration: 120,
-      dependencies: ['step3'],
-      createdAt: new Date(),
-      updatedAt: new Date()
-    },
-    {
-      id: 'step5',
-      repairId: repair.id,
-      stepNumber: 5,
-      stepName: 'Quality Check',
-      description: 'Test and verify repair quality',
-      status: 'pending',
-      estimatedDuration: 30,
-      dependencies: ['step4'],
-      createdAt: new Date(),
-      updatedAt: new Date()
-    },
-    {
-      id: 'step6',
-      repairId: repair.id,
-      stepNumber: 6,
-      stepName: 'Final Inspection',
-      description: 'Complete final inspection and documentation',
-      status: 'pending',
-      estimatedDuration: 15,
-      dependencies: ['step5'],
-      createdAt: new Date(),
-      updatedAt: new Date()
-    }
-  ];
-}
-
-function evaluateCondition(repair: Repair, condition: WorkflowRule['condition']): boolean {
-  const value = repair[condition.field];
-  
-  switch (condition.operator) {
-    case 'equals':
-      return value === condition.value;
-    case 'not_equals':
-      return value !== condition.value;
-    case 'contains':
-      return typeof value === 'string' && typeof condition.value === 'string' && 
-             value.toLowerCase().includes(condition.value.toLowerCase());
-    case 'greater_than':
-      return typeof value === 'number' && typeof condition.value === 'number' && value > condition.value;
-    case 'less_than':
-      return typeof value === 'number' && typeof condition.value === 'number' && value < condition.value;
-    default:
-      return false;
-  }
-}
 
 export default SmartWorkflowEngine;

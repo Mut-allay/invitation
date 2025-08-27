@@ -1,573 +1,529 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { 
-  CameraIcon, 
   CheckCircleIcon,
+  CameraIcon,
   DocumentCheckIcon,
-  ChartBarIcon,
-  ClockIcon
+  StarIcon,
+  EyeIcon,
+  ArrowRightIcon,
+  ArrowLeftIcon
 } from '@heroicons/react/24/outline';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { useToast } from '../../contexts/toast-hooks';
-import { getErrorMessage } from '@/lib/utils';
-import type { Repair } from '../../types/repair';
 
-interface QualityChecklist {
+import type { Repair } from '../../types/index';
+
+interface QualityCheckpoint {
   id: string;
-  category: 'safety' | 'performance' | 'cosmetic' | 'documentation';
-  items: ChecklistItem[];
+  name: string;
+  description: string;
+  isRequired: boolean;
   isCompleted: boolean;
   completedBy?: string;
   completedAt?: Date;
-}
-
-interface ChecklistItem {
-  id: string;
-  description: string;
-  isChecked: boolean;
   notes?: string;
-  photos?: string[];
-  requiresPhoto: boolean;
+  photos: string[];
 }
 
-interface PhotoDocument {
+interface QualityChecklist {
   id: string;
-  url: string;
-  description: string;
-  category: 'before' | 'during' | 'after' | 'issue' | 'solution';
-  uploadedBy: string;
-  uploadedAt: Date;
-  tags: string[];
-}
-
-interface QualityMetrics {
-  overallScore: number;
-  safetyScore: number;
-  performanceScore: number;
-  cosmeticScore: number;
-  documentationScore: number;
-  totalCheckpoints: number;
-  completedCheckpoints: number;
-  failedCheckpoints: number;
-  averageCompletionTime: number;
+  name: string;
+  items: QualityCheckpoint[];
+  totalItems: number;
+  completedItems: number;
+  isApproved: boolean;
+  approvedBy?: string;
+  approvedAt?: Date;
 }
 
 interface QualityControlSystemProps {
   repair: Repair;
-  onQualityUpdate: (metrics: QualityMetrics) => void;
+  onQualityUpdate: (repairId: string, qualityData: unknown) => void;
+  onClose: () => void;
 }
 
-// Mock data for when API returns empty
-const mockInspectors = [
-  { id: 'insp1', name: 'Quality Manager', role: 'Senior Inspector' },
-  { id: 'insp2', name: 'Team Lead', role: 'Lead Inspector' },
-  { id: 'insp3', name: 'Technician', role: 'Inspector' }
-];
-
-// Default quality checklists
-const defaultChecklists: QualityChecklist[] = [
-  {
-    id: 'safety',
-    category: 'safety',
-    isCompleted: false,
-    items: [
-      {
-        id: 'safety1',
-        description: 'All safety equipment properly installed',
-        isChecked: false,
-        requiresPhoto: true
-      },
-      {
-        id: 'safety2',
-        description: 'Brake system functionality verified',
-        isChecked: false,
-        requiresPhoto: false
-      },
-      {
-        id: 'safety3',
-        description: 'Steering system integrity confirmed',
-        isChecked: false,
-        requiresPhoto: false
-      },
-      {
-        id: 'safety4',
-        description: 'Tire condition and pressure checked',
-        isChecked: false,
-        requiresPhoto: true
-      }
-    ]
-  },
-  {
-    id: 'performance',
-    category: 'performance',
-    isCompleted: false,
-    items: [
-      {
-        id: 'perf1',
-        description: 'Engine performance test completed',
-        isChecked: false,
-        requiresPhoto: true
-      },
-      {
-        id: 'perf2',
-        description: 'Transmission operation verified',
-        isChecked: false,
-        requiresPhoto: false
-      },
-      {
-        id: 'perf3',
-        description: 'Electrical systems tested',
-        isChecked: false,
-        requiresPhoto: false
-      },
-      {
-        id: 'perf4',
-        description: 'AC/Heating system operational',
-        isChecked: false,
-        requiresPhoto: false
-      }
-    ]
-  },
-  {
-    id: 'cosmetic',
-    category: 'cosmetic',
-    isCompleted: false,
-    items: [
-      {
-        id: 'cosm1',
-        description: 'Exterior damage documented',
-        isChecked: false,
-        requiresPhoto: true
-      },
-      {
-        id: 'cosm2',
-        description: 'Interior cleanliness verified',
-        isChecked: false,
-        requiresPhoto: true
-      },
-      {
-        id: 'cosm3',
-        description: 'Paint and finish quality checked',
-        isChecked: false,
-        requiresPhoto: true
-      }
-    ]
-  },
-  {
-    id: 'documentation',
-    category: 'documentation',
-    isCompleted: false,
-    items: [
-      {
-        id: 'doc1',
-        description: 'All work orders completed',
-        isChecked: false,
-        requiresPhoto: false
-      },
-      {
-        id: 'doc2',
-        description: 'Parts usage documented',
-        isChecked: false,
-        requiresPhoto: false
-      },
-      {
-        id: 'doc3',
-        description: 'Customer communication logged',
-        isChecked: false,
-        requiresPhoto: false
-      }
-    ]
-  }
-];
-
-export const QualityControlSystem: React.FC<QualityControlSystemProps> = ({
+const QualityControlSystem: React.FC<QualityControlSystemProps> = ({
   repair,
-  onQualityUpdate
+  onQualityUpdate,
+  onClose
 }) => {
-  const { success: showSuccess, error: showError } = useToast();
-  const [checklists, setChecklists] = useState<QualityChecklist[]>(defaultChecklists);
-  const [photos, setPhotos] = useState<PhotoDocument[]>([]);
-  const [currentInspector, setCurrentInspector] = useState<string>('insp1');
-  const [isUploading, setIsUploading] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<string>('safety');
+  const [currentStep, setCurrentStep] = useState(0);
+  const [checklists, setChecklists] = useState<QualityChecklist[]>([
+    {
+      id: 'pre-repair',
+      name: 'Pre-Repair Inspection',
+      items: [
+        {
+          id: 'safety-check',
+          name: 'Safety Equipment Check',
+          description: 'Verify all safety equipment is in place and functional',
+          isRequired: true,
+          isCompleted: false,
+          photos: []
+        },
+        {
+          id: 'vehicle-inspection',
+          name: 'Vehicle Condition Assessment',
+          description: 'Document vehicle condition before repair begins',
+          isRequired: true,
+          isCompleted: false,
+          photos: []
+        },
+        {
+          id: 'tools-verification',
+          name: 'Tools and Equipment Verification',
+          description: 'Ensure all required tools and equipment are available',
+          isRequired: true,
+          isCompleted: false,
+          photos: []
+        }
+      ],
+      totalItems: 3,
+      completedItems: 0,
+      isApproved: false
+    },
+    {
+      id: 'during-repair',
+      name: 'During Repair Quality Checks',
+      items: [
+        {
+          id: 'work-progress',
+          name: 'Work Progress Documentation',
+          description: 'Document key repair steps and progress',
+          isRequired: true,
+          isCompleted: false,
+          photos: []
+        },
+        {
+          id: 'parts-verification',
+          name: 'Parts Quality Verification',
+          description: 'Verify all parts meet quality standards',
+          isRequired: true,
+          isCompleted: false,
+          photos: []
+        },
+        {
+          id: 'safety-compliance',
+          name: 'Safety Compliance Check',
+          description: 'Ensure safety protocols are followed throughout repair',
+          isRequired: true,
+          isCompleted: false,
+          photos: []
+        }
+      ],
+      totalItems: 3,
+      completedItems: 0,
+      isApproved: false
+    },
+    {
+      id: 'post-repair',
+      name: 'Post-Repair Quality Assurance',
+      items: [
+        {
+          id: 'final-inspection',
+          name: 'Final Vehicle Inspection',
+          description: 'Comprehensive inspection of completed repair work',
+          isRequired: true,
+          isCompleted: false,
+          photos: []
+        },
+        {
+          id: 'test-drive',
+          name: 'Test Drive Verification',
+          description: 'Verify vehicle performance and functionality',
+          isRequired: true,
+          isCompleted: false,
+          photos: []
+        },
+        {
+          id: 'documentation-review',
+          name: 'Documentation Review',
+          description: 'Review and complete all required documentation',
+          isRequired: true,
+          isCompleted: false,
+          photos: []
+        }
+      ],
+      totalItems: 3,
+      completedItems: 0,
+      isApproved: false
+    }
+  ]);
 
-  // Calculate score for a specific category
-  const calculateCategoryScore = useCallback((category: string): number => {
-    const checklist = checklists.find(list => list.category === category);
-    if (!checklist) return 0;
+  const [qualityScore, setQualityScore] = useState(0);
+
+  // Calculate overall quality metrics
+  const qualityMetrics = useMemo(() => {
+    const totalCheckpoints = checklists.reduce((sum, list) => sum + list.totalItems, 0);
+    const completedCheckpoints = checklists.reduce((sum, list) => sum + list.completedItems, 0);
+    const completionRate = totalCheckpoints > 0 ? (completedCheckpoints / totalCheckpoints) * 100 : 0;
     
-    const totalItems = checklist.items.length;
-    const completedItems = checklist.items.filter(item => item.isChecked).length;
+    // Calculate quality score based on completion and approval status
+    let score = completionRate;
+    const approvedLists = checklists.filter(list => list.isApproved).length;
+    score += (approvedLists / checklists.length) * 20; // Bonus for approvals
     
-    return totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
-  }, [checklists]);
-
-  // Calculate average completion time
-  const calculateAverageCompletionTime = useCallback((): number => {
-    const completedChecklists = checklists.filter(list => list.isCompleted);
-    if (completedChecklists.length === 0) return 0;
-    
-    // Mock calculation - in real app, this would use actual timestamps
-    return Math.round(completedChecklists.length * 45); // 45 minutes per checklist
-  }, [checklists]);
-
-  // Calculate quality metrics
-  const qualityMetrics = useMemo((): QualityMetrics => {
-    const totalItems = checklists.reduce((sum, list) => sum + list.items.length, 0);
-    const completedItems = checklists.reduce((sum, list) => 
-      sum + list.items.filter(item => item.isChecked).length, 0
-    );
-    const failedItems = totalItems - completedItems;
-    
-    const categoryScores = {
-      safety: calculateCategoryScore('safety'),
-      performance: calculateCategoryScore('performance'),
-      cosmetic: calculateCategoryScore('cosmetic'),
-      documentation: calculateCategoryScore('documentation')
-    };
-
-    const overallScore = Math.round(
-      Object.values(categoryScores).reduce((sum, score) => sum + score, 0) / 4
-    );
-
     return {
-      overallScore,
-      safetyScore: categoryScores.safety,
-      performanceScore: categoryScores.performance,
-      cosmeticScore: categoryScores.cosmetic,
-      documentationScore: categoryScores.documentation,
-      totalCheckpoints: totalItems,
-      completedCheckpoints: completedItems,
-      failedCheckpoints: failedItems,
-      averageCompletionTime: calculateAverageCompletionTime()
+      totalCheckpoints,
+      completedCheckpoints,
+      completionRate,
+      qualityScore: Math.min(100, Math.round(score)),
+      approvedLists,
+      totalLists: checklists.length
     };
-  }, [checklists, calculateCategoryScore, calculateAverageCompletionTime]);
+  }, [checklists]);
 
-  // Handle checklist item toggle
-  const toggleChecklistItem = useCallback((listId: string, itemId: string) => {
-    setChecklists(prev => prev.map(list => {
-      if (list.id === listId) {
-        const updatedItems = list.items.map(item => {
-          if (item.id === itemId) {
-            return { ...item, isChecked: !item.isChecked };
+  // Handle checkpoint completion
+  const toggleCheckpoint = useCallback((checklistId: string, checkpointId: string) => {
+    setChecklists(prev => prev.map(checklist => {
+      if (checklist.id === checklistId) {
+        const updatedItems = checklist.items.map(item => {
+          if (item.id === checkpointId) {
+            const isCompleted = !item.isCompleted;
+            return {
+              ...item,
+              isCompleted,
+              completedBy: isCompleted ? 'Current User' : undefined,
+              completedAt: isCompleted ? new Date() : undefined
+            };
           }
           return item;
         });
         
-        const isCompleted = updatedItems.every(item => item.isChecked);
+        const completedItems = updatedItems.filter(item => item.isCompleted).length;
+        
         return {
-          ...list,
+          ...checklist,
           items: updatedItems,
-          isCompleted,
-          completedBy: isCompleted ? currentInspector : undefined,
-          completedAt: isCompleted ? new Date() : undefined
+          completedItems
         };
       }
-      return list;
-    }));
-  }, [currentInspector]);
-
-  // Handle photo upload
-  const handlePhotoUpload = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (!files || files.length === 0) return;
-
-    setIsUploading(true);
-    try {
-      // Mock photo upload - in real app, this would upload to storage
-      const newPhotos: PhotoDocument[] = Array.from(files).map((file, index) => ({
-        id: `photo_${Date.now()}_${index}`,
-        url: URL.createObjectURL(file), // Mock URL
-        description: `Photo for ${selectedCategory} inspection`,
-        category: 'during' as const,
-        uploadedBy: currentInspector,
-        uploadedAt: new Date(),
-        tags: [selectedCategory, repair.id]
-      }));
-
-      setPhotos(prev => [...prev, ...newPhotos]);
-      
-      showSuccess(`${files.length} photo(s) uploaded successfully`);
-    } catch (error) {
-      showError(getErrorMessage(error));
-    } finally {
-      setIsUploading(false);
-    }
-  }, [selectedCategory, currentInspector, repair.id, showSuccess, showError]);
-
-  // Handle notes update
-  const updateItemNotes = useCallback((listId: string, itemId: string, notes: string) => {
-    setChecklists(prev => prev.map(list => {
-      if (list.id === listId) {
-        const updatedItems = list.items.map(item => {
-          if (item.id === itemId) {
-            return { ...item, notes };
-          }
-          return item;
-        });
-        return { ...list, items: updatedItems };
-      }
-      return list;
+      return checklist;
     }));
   }, []);
 
-  // Handle final approval
-  const handleFinalApproval = useCallback(() => {
-    const allCompleted = checklists.every(list => list.isCompleted);
+  // Handle photo upload (simulated)
+  const handlePhotoUpload = useCallback((checkpointId: string) => {
+    // Simulate photo upload
+    const newPhoto = `photo_${Date.now()}.jpg`;
     
-    if (!allCompleted) {
-      showError('All quality checklists must be completed before final approval');
-      return;
+    // Update checkpoint with photo
+    setChecklists(prev => prev.map(checklist => ({
+      ...checklist,
+      items: checklist.items.map(item => {
+        if (item.id === checkpointId) {
+          return {
+            ...item,
+            photos: [...item.photos, newPhoto]
+          };
+        }
+        return item;
+      })
+    })));
+  }, []);
+
+  // Handle checklist approval
+  const approveChecklist = useCallback((checklistId: string) => {
+    setChecklists(prev => prev.map(checklist => {
+      if (checklist.id === checklistId) {
+        return {
+          ...checklist,
+          isApproved: true,
+          approvedBy: 'Current User',
+          approvedAt: new Date()
+        };
+      }
+      return checklist;
+    }));
+  }, []);
+
+  // Handle quality score update
+  const updateQualityScore = useCallback((score: number) => {
+    setQualityScore(score);
+    onQualityUpdate(repair.id, { qualityScore: score });
+  }, [repair.id, onQualityUpdate]);
+
+  // Navigate between steps
+  const nextStep = useCallback(() => {
+    if (currentStep < checklists.length - 1) {
+      setCurrentStep(currentStep + 1);
     }
+  }, [currentStep, checklists.length]);
 
-    if (qualityMetrics.overallScore < 80) {
-      showError('Overall quality score must be at least 80% for approval');
-      return;
+  const prevStep = useCallback(() => {
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
     }
+  }, [currentStep]);
 
-    showSuccess('All quality checks passed. Repair approved for completion.');
-
-    // Update repair status in real app
-    onQualityUpdate(qualityMetrics);
-  }, [checklists, qualityMetrics, onQualityUpdate, showSuccess, showError]);
-
-  // Update metrics when checklists change
-  React.useEffect(() => {
-    onQualityUpdate(qualityMetrics);
-  }, [qualityMetrics, onQualityUpdate]);
+  const currentChecklist = checklists[currentStep];
 
   return (
-    <div className="space-y-6">
-      {/* Quality Metrics Overview */}
-      <Card className="card-glass">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center space-x-2">
-            <ChartBarIcon className="w-6 h-6 text-primary" />
-            <h3 className="text-responsive-lg font-semibold">Quality Control Metrics</h3>
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
+          <div className="flex items-center space-x-3">
+            <DocumentCheckIcon className="w-6 h-6 text-primary" />
+            <h2 className="text-responsive-xl font-semibold text-slate-900 dark:text-slate-100">
+              Quality Control System
+            </h2>
           </div>
-          <div className="text-right">
-            <div className="text-responsive-2xl font-bold text-primary">
-              {qualityMetrics.overallScore}%
-            </div>
-            <div className="text-responsive-sm text-muted-foreground">Overall Score</div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="text-center">
-            <div className="text-responsive-lg font-semibold text-green-600">
-              {qualityMetrics.safetyScore}%
-            </div>
-            <div className="text-responsive-xs text-muted-foreground">Safety</div>
-          </div>
-          <div className="text-center">
-            <div className="text-responsive-lg font-semibold text-blue-600">
-              {qualityMetrics.performanceScore}%
-            </div>
-            <div className="text-responsive-xs text-muted-foreground">Performance</div>
-          </div>
-          <div className="text-center">
-            <div className="text-responsive-lg font-semibold text-purple-600">
-              {qualityMetrics.cosmeticScore}%
-            </div>
-            <div className="text-responsive-xs text-muted-foreground">Cosmetic</div>
-          </div>
-          <div className="text-center">
-            <div className="text-responsive-lg font-semibold text-orange-600">
-              {qualityMetrics.documentationScore}%
-            </div>
-            <div className="text-responsive-xs text-muted-foreground">Documentation</div>
-          </div>
-        </div>
-
-        <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
-          <div className="flex items-center justify-between text-responsive-sm">
-            <span>Progress: {qualityMetrics.completedCheckpoints}/{qualityMetrics.totalCheckpoints}</span>
-            <span>Failed: {qualityMetrics.failedCheckpoints}</span>
-          </div>
-          <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 mt-2">
-            <div 
-              className="bg-primary h-2 rounded-full transition-all duration-300"
-              style={{ width: `${(qualityMetrics.completedCheckpoints / qualityMetrics.totalCheckpoints) * 100}%` }}
-            />
-          </div>
-        </div>
-      </Card>
-
-      {/* Inspector Selection */}
-      <Card className="card-glass">
-        <div className="flex items-center justify-between mb-4">
-          <h4 className="text-responsive-base font-semibold">Quality Inspector</h4>
-          <select
-            value={currentInspector}
-            onChange={(e) => setCurrentInspector(e.target.value)}
-            className="input-field text-responsive-sm"
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onClose}
+            className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
           >
-            {mockInspectors.map(inspector => (
-              <option key={inspector.id} value={inspector.id}>
-                {inspector.name} - {inspector.role}
-              </option>
-            ))}
-          </select>
-        </div>
-      </Card>
-
-      {/* Quality Checklists */}
-      <Card className="card-glass">
-        <div className="flex items-center justify-between mb-4">
-          <h4 className="text-responsive-base font-semibold">Quality Checklists</h4>
-          <div className="flex space-x-2">
-            {['safety', 'performance', 'cosmetic', 'documentation'].map(category => (
-              <Button
-                key={category}
-                size="sm"
-                variant={selectedCategory === category ? "default" : "outline"}
-                onClick={() => setSelectedCategory(category)}
-                className="btn-ghost"
-              >
-                {category.charAt(0).toUpperCase() + category.slice(1)}
-              </Button>
-            ))}
-          </div>
+            ✕
+          </Button>
         </div>
 
-        <div className="space-y-4">
-          {checklists
-            .filter(list => list.category === selectedCategory)
-            .map(list => (
-              <div key={list.id} className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <h5 className="text-responsive-sm font-medium capitalize">
-                    {list.category} Checklist
-                  </h5>
-                  <div className="flex items-center space-x-2">
-                    {list.isCompleted && (
-                      <CheckCircleIcon className="w-5 h-5 text-green-500" />
-                    )}
-                    <span className="text-responsive-xs text-muted-foreground">
-                      {list.items.filter(item => item.isChecked).length}/{list.items.length}
-                    </span>
+        <div className="flex h-[calc(90vh-120px)]">
+          {/* Left Panel - Quality Metrics */}
+          <div className="w-1/3 p-6 border-r border-slate-200 dark:border-slate-700 overflow-y-auto">
+            <div className="space-y-6">
+              {/* Quality Score */}
+              <Card className="card-glass">
+                <h3 className="text-responsive-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">
+                  Quality Score
+                </h3>
+                <div className="text-center">
+                  <div className="text-4xl font-bold text-primary mb-2">
+                    {qualityMetrics.qualityScore}%
+                  </div>
+                  <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 mb-4">
+                    <div 
+                      className="bg-primary h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${qualityMetrics.qualityScore}%` }}
+                    />
+                  </div>
+                  <div className="text-sm text-slate-600 dark:text-slate-400">
+                    {qualityMetrics.completedCheckpoints} of {qualityMetrics.totalCheckpoints} checkpoints completed
                   </div>
                 </div>
+              </Card>
 
-                <div className="space-y-2">
-                  {list.items.map(item => (
-                    <div key={item.id} className="flex items-start space-x-3 p-3 rounded-lg border border-slate-200 dark:border-slate-700">
-                      <input
-                        type="checkbox"
-                        checked={item.isChecked}
-                        onChange={() => toggleChecklistItem(list.id, item.id)}
-                        className="mt-1 w-4 h-4 text-primary border-slate-300 rounded focus:ring-primary"
-                      />
-                      <div className="flex-1">
-                        <div className="text-responsive-sm font-medium">{item.description}</div>
-                        {item.requiresPhoto && (
-                          <div className="flex items-center space-x-2 mt-2">
-                            <CameraIcon className="w-4 h-4 text-muted-foreground" />
-                            <span className="text-responsive-xs text-muted-foreground">Photo required</span>
+              {/* Progress Overview */}
+              <Card className="card-glass">
+                <h3 className="text-responsive-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">
+                  Progress Overview
+                </h3>
+                <div className="space-y-3">
+                  {checklists.map((checklist, index) => (
+                    <div key={checklist.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700 rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                          index === currentStep ? 'bg-primary text-white' :
+                          checklist.isApproved ? 'bg-green-100 text-green-800' :
+                          'bg-slate-100 text-slate-600'
+                        }`}>
+                          {index + 1}
+                        </div>
+                        <div>
+                          <div className="font-medium text-slate-900 dark:text-slate-100">
+                            {checklist.name}
                           </div>
-                        )}
-                        <Input
-                          placeholder="Add notes..."
-                          value={item.notes || ''}
-                          onChange={(e) => updateItemNotes(list.id, item.id, e.target.value)}
-                          className="input-field mt-2 text-responsive-xs"
-                        />
+                          <div className="text-sm text-slate-600 dark:text-slate-400">
+                            {checklist.completedItems}/{checklist.totalItems} items
+                          </div>
+                        </div>
+                      </div>
+                      {checklist.isApproved && (
+                        <CheckCircleIcon className="w-5 h-5 text-green-500" />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </Card>
+
+              {/* Quality Score Input */}
+              <Card className="card-glass">
+                <h3 className="text-responsive-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">
+                  Manual Quality Score
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-2">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        onClick={() => updateQualityScore(star * 20)}
+                        className={`text-2xl ${
+                          qualityScore >= star * 20 ? 'text-yellow-400' : 'text-slate-300'
+                        } hover:text-yellow-400 transition-colors`}
+                      >
+                        <StarIcon className="w-6 h-6" />
+                      </button>
+                    ))}
+                  </div>
+                  <div className="text-sm text-slate-600 dark:text-slate-400">
+                    Current score: {qualityScore}/100
+                  </div>
+                </div>
+              </Card>
+            </div>
+          </div>
+
+          {/* Right Panel - Checklist Details */}
+          <div className="w-2/3 p-6 overflow-y-auto">
+            <div className="space-y-6">
+              {/* Step Navigation */}
+              <div className="flex items-center justify-between">
+                <Button
+                  onClick={prevStep}
+                  disabled={currentStep === 0}
+                  variant="ghost"
+                  className="flex items-center space-x-2"
+                >
+                  <ArrowLeftIcon className="w-4 h-4" />
+                  Previous
+                </Button>
+                
+                <div className="text-center">
+                  <h3 className="text-responsive-lg font-semibold text-slate-900 dark:text-slate-100">
+                    {currentChecklist.name}
+                  </h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">
+                    Step {currentStep + 1} of {checklists.length}
+                  </p>
+                </div>
+                
+                <Button
+                  onClick={nextStep}
+                  disabled={currentStep === checklists.length - 1}
+                  variant="ghost"
+                  className="flex items-center space-x-2"
+                >
+                  Next
+                  <ArrowRightIcon className="w-4 h-4" />
+                </Button>
+              </div>
+
+              {/* Checklist Items */}
+              <Card className="card-glass">
+                <div className="space-y-4">
+                  {currentChecklist.items.map((item) => (
+                    <div key={item.id} className="border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-3 mb-2">
+                            <button
+                              onClick={() => toggleCheckpoint(currentChecklist.id, item.id)}
+                              className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
+                                item.isCompleted 
+                                  ? 'bg-green-500 border-green-500 text-white' 
+                                  : 'border-slate-300 hover:border-green-500'
+                              }`}
+                            >
+                              {item.isCompleted && <CheckCircleIcon className="w-4 h-4" />}
+                            </button>
+                            <div>
+                              <h4 className="font-medium text-slate-900 dark:text-slate-100">
+                                {item.name}
+                                {item.isRequired && (
+                                  <span className="text-red-500 ml-1">*</span>
+                                )}
+                              </h4>
+                              <p className="text-sm text-slate-600 dark:text-slate-400">
+                                {item.description}
+                              </p>
+                            </div>
+                          </div>
+                          
+                          {item.isCompleted && (
+                            <div className="ml-9 space-y-2">
+                              <div className="text-xs text-slate-500 dark:text-slate-400">
+                                Completed by {item.completedBy} on {item.completedAt?.toLocaleString()}
+                              </div>
+                              
+                              {/* Photo Upload Section */}
+                              <div className="space-y-2">
+                                <div className="flex items-center space-x-2">
+                                  <CameraIcon className="w-4 h-4 text-slate-500" />
+                                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                                    Documentation Photos
+                                  </span>
+                                </div>
+                                
+                                <div className="flex items-center space-x-2">
+                                  <Button
+                                    onClick={() => handlePhotoUpload(item.id)}
+                                    size="sm"
+                                    variant="outline"
+                                    className="text-xs"
+                                  >
+                                    <CameraIcon className="w-4 h-4 mr-1" />
+                                    Add Photo
+                                  </Button>
+                                  
+                                  {item.photos.length > 0 && (
+                                    <span className="text-xs text-slate-500">
+                                      {item.photos.length} photo(s)
+                                    </span>
+                                  )}
+                                </div>
+                                
+                                {/* Photo Preview */}
+                                {item.photos.length > 0 && (
+                                  <div className="flex space-x-2 overflow-x-auto">
+                                    {item.photos.map((photo, index) => (
+                                      <div key={index} className="w-16 h-16 bg-slate-200 dark:bg-slate-700 rounded-lg flex items-center justify-center">
+                                        <EyeIcon className="w-4 h-4 text-slate-500" />
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                              
+                              {item.notes && (
+                                <div className="text-sm text-slate-600 dark:text-slate-400">
+                                  <strong>Notes:</strong> {item.notes}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))}
                 </div>
-              </div>
-            ))}
-        </div>
-      </Card>
+              </Card>
 
-      {/* Photo Documentation */}
-      <Card className="card-glass">
-        <div className="flex items-center justify-between mb-4">
-          <h4 className="text-responsive-base font-semibold">Photo Documentation</h4>
-          <div className="flex items-center space-x-2">
-            <Input
-              type="file"
-              multiple
-              accept="image/*"
-              onChange={handlePhotoUpload}
-              disabled={isUploading}
-              className="hidden"
-              id="photo-upload"
-            />
-            <label htmlFor="photo-upload">
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={isUploading}
-                className="btn-ghost cursor-pointer"
-              >
-                {isUploading ? (
-                  <>
-                    <ClockIcon className="w-4 h-4 mr-1 animate-spin" />
-                    Uploading...
-                  </>
-                ) : (
-                  <>
-                    <CameraIcon className="w-4 h-4 mr-1" />
-                    Upload Photos
-                  </>
-                )}
-              </Button>
-            </label>
-          </div>
-        </div>
-
-        {photos.length > 0 && (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {photos.map(photo => (
-              <div key={photo.id} className="relative group">
-                <img
-                  src={photo.url}
-                  alt={photo.description}
-                  className="w-full h-24 object-cover rounded-lg border border-slate-200 dark:border-slate-700"
-                />
-                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-lg flex items-center justify-center">
-                  <div className="text-white text-center p-2">
-                    <div className="text-responsive-xs font-medium">{photo.description}</div>
-                    <div className="text-responsive-xs opacity-75">{photo.category}</div>
+              {/* Approval Section */}
+              <Card className="card-glass">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="font-medium text-slate-900 dark:text-slate-100">
+                      Checklist Approval
+                    </h4>
+                    <p className="text-sm text-slate-600 dark:text-slate-400">
+                      {currentChecklist.completedItems}/{currentChecklist.totalItems} items completed
+                    </p>
+                  </div>
+                  
+                  <div className="flex items-center space-x-3">
+                    {currentChecklist.isApproved ? (
+                      <div className="flex items-center space-x-2 text-green-600">
+                        <CheckCircleIcon className="w-5 h-5" />
+                        <span className="text-sm font-medium">Approved</span>
+                      </div>
+                    ) : (
+                      <Button
+                        onClick={() => approveChecklist(currentChecklist.id)}
+                        disabled={currentChecklist.completedItems < currentChecklist.totalItems}
+                        className="btn-primary"
+                      >
+                        <CheckCircleIcon className="w-4 h-4 mr-2" />
+                        Approve Checklist
+                      </Button>
+                    )}
                   </div>
                 </div>
-              </div>
-            ))}
+              </Card>
+            </div>
           </div>
-        )}
-
-        {photos.length === 0 && (
-          <div className="text-center py-8 text-muted-foreground">
-            <CameraIcon className="w-12 h-12 mx-auto mb-2 opacity-50" />
-            <p className="text-responsive-sm">No photos uploaded yet</p>
-            <p className="text-responsive-xs">Upload photos to document the repair process</p>
-          </div>
-        )}
-      </Card>
-
-      {/* Final Approval */}
-      <Card className="card-glass">
-        <div className="flex items-center justify-between">
-          <div>
-            <h4 className="text-responsive-base font-semibold">Final Quality Approval</h4>
-            <p className="text-responsive-xs text-muted-foreground">
-              All checklists must be completed and overall score ≥ 80%
-            </p>
-          </div>
-          <Button
-            onClick={handleFinalApproval}
-            disabled={qualityMetrics.overallScore < 80 || !checklists.every(list => list.isCompleted)}
-            className="btn-primary"
-          >
-            <DocumentCheckIcon className="w-4 h-4 mr-2" />
-            Approve Quality
-          </Button>
         </div>
-      </Card>
+      </div>
     </div>
   );
 };
