@@ -242,6 +242,7 @@ const ZRAInvoiceGenerator: React.FC<ZRAInvoiceGeneratorProps> = ({
 
   // Generate QR code (simplified - in real implementation would use proper QR library)
   const generateQRCode = (invoice: ZRAInvoice): string => {
+    // Simplified QR code generation for testing - much faster
     const qrData = {
       invoiceNumber: invoice.invoiceNumber,
       businessTpin: invoice.businessTpin,
@@ -249,7 +250,7 @@ const ZRAInvoiceGenerator: React.FC<ZRAInvoiceGeneratorProps> = ({
       date: invoice.invoiceDate.toISOString().split('T')[0]
     };
     
-    // In real implementation, use a proper QR code library
+    // Return a simple SVG-based QR code representation
     return `data:image/svg+xml;base64,${btoa(`<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="white"/><text x="50" y="50" text-anchor="middle" font-size="8">QR:${invoice.invoiceNumber}</text></svg>`)}`;
   };
 
@@ -286,8 +287,8 @@ const ZRAInvoiceGenerator: React.FC<ZRAInvoiceGeneratorProps> = ({
       // Generate QR code
       completeInvoice.qrCode = generateQRCode(completeInvoice);
 
-      // Simulate ZRA submission delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Simulate ZRA submission delay (reduced for testing)
+      await new Promise(resolve => setTimeout(resolve, 500));
 
       onInvoiceGenerated(completeInvoice);
     } catch (error) {
