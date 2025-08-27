@@ -8,7 +8,8 @@ import {
   ArrowTrendingUpIcon,
   ArrowTrendingDownIcon,
   ClockIcon,
-  CheckCircleIcon
+  CheckCircleIcon,
+  ChartBarIcon
 } from '@heroicons/react/24/outline';
 import { useVehicles } from '../hooks/useVehicles';
 import { useSales } from '../hooks/useSales';
@@ -20,6 +21,7 @@ import MainChart from '../components/organisms/charts/MainChart';
 import DateRangeFilter from '../components/organisms/DateRangeFilter';
 import RecentActivity from '../components/organisms/RecentActivity';
 import QuickActions from '../components/organisms/QuickActions';
+import RepairAnalytics from '../components/analytics/RepairAnalytics';
 
 const DashboardHome: React.FC = () => {
   const { vehicles } = useVehicles();
@@ -289,6 +291,19 @@ const DashboardHome: React.FC = () => {
             />
           </div>
         </div>
+      </div>
+
+      {/* Repair Analytics */}
+      <div className="card-glass p-6 rounded-xl shadow-layered">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-responsive-xl font-semibold text-foreground flex items-center space-x-2">
+            <ChartBarIcon className="w-6 h-6 text-primary" />
+            <span>Advanced Repair Analytics</span>
+          </h3>
+        </div>
+        <RepairAnalytics
+          repairs={repairs}
+        />
       </div>
 
       {/* Recent Activity */}
