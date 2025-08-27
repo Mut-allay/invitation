@@ -1,130 +1,89 @@
-import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { getFirestore, FieldValue } from 'firebase-admin/firestore';
+import { getFirestore, Timestamp } from 'firebase-admin/firestore';
+import { onCall, HttpsError, CallableRequest } from 'firebase-functions/v2/https';
 
 const db = getFirestore();
 
-// Types for Parts Orders (Phase 1 - Basic Implementation)
-interface PartsOrderFormData {
-  supplierName: string;
-  expectedDelivery?: Date;
-  notes?: string;
-  items: OrderItemFormData[];
-}
-
-interface OrderItemFormData {
-  partName: string;
-  qty: number;
-  unitPrice: number;
-}
-
-interface PartsOrder {
-  id: string;
-  tenantId: string;
-  supplierName: string;
-  status: 'pending' | 'confirmed' | 'delivered' | 'cancelled';
-  totalAmount: number;
-  orderDate: Date;
-  expectedDelivery?: Date;
-  notes?: string;
-  createdBy: string;
-  updatedAt: Date;
-}
-
-interface OrderItem {
-  id: string;
-  orderId: string;
-  partName: string;
-  qty: number;
-  unitPrice: number;
-  totalPrice: number;
-}
-
-/**
- * Create a new parts order
- * Phase 1: Basic parts ordering functionality
- */
-export const createPartsOrder = onCall<{ tenantId: string; order: PartsOrderFormData }>(async (request) => {
-  if (!request.auth) {
-    throw new HttpsError('unauthenticated', 'User must be authenticated');
+// --- 1. Manual Validation Function ---
+const validateCreateOrderData = (data: any) => {
+  if (!data) {
+    throw new HttpsError('invalid-argument', 'Request data is missing.');
   }
 
-  const { tenantId, order } = request.data;
-  const userClaims = request.auth.token;
-
-  // Verify user belongs to the tenant
-  if (userClaims.tenantId !== tenantId) {
-    throw new HttpsError('permission-denied', 'Access denied to this tenant');
+  // Validate top-level fields
+  if (typeof data.tenantId !== 'string' || data.tenantId.length === 0) {
+    throw new HttpsError('invalid-argument', 'A valid tenantId is required.');
+  }
+  if (typeof data.supplierName !== 'string' || data.supplierName.length < 2) {
+    throw new HttpsError('invalid-argument', 'Supplier name must be at least 2 characters long.');
+  }
+  if (!Array.isArray(data.items) || data.items.length === 0) {
+    throw new HttpsError('invalid-argument', 'An order must contain at least one item.');
   }
 
-  // Validate order data
-  if (!order.supplierName || !order.items || order.items.length === 0) {
-    throw new HttpsError('invalid-argument', 'Order must have supplier name and at least one item');
-  }
-
-  // Validate items
-  for (const item of order.items) {
-    if (!item.partName || item.qty <= 0 || item.unitPrice <= 0) {
-      throw new HttpsError('invalid-argument', 'All items must have valid part name, quantity, and unit price');
+  // Validate each item in the array
+  for (const item of data.items) {
+    if (typeof item.partName !== 'string' || item.partName.length < 3) {
+      throw new HttpsError('invalid-argument', 'Each part name must be at least 3 characters long.');
+    }
+    if (typeof item.qty !== 'number' || !Number.isInteger(item.qty) || item.qty <= 0) {
+      throw new HttpsError('invalid-argument', `Quantity for '${item.partName}' must be a positive integer.`);
+    }
+    if (typeof item.unitPrice !== 'number' || item.unitPrice < 0) {
+      throw new HttpsError('invalid-argument', `Unit price for '${item.partName}' cannot be negative.`);
     }
   }
+  
+  // Return the validated data if all checks pass
+  return data;
+};
 
-  try {
-    // Calculate total amount
-    const totalAmount = order.items.reduce((sum, item) => sum + (item.qty * item.unitPrice), 0);
 
-    // Create the parts order document
-    const orderData: Omit<PartsOrder, 'id'> = {
-      tenantId,
-      supplierName: order.supplierName,
-      status: 'pending',
-      totalAmount,
-      orderDate: new Date(),
-      expectedDelivery: order.expectedDelivery,
-      notes: order.notes,
-      createdBy: request.auth.uid,
-      updatedAt: new Date(),
-    };
-
-    // Use a batch to create order and items atomically
-    const batch = db.batch();
-    
-    // Create the order document
-    const orderRef = db.collection('partsOrders').doc();
-    batch.set(orderRef, {
-      ...orderData,
-      orderDate: FieldValue.serverTimestamp(),
-      updatedAt: FieldValue.serverTimestamp(),
-    });
-
-    // Create order items
-    const items: OrderItem[] = [];
-    order.items.forEach((item, index) => {
-      const itemRef = orderRef.collection('items').doc();
-      const orderItem: Omit<OrderItem, 'id'> = {
-        orderId: orderRef.id,
-        partName: item.partName,
-        qty: item.qty,
-        unitPrice: item.unitPrice,
-        totalPrice: item.qty * item.unitPrice,
-      };
-      
-      batch.set(itemRef, orderItem);
-      items.push({ id: itemRef.id, ...orderItem });
-    });
-
-    // Commit the batch
-    await batch.commit();
-
-    // Return the created order with items
-    const createdOrder = {
-      id: orderRef.id,
-      ...orderData,
-      items,
-    };
-
-    return { order: createdOrder };
-  } catch (error) {
-    console.error('Error creating parts order:', error);
-    throw new HttpsError('internal', 'Failed to create parts order');
+// --- 2. Core Business Logic (Using Manual Validation) ---
+export async function createPartsOrderLogic(request: CallableRequest) {
+  if (!request.auth) {
+    throw new HttpsError('unauthenticated', 'You must be logged in to create an order.');
   }
-});
+
+  // Input Validation using our manual function
+  const { tenantId, supplierName, notes, items } = validateCreateOrderData(request.data);
+
+  if (request.auth.token.tenantId !== tenantId) {
+    throw new HttpsError('permission-denied', 'You are not authorized to perform this action for the specified tenant.');
+  }
+
+  const totalAmount = items.reduce((sum: number, item: any) => sum + (item.qty * item.unitPrice), 0);
+
+  const newOrder = {
+    tenantId,
+    supplierName,
+    notes: notes || '',
+    totalAmount,
+    status: 'pending',
+    orderDate: Timestamp.now(),
+    updatedAt: Timestamp.now(),
+    createdBy: request.auth.uid,
+    itemCount: items.length,
+  };
+
+  const batch = db.batch();
+  const orderRef = db.collection('partsOrders').doc();
+  batch.set(orderRef, newOrder);
+
+  items.forEach((item: any) => {
+    const itemRef = orderRef.collection('orderItems').doc();
+    batch.set(itemRef, {
+      partName: item.partName,
+      qty: item.qty,
+      unitPrice: item.unitPrice,
+      totalPrice: item.qty * item.unitPrice,
+    });
+  });
+
+  await batch.commit();
+
+  return { status: 'success', orderId: orderRef.id, message: 'Order created successfully.' };
+}
+
+
+// --- 3. Thin Firebase Wrapper (Unchanged) ---
+export const createPartsOrder = onCall(createPartsOrderLogic);

@@ -96,7 +96,7 @@ export const OrderStatusTracker: React.FC<OrderStatusTrackerProps> = ({
             <div>
               <h2 className="text-2xl font-bold text-gray-900">Update Order Status</h2>
               <p className="text-gray-600 mt-1">
-                Order #{order.id.slice(-8).toUpperCase()} - {order.supplierName}
+                Order #{order.id.split('-').pop()?.toUpperCase()} - {order.supplierName}
               </p>
             </div>
             <button
@@ -108,7 +108,7 @@ export const OrderStatusTracker: React.FC<OrderStatusTrackerProps> = ({
           </div>
 
           {/* Current Status */}
-          <div className="mb-6">
+          <div className="mb-6" data-testid="current-status-section">
             <h3 className="text-lg font-medium text-gray-900 mb-3">Current Status</h3>
             <div className={`p-4 rounded-lg border ${getStatusInfo(order.status).bgColor} ${getStatusInfo(order.status).borderColor}`}>
               <div className="flex items-center">
@@ -150,6 +150,7 @@ export const OrderStatusTracker: React.FC<OrderStatusTrackerProps> = ({
                         checked={selectedStatus === status}
                         onChange={(e) => setSelectedStatus(e.target.value as OrderStatusUpdate['status'])}
                         className="mt-1 mr-3"
+                        data-testid={`status-radio-${status}`}
                       />
                       <div className="flex-1">
                         <div className="flex items-center">

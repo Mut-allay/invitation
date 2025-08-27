@@ -45,7 +45,6 @@ describe('VATCalculator', () => {
     it('shows VAT rate options', () => {
       render(<VATCalculator {...defaultProps} />);
       
-      const vatRateSelect = screen.getByLabelText(/VAT Rate/);
       expect(screen.getByText('0% - VAT Exempt')).toBeInTheDocument();
       expect(screen.getByText('16% - Standard Rate')).toBeInTheDocument();
     });

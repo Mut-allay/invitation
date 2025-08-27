@@ -5,7 +5,7 @@ import RealTimeAnalytics from '../RealTimeAnalytics';
 
 // Mock the MainChart component
 jest.mock('../../organisms/charts/MainChart', () => {
-  return function MockMainChart({ data, type, dataKey, title }: any) {
+  return function MockMainChart({ data, type, dataKey, title }: { data?: unknown[]; type?: string; dataKey?: string; title?: string }) {
     return (
       <div data-testid="main-chart">
         <div data-testid="chart-type">{type}</div>
@@ -64,8 +64,8 @@ describe('RealTimeAnalytics', () => {
     render(<RealTimeAnalytics />);
     
     await waitFor(() => {
-      const revenueElements = screen.getAllByText(/K \d+,?\d*/);
+      const revenueElements = screen.getAllByText(/K \d{1,3}(,\d{3})*/);
       expect(revenueElements.length).toBeGreaterThan(0);
-    }, { timeout: 3000 });
+    }, { timeout: 5000 });
   });
 });

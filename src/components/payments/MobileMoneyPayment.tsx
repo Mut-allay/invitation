@@ -118,26 +118,21 @@ const MobileMoneyPayment: React.FC<MobileMoneyPaymentProps> = ({
     setCurrentStep('processing');
     setPaymentError('');
 
-    try {
-      // Simulate payment processing
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Simulate success (in real app, this would be an API call)
-      const reference = `MM-${Date.now()}`;
-      
-      onPaymentComplete({
-        provider: selectedProvider!,
-        phoneNumber,
-        amount,
-        reference,
-        status: 'success'
-      });
-      
-      setCurrentStep('success');
-    } catch (error) {
-      setPaymentError('Payment failed. Please try again.');
-      setCurrentStep('error');
-    }
+    // Simulate payment processing
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    // Simulate success (in real app, this would be an API call)
+    const reference = `MM-${Date.now()}`;
+    
+    onPaymentComplete({
+      provider: selectedProvider!,
+      phoneNumber,
+      amount,
+      reference,
+      status: 'success'
+    });
+    
+    setCurrentStep('success');
   };
 
   const handleCancel = () => {

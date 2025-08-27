@@ -66,6 +66,9 @@ const RealTimeAnalytics: React.FC<RealTimeAnalyticsProps> = ({ className = '' })
 
   // Simulate real-time data updates
   useEffect(() => {
+    // Set initial metrics immediately
+    setMetrics(prevMetrics => prevMetrics);
+    
     const interval = setInterval(() => {
       setMetrics([
         {

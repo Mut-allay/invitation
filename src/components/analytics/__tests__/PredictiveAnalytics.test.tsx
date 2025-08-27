@@ -1,11 +1,11 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import PredictiveAnalytics from '../PredictiveAnalytics';
 
 // Mock the MainChart component
 jest.mock('../../organisms/charts/MainChart', () => {
-  return function MockMainChart({ data, type, dataKey, title }: any) {
+  return function MockMainChart({ data, type, dataKey, title }: { data?: unknown[]; type?: string; dataKey?: string; title?: string }) {
     return (
       <div data-testid="main-chart">
         <div data-testid="chart-type">{type}</div>
@@ -110,7 +110,7 @@ describe('PredictiveAnalytics', () => {
     render(<PredictiveAnalytics />);
     
     await waitFor(() => {
-      // Should show both up and down trends
+      // Should show trend indicators
       const trendElements = screen.getAllByText(/Customer Trends/);
       expect(trendElements.length).toBeGreaterThan(0);
     }, { timeout: 3000 });

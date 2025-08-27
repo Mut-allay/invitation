@@ -16,7 +16,7 @@ import {
 import { useInventory } from '../hooks/useInventory';
 import { InventoryModal } from '../components/inventory/InventoryModal';
 import { SupplierModal } from '../components/inventory/SupplierModal';
-import { useToast } from '../contexts/ToastContext';
+import { useToast } from '../contexts/toast-hooks';
 import { getErrorMessage } from '@/lib/utils';
 import type { Inventory } from '../types/index';
 

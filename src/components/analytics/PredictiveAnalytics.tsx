@@ -4,7 +4,7 @@ import {
   ChartBarIcon,
   UserGroupIcon,
   CubeIcon,
-  CalendarIcon,
+
   ExclamationTriangleIcon,
   CheckCircleIcon,
   ClockIcon
@@ -148,7 +148,7 @@ const PredictiveAnalytics: React.FC<PredictiveAnalyticsProps> = ({ className = '
 
   const getPredictionChartData = () => {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
-    return months.map((month, index) => ({
+    return months.map((month) => ({
       month,
       actual: Math.floor(Math.random() * 50000) + 30000,
       predicted: Math.floor(Math.random() * 50000) + 35000,
@@ -173,7 +173,7 @@ const PredictiveAnalytics: React.FC<PredictiveAnalyticsProps> = ({ className = '
           <div className="flex items-center space-x-2">
             <select
               value={selectedTimeframe}
-              onChange={(e) => setSelectedTimeframe(e.target.value as any)}
+              onChange={(e) => setSelectedTimeframe(e.target.value as 'week' | 'month' | 'quarter')}
               className="px-3 py-1 bg-white/20 text-white border border-white/30 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-white/50"
             >
               <option value="week">Next Week</option>
@@ -265,6 +265,27 @@ const PredictiveAnalytics: React.FC<PredictiveAnalyticsProps> = ({ className = '
                 title="Monthly Performance"
                 height={300}
               />
+            </div>
+
+            {/* Trend Indicators */}
+            <div className="bg-white rounded-lg p-6 border border-gray-200">
+              <h4 className="text-lg font-semibold text-gray-900 mb-4">Trend Indicators</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200">
+                  <div className="flex items-center space-x-2">
+                    <ArrowTrendingUpIcon className="h-5 w-5 text-green-500" />
+                    <span className="text-sm font-medium text-green-700">Sales trending up</span>
+                  </div>
+                  <span className="text-xs text-green-600">from last hour</span>
+                </div>
+                <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg border border-red-200">
+                  <div className="flex items-center space-x-2">
+                    <ArrowTrendingUpIcon className="h-5 w-5 text-red-500 transform rotate-180" />
+                    <span className="text-sm font-medium text-red-700">Repair volume down</span>
+                  </div>
+                  <span className="text-xs text-red-600">from last hour</span>
+                </div>
+              </div>
             </div>
 
             {/* Insights */}

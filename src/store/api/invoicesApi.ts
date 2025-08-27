@@ -56,7 +56,7 @@ export const invoicesApi = createApi({
       }),
       invalidatesTags: ['Invoice'],
     }),
-    submitToZRA: builder.mutation<any, { tenantId: string; invoiceId: string }>({
+    submitToZRA: builder.mutation<unknown, { tenantId: string; invoiceId: string }>({
       query: ({ tenantId, invoiceId }) => ({
         url: '/submitToZRA',
         method: 'POST',

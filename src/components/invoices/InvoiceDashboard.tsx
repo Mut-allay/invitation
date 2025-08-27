@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   DocumentTextIcon,
   MagnifyingGlassIcon,
@@ -10,7 +10,7 @@ import {
   TrashIcon,
   CheckCircleIcon,
   XCircleIcon,
-  ClockIcon,
+
   ExclamationTriangleIcon,
   ChartBarIcon,
   DocumentArrowDownIcon,
@@ -120,7 +120,7 @@ const InvoiceDashboard: React.FC<InvoiceDashboardProps> = ({
 
   // Filter and sort invoices
   const filteredAndSortedInvoices = useMemo(() => {
-    let filtered = invoices.filter(invoice => {
+    const filtered = invoices.filter(invoice => {
       // Status filter
       if (filters.status !== 'all' && invoice.status !== filters.status) {
         return false;
@@ -134,22 +134,26 @@ const InvoiceDashboard: React.FC<InvoiceDashboardProps> = ({
         case 'today':
           if (invoiceDate.toDateString() !== today.toDateString()) return false;
           break;
-        case 'week':
+        case 'week': {
           const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
           if (invoiceDate < weekAgo) return false;
           break;
-        case 'month':
+        }
+        case 'month': {
           const monthAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
           if (invoiceDate < monthAgo) return false;
           break;
-        case 'quarter':
+        }
+        case 'quarter': {
           const quarterAgo = new Date(today.getTime() - 90 * 24 * 60 * 60 * 1000);
           if (invoiceDate < quarterAgo) return false;
           break;
-        case 'year':
+        }
+        case 'year': {
           const yearAgo = new Date(today.getTime() - 365 * 24 * 60 * 60 * 1000);
           if (invoiceDate < yearAgo) return false;
           break;
+        }
       }
 
       // Amount range filter
@@ -183,7 +187,7 @@ const InvoiceDashboard: React.FC<InvoiceDashboardProps> = ({
 
     // Sort invoices
     filtered.sort((a, b) => {
-      let aValue: any, bValue: any;
+      let aValue: Date | number | string, bValue: Date | number | string;
 
       switch (sortBy) {
         case 'date':

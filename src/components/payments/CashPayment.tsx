@@ -32,7 +32,7 @@ const CashPayment: React.FC<CashPaymentProps> = ({
 }) => {
   const [paymentStep, setPaymentStep] = useState<PaymentStep>('enter-amount');
   const [amountReceived, setAmountReceived] = useState<number>(0);
-  const [isLoading, setIsLoading] = useState(false);
+  const [, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
   // Format amount in Zambian Kwacha
@@ -114,9 +114,6 @@ const CashPayment: React.FC<CashPaymentProps> = ({
       });
 
       setPaymentStep('success');
-    } catch (err) {
-      setError('Payment processing failed. Please try again.');
-      setPaymentStep('error');
     } finally {
       setIsLoading(false);
     }

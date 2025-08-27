@@ -15,14 +15,8 @@ import DateRangeFilter from '../components/organisms/DateRangeFilter';
 
 const BusinessIntelligencePage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'overview' | 'realtime' | 'reports' | 'predictions'>('overview');
-  const [dateRange, setDateRange] = useState<{ start: Date; end: Date }>({
-    start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // 30 days ago
-    end: new Date()
-  });
 
-  const handleDateRangeChange = (startDate: Date, endDate: Date) => {
-    setDateRange({ start: startDate, end: endDate });
-  };
+
 
   const tabs = [
     {
@@ -106,7 +100,7 @@ const BusinessIntelligencePage: React.FC = () => {
               <p className="text-gray-600">Advanced analytics and insights for data-driven decisions</p>
             </div>
             <div className="flex items-center space-x-3">
-              <DateRangeFilter onDateRangeChange={handleDateRangeChange} />
+              <DateRangeFilter onDateRangeChange={() => {}} />
               <button className="flex items-center space-x-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
                 <ArrowDownTrayIcon className="h-4 w-4" />
                 <span>Export Dashboard</span>
@@ -123,7 +117,7 @@ const BusinessIntelligencePage: React.FC = () => {
               return (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id as any)}
+                  onClick={() => setActiveTab(tab.id as 'overview' | 'realtime' | 'reports' | 'predictions')}
                   className={`flex items-center space-x-2 py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
                     activeTab === tab.id
                       ? 'border-indigo-500 text-indigo-600'

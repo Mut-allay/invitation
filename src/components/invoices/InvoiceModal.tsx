@@ -21,13 +21,13 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleInvoiceGenerated = (zraInvoice: any) => {
+  const handleInvoiceGenerated = (zraInvoice: { invoiceNumber: string; totalAmount: number }) => {
     console.log('ZRA Invoice Generated:', zraInvoice);
     alert(`ZRA Invoice Generated Successfully!\nInvoice Number: ${zraInvoice.invoiceNumber}\nTotal Amount: K${zraInvoice.totalAmount.toLocaleString()}`);
     onClose();
   };
 
-  const handleVATCalculation = (calculation: any) => {
+  const handleVATCalculation = (calculation: { amount: number; vatAmount: number; totalWithVAT: number }) => {
     console.log('VAT Calculation:', calculation);
   };
 

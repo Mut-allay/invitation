@@ -12,7 +12,7 @@ import {
   PlusIcon,
   TrashIcon
 } from '@heroicons/react/24/outline';
-import { useToast } from '../contexts/ToastContext';
+import { useToast } from '../contexts/toast-hooks';
 
 interface User {
   id: string;

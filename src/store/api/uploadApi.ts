@@ -13,7 +13,7 @@ export const uploadApi = createApi({
   }),
   tagTypes: ['Upload'],
   endpoints: (builder) => ({
-    uploadFile: builder.mutation<UploadFile, { tenantId: string; file: any; metadata?: UploadMetadata }>({
+    uploadFile: builder.mutation<UploadFile, { tenantId: string; file: File; metadata?: UploadMetadata }>({
       query: ({ tenantId, file, metadata }) => ({
         url: '/uploadFile',
         method: 'POST',

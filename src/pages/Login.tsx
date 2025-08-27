@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import { useToast } from '../contexts/ToastContext';
+import { useAuth } from '../contexts/auth-hooks';
+import { useToast } from '../contexts/toast-hooks';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

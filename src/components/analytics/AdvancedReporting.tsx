@@ -24,7 +24,7 @@ interface CustomReport {
   id: string;
   name: string;
   description: string;
-  filters: any;
+  filters: Record<string, unknown>;
   columns: string[];
   schedule?: string;
   lastGenerated?: Date;
@@ -36,9 +36,9 @@ interface AdvancedReportingProps {
 
 const AdvancedReporting: React.FC<AdvancedReportingProps> = ({ className = '' }) => {
   const [activeTab, setActiveTab] = useState<'templates' | 'custom' | 'scheduled'>('templates');
-  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
+
   const [showReportBuilder, setShowReportBuilder] = useState(false);
-  const [customReports, setCustomReports] = useState<CustomReport[]>([]);
+  const [customReports] = useState<CustomReport[]>([]);
 
   const reportTemplates: ReportTemplate[] = [
     {
@@ -83,8 +83,7 @@ const AdvancedReporting: React.FC<AdvancedReportingProps> = ({ className = '' })
     }
   ];
 
-  const handleGenerateReport = (templateId: string) => {
-    setSelectedTemplate(templateId);
+  const handleGenerateReport = () => {
     setShowReportBuilder(true);
   };
 
@@ -138,7 +137,7 @@ const AdvancedReporting: React.FC<AdvancedReportingProps> = ({ className = '' })
           ].map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
+              onClick={() => setActiveTab(tab.id as 'templates' | 'custom' | 'scheduled')}
               className={`flex-1 px-6 py-4 text-sm font-medium border-b-2 transition-all duration-200 ${
                 activeTab === tab.id
                   ? 'border-indigo-500 text-indigo-600 bg-indigo-50'
@@ -188,7 +187,7 @@ const AdvancedReporting: React.FC<AdvancedReportingProps> = ({ className = '' })
                     
                     <div className="flex space-x-2">
                       <button
-                        onClick={() => handleGenerateReport(template.id)}
+                        onClick={() => handleGenerateReport()}
                         className="flex-1 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium"
                       >
                         Generate

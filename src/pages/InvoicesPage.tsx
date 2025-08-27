@@ -14,7 +14,7 @@ import {
 import { useInvoices } from '../hooks/useInvoices';
 import { InvoiceModal } from '../components/invoices/InvoiceModal';
 import { PaymentModal } from '../components/invoices/PaymentModal';
-import { useToast } from '../contexts/ToastContext';
+import { useToast } from '../contexts/toast-hooks';
 import { getErrorMessage } from '@/lib/utils';
 import type { Invoice } from '../types/index';
 
