@@ -61,7 +61,7 @@ const testData = {
 };
 
 // Helper function to make authenticated requests
-const makeRequest = async (endpoint: string, method: 'GET' | 'POST', data?: any) => {
+const makeRequest = async (endpoint: string, method: 'GET' | 'POST', data?: unknown) => {
     try {
         const response = await axios({
             method,
@@ -73,8 +73,9 @@ const makeRequest = async (endpoint: string, method: 'GET' | 'POST', data?: any)
             }
         });
         return response.data;
-    } catch (error: any) {
-        console.error(`Error calling ${endpoint}:`, error.response?.data || error.message);
+    } catch (error: unknown) {
+        const axiosError = error as { response?: { data: unknown }; message: string };
+        console.error(`Error calling ${endpoint}:`, axiosError.response?.data || axiosError.message);
         throw error;
     }
 };
@@ -107,7 +108,7 @@ async function testZRAIntegration() {
         });
         console.log('✅ Smart Invoice generated:', invoice);
 
-    } catch (error) {
+    } catch {
         console.error('❌ ZRA Integration test failed');
     }
 }
@@ -131,7 +132,7 @@ async function testPaymentIntegrations() {
         const bankTransfer = await makeRequest('/initiateTransfer', 'POST', testData.payment.bank);
         console.log('✅ Bank Transfer initiated:', bankTransfer);
 
-    } catch (error) {
+    } catch {
         console.error('❌ Payment Integration test failed');
     }
 }
@@ -185,7 +186,7 @@ async function testFullSalesFlow() {
         });
         console.log('✅ Invoice generated:', invoice);
 
-    } catch (error) {
+    } catch {
         console.error('❌ Full Sales Flow test failed');
     }
 }

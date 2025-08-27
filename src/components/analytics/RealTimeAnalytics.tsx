@@ -61,7 +61,7 @@ const RealTimeAnalytics: React.FC<RealTimeAnalyticsProps> = ({ className = '' })
       lastUpdated: new Date()
     }
   ]);
-  const [isConnected, setIsConnected] = useState(true);
+  const [isConnected] = useState(true);
   const [lastUpdate, setLastUpdate] = useState(new Date());
 
   // Simulate real-time data updates
