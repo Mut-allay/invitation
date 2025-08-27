@@ -1,6 +1,7 @@
 
 import { api } from '../api';
 import { PartnerBusiness } from '../../types/partnerBusiness';
+import { PartnerCatalogItem } from '../../types/partnerCatalogItem';
 
 interface InvitePartnerRequest {
   tenantId: string;
@@ -32,7 +33,7 @@ export const partnerBusinessApi = api.injectEndpoints({
       }),
       invalidatesTags: ['Partner'],
     }),
-    getPartnerCatalog: builder.query<any[], { tenantId: string; partnerTenantId: string }>({
+    getPartnerCatalog: builder.query<PartnerCatalogItem[], { tenantId: string; partnerTenantId: string }>({
       query: ({ tenantId, partnerTenantId }) => `tenant/${tenantId}/partners/${partnerTenantId}/catalog`,
       providesTags: ['PartnerCatalog'],
     }),
