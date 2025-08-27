@@ -22,4 +22,9 @@ __exportStar(require("./sales"), exports);
 __exportStar(require("./repairs"), exports);
 __exportStar(require("./invoices"), exports);
 __exportStar(require("./upload"), exports);
+// Parts Ordering Functions (Phase 1)
+__exportStar(require("./parts-ordering/createPartsOrder"), exports);
+__exportStar(require("./parts-ordering/getPartsOrders"), exports);
+__exportStar(require("./parts-ordering/updateOrderStatus"), exports);
+__exportStar(require("./parts-ordering/deletePartsOrder"), exports);
 //# sourceMappingURL=index.js.map

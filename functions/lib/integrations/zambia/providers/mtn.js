@@ -1,36 +1,33 @@
-import { v4 as uuidv4 } from 'uuid';
-import type { MobileMoneyRequest, MobileMoneyTransaction, PaymentResponse } from '../types';
-
-export class MTNService {
-    private accessToken: string | null = null;
-
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.MTNService = void 0;
+const uuid_1 = require("uuid");
+class MTNService {
     constructor() {
+        this.accessToken = null;
         // Configuration will be used in production
         if (process.env.NODE_ENV === 'production') {
-            if (!process.env.MTN_API_KEY) throw new Error('MTN_API_KEY is required in production');
-            if (!process.env.MTN_API_URL) throw new Error('MTN_API_URL is required in production');
+            if (!process.env.MTN_API_KEY)
+                throw new Error('MTN_API_KEY is required in production');
+            if (!process.env.MTN_API_URL)
+                throw new Error('MTN_API_URL is required in production');
         }
     }
-
-    private async ensureAccessToken(): Promise<string> {
+    async ensureAccessToken() {
         if (process.env.NODE_ENV !== 'production') {
             return 'test-token';
         }
-
         if (this.accessToken) {
             return this.accessToken;
         }
-
         // In real implementation, make API call to get token
         throw new Error('MTN token acquisition not implemented for production');
     }
-
-    public async initiatePayment(request: MobileMoneyRequest): Promise<PaymentResponse> {
-        const transactionId = uuidv4();
-
+    async initiatePayment(request) {
+        const transactionId = (0, uuid_1.v4)();
         if (process.env.NODE_ENV !== 'production') {
             // Return mock data in sandbox mode
-            const transaction: MobileMoneyTransaction = {
+            const transaction = {
                 id: transactionId,
                 amount: request.amount,
                 currency: request.currency,
@@ -43,13 +40,11 @@ export class MTNService {
                 mtnReference: transactionId,
                 metadata: request.metadata
             };
-
             return {
                 transaction,
                 message: 'Payment request initiated successfully'
             };
         }
-
         // Get access token and make API call to initiate payment
         const token = await this.ensureAccessToken();
         // In production, token would be used for API call
@@ -57,8 +52,7 @@ export class MTNService {
         // In real implementation, this would call the MTN API
         throw new Error('MTN payment initiation not implemented for production');
     }
-
-    public async checkPaymentStatus(transactionId: string): Promise<MobileMoneyTransaction> {
+    async checkPaymentStatus(transactionId) {
         if (process.env.NODE_ENV !== 'production') {
             // Return mock successful transaction in sandbox mode
             return {
@@ -74,7 +68,6 @@ export class MTNService {
                 mtnReference: transactionId
             };
         }
-
         // Get access token and make API call to check status
         const token = await this.ensureAccessToken();
         // In production, token would be used for API call
@@ -83,3 +76,5 @@ export class MTNService {
         throw new Error('MTN payment status check not implemented for production');
     }
 }
+exports.MTNService = MTNService;
+//# sourceMappingURL=mtn.js.map

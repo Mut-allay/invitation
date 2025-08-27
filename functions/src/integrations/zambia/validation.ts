@@ -1,10 +1,11 @@
-import { z } from 'zod';
 import {
     PaymentProviderSchema,
     BankSchema,
     MobileMoneyRequestSchema,
     BankTransferRequestSchema,
-    PaymentRequest
+    PaymentRequest,
+    MobileMoneyRequest,
+    BankTransferRequest
 } from './types';
 
 // Provider prefixes for phone numbers
@@ -71,3 +72,4 @@ export const isMobileMoneyRequest = (request: PaymentRequest): request is Mobile
 
 export const isBankTransferRequest = (request: PaymentRequest): request is BankTransferRequest => {
     return 'bank' in request && 'accountNumber' in request;
+};

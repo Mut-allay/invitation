@@ -1,64 +1,59 @@
-import { v4 as uuidv4 } from 'uuid';
-import type { MobileMoneyRequest, MobileMoneyTransaction, PaymentResponse } from '../types';
-
-export class MTNService {
-    private accessToken: string | null = null;
-
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ZamtelService = void 0;
+const uuid_1 = require("uuid");
+class ZamtelService {
     constructor() {
+        this.accessToken = null;
         // Configuration will be used in production
         if (process.env.NODE_ENV === 'production') {
-            if (!process.env.MTN_API_KEY) throw new Error('MTN_API_KEY is required in production');
-            if (!process.env.MTN_API_URL) throw new Error('MTN_API_URL is required in production');
+            if (!process.env.ZAMTEL_API_KEY)
+                throw new Error('ZAMTEL_API_KEY is required in production');
+            if (!process.env.ZAMTEL_API_URL)
+                throw new Error('ZAMTEL_API_URL is required in production');
         }
     }
-
-    private async ensureAccessToken(): Promise<string> {
+    async ensureAccessToken() {
         if (process.env.NODE_ENV !== 'production') {
             return 'test-token';
         }
-
         if (this.accessToken) {
             return this.accessToken;
         }
-
         // In real implementation, make API call to get token
-        throw new Error('MTN token acquisition not implemented for production');
+        throw new Error('Zamtel token acquisition not implemented for production');
     }
-
-    public async initiatePayment(request: MobileMoneyRequest): Promise<PaymentResponse> {
-        const transactionId = uuidv4();
-
+    async initiatePayment(request) {
+        const transactionId = (0, uuid_1.v4)();
         if (process.env.NODE_ENV !== 'production') {
             // Return mock data in sandbox mode
-            const transaction: MobileMoneyTransaction = {
+            const transaction = {
                 id: transactionId,
                 amount: request.amount,
                 currency: request.currency,
                 status: 'PENDING',
-                provider: 'MTN',
+                provider: 'ZAMTEL',
                 phoneNumber: request.phoneNumber,
                 createdAt: new Date(),
                 updatedAt: new Date(),
-                mtnTransactionId: transactionId,
-                mtnReference: transactionId,
+                zamtelTransactionId: transactionId,
+                zamtelReference: transactionId,
                 metadata: request.metadata
             };
-
             return {
                 transaction,
                 message: 'Payment request initiated successfully'
             };
         }
-
-        // Get access token and make API call to initiate payment
+        // Get access token and prepare for API call
         const token = await this.ensureAccessToken();
         // In production, token would be used for API call
         console.debug('Using token:', token);
-        // In real implementation, this would call the MTN API
-        throw new Error('MTN payment initiation not implemented for production');
+        // Make API call to initiate payment
+        // In real implementation, this would call the Zamtel API
+        throw new Error('Zamtel payment initiation not implemented for production');
     }
-
-    public async checkPaymentStatus(transactionId: string): Promise<MobileMoneyTransaction> {
+    async checkPaymentStatus(transactionId) {
         if (process.env.NODE_ENV !== 'production') {
             // Return mock successful transaction in sandbox mode
             return {
@@ -66,20 +61,22 @@ export class MTNService {
                 amount: 1000,
                 currency: 'ZMW',
                 status: 'COMPLETED',
-                provider: 'MTN',
-                phoneNumber: '260967000000',
+                provider: 'ZAMTEL',
+                phoneNumber: '260950000000',
                 createdAt: new Date(),
                 updatedAt: new Date(),
-                mtnTransactionId: transactionId,
-                mtnReference: transactionId
+                zamtelTransactionId: transactionId,
+                zamtelReference: transactionId
             };
         }
-
-        // Get access token and make API call to check status
+        // Get access token and prepare for API call
         const token = await this.ensureAccessToken();
         // In production, token would be used for API call
         console.debug('Using token:', token);
-        // In real implementation, this would call the MTN API
-        throw new Error('MTN payment status check not implemented for production');
+        // Make API call to check status
+        // In real implementation, this would call the Zamtel API
+        throw new Error('Zamtel payment status check not implemented for production');
     }
 }
+exports.ZamtelService = ZamtelService;
+//# sourceMappingURL=zamtel.js.map

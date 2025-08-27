@@ -1,4 +1,4 @@
-import { db } from '../../config/firebase-admin';
+import { db } from '@/config/firebase-admin';
 import { z } from 'zod';
 import type { Transaction } from './types';
 

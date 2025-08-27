@@ -2,13 +2,14 @@ import { v4 as uuidv4 } from 'uuid';
 import type { MobileMoneyRequest, MobileMoneyTransaction, PaymentResponse } from '../types';
 
 export class ZamtelService {
-    private apiKey: string;
-    private baseUrl: string;
     private accessToken: string | null = null;
 
     constructor() {
-        this.apiKey = process.env.ZAMTEL_API_KEY || '';
-        this.baseUrl = process.env.ZAMTEL_API_URL || 'https://api.zamtel.com/v1';
+        // Configuration will be used in production
+        if (process.env.NODE_ENV === 'production') {
+            if (!process.env.ZAMTEL_API_KEY) throw new Error('ZAMTEL_API_KEY is required in production');
+            if (!process.env.ZAMTEL_API_URL) throw new Error('ZAMTEL_API_URL is required in production');
+        }
     }
 
     private async ensureAccessToken(): Promise<string> {
@@ -49,8 +50,10 @@ export class ZamtelService {
             };
         }
 
-        // Get access token
+        // Get access token and prepare for API call
         const token = await this.ensureAccessToken();
+        // In production, token would be used for API call
+        console.debug('Using token:', token);
 
         // Make API call to initiate payment
         // In real implementation, this would call the Zamtel API
@@ -74,8 +77,10 @@ export class ZamtelService {
             };
         }
 
-        // Get access token
+        // Get access token and prepare for API call
         const token = await this.ensureAccessToken();
+        // In production, token would be used for API call
+        console.debug('Using token:', token);
 
         // Make API call to check status
         // In real implementation, this would call the Zamtel API
