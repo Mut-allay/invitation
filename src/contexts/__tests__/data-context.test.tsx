@@ -1,178 +1,260 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { DataProvider, useData } from '../data-context';
+import type { Vehicle } from '../../types/vehicle';
+
+// Mock the auth context
+jest.mock('../auth-hooks', () => ({
+  useAuth: () => ({
+    userProfile: {
+      tenantId: 'test-tenant',
+      uid: 'test-user',
+    },
+  }),
+}));
 
 // Test component to access context
 const TestComponent = () => {
-  const { state, dispatch } = useData();
-
+  const { state, getCachedData, setCachedData, clearCache, addSubscription, removeSubscription, clearAllSubscriptions, updateVehicle, addVehicle, removeVehicle } = useData();
+  
   return (
     <div>
-      <div data-testid="customers-count">{state.customers.length}</div>
-      <div data-testid="vehicles-count">{state.vehicles.length}</div>
-      <div data-testid="repairs-count">{state.repairs.length}</div>
-      <div data-testid="sales-count">{state.sales.length}</div>
-      <div data-testid="invoices-count">{state.invoices.length}</div>
-      <div data-testid="inventory-count">{state.inventory.length}</div>
-      <button
-        data-testid="set-customers"
-        onClick={() => dispatch({ type: 'SET_CUSTOMERS', payload: [{ id: '1', name: 'Test Customer' }] })}
+      <div data-testid="vehicles-count">{state.vehicles.data.length}</div>
+      <div data-testid="vehicles-loading">{state.vehicles.loading.toString()}</div>
+      <div data-testid="vehicles-error">{state.vehicles.error || 'no-error'}</div>
+      <div data-testid="cache-keys">{Object.keys(state.cache).join(',')}</div>
+      <div data-testid="subscription-count">{Object.keys(state.realTimeSubscriptions).length}</div>
+      <button 
+        onClick={() => setCachedData('test-key', { test: 'data' })}
+        data-testid="set-cache"
       >
-        Set Customers
+        Set Cache
       </button>
-      <button
-        data-testid="set-vehicles"
-        onClick={() => dispatch({ type: 'SET_VEHICLES', payload: [{ id: '1', make: 'Toyota' }] })}
+      <button 
+        onClick={() => clearCache()}
+        data-testid="clear-cache"
       >
-        Set Vehicles
+        Clear Cache
       </button>
-      <button
-        data-testid="add-customer"
-        onClick={() => dispatch({ type: 'ADD_CUSTOMER', payload: { id: '2', name: 'New Customer' } })}
+      <button 
+        onClick={() => getCachedData('test-key')}
+        data-testid="get-cache"
       >
-        Add Customer
+        Get Cache
       </button>
-      <button
-        data-testid="update-customer"
-        onClick={() => dispatch({ type: 'UPDATE_CUSTOMER', payload: { id: '1', name: 'Updated Customer' } })}
+      <button 
+        onClick={() => addSubscription('test-sub', jest.fn())}
+        data-testid="add-subscription"
       >
-        Update Customer
+        Add Subscription
       </button>
-      <button
-        data-testid="delete-customer"
-        onClick={() => dispatch({ type: 'DELETE_CUSTOMER', payload: '1' })}
+      <button 
+        onClick={() => addSubscription('test-sub-2', jest.fn())}
+        data-testid="add-subscription-2"
       >
-        Delete Customer
+        Add Subscription 2
+      </button>
+      <button 
+        onClick={() => removeSubscription('test-sub')}
+        data-testid="remove-subscription"
+      >
+        Remove Subscription
+      </button>
+      <button 
+        onClick={() => clearAllSubscriptions()}
+        data-testid="clear-subscriptions"
+      >
+        Clear Subscriptions
+      </button>
+      <button 
+        onClick={() => {
+          const mockVehicle: Vehicle = {
+            id: 'test-1',
+            tenantId: 'test-tenant',
+            make: 'Toyota',
+            model: 'Camry',
+            year: 2020,
+            regNumber: 'ABC123',
+            vin: '123456789',
+            status: 'available',
+            costPrice: 15000,
+            sellingPrice: 18000,
+            description: 'Test vehicle',
+            mileage: 50000,
+            fuelType: 'petrol',
+            transmission: 'automatic',
+            color: 'Blue',
+            features: ['Navigation'],
+            images: [],
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          };
+          addVehicle(mockVehicle);
+        }}
+        data-testid="add-vehicle"
+      >
+        Add Vehicle
+      </button>
+      <button 
+        onClick={() => {
+          const mockVehicle: Vehicle = {
+            id: 'test-1',
+            tenantId: 'test-tenant',
+            make: 'Updated Toyota',
+            model: 'Camry',
+            year: 2020,
+            regNumber: 'ABC123',
+            vin: '123456789',
+            status: 'available',
+            costPrice: 15000,
+            sellingPrice: 18000,
+            description: 'Test vehicle',
+            mileage: 50000,
+            fuelType: 'petrol',
+            transmission: 'automatic',
+            color: 'Blue',
+            features: ['Navigation'],
+            images: [],
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          };
+          updateVehicle(mockVehicle);
+        }}
+        data-testid="update-vehicle"
+      >
+        Update Vehicle
+      </button>
+      <button 
+        onClick={() => removeVehicle('test-1')}
+        data-testid="remove-vehicle"
+      >
+        Remove Vehicle
       </button>
     </div>
   );
 };
 
-const renderWithProvider = (component: React.ReactElement) => {
-  return render(
-    <DataProvider>
-      {component}
-    </DataProvider>
-  );
-};
+// Wrapper component for testing
+const TestWrapper = ({ children }: { children: React.ReactNode }) => (
+  <DataProvider>
+    {children}
+  </DataProvider>
+);
 
 describe('DataContext', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  describe('Initial State', () => {
-    it('provides initial state with empty arrays', () => {
-      renderWithProvider(<TestComponent />);
+  it('provides initial state', () => {
+    render(
+      <TestWrapper>
+        <TestComponent />
+      </TestWrapper>
+    );
 
-      expect(screen.getByTestId('customers-count')).toHaveTextContent('0');
+    expect(screen.getByTestId('vehicles-count')).toHaveTextContent('0');
+    expect(screen.getByTestId('vehicles-loading')).toHaveTextContent('false');
+    expect(screen.getByTestId('vehicles-error')).toHaveTextContent('no-error');
+    expect(screen.getByTestId('cache-keys')).toHaveTextContent('');
+    expect(screen.getByTestId('subscription-count')).toHaveTextContent('0');
+  });
+
+  it('manages cache operations', async () => {
+    render(
+      <TestWrapper>
+        <TestComponent />
+      </TestWrapper>
+    );
+
+    // Set cache
+    fireEvent.click(screen.getByTestId('set-cache'));
+    
+    await waitFor(() => {
+      expect(screen.getByTestId('cache-keys')).toHaveTextContent('test-key');
+    });
+
+    // Clear cache
+    fireEvent.click(screen.getByTestId('clear-cache'));
+    
+    await waitFor(() => {
+      expect(screen.getByTestId('cache-keys')).toHaveTextContent('');
+    });
+  });
+
+  it('manages subscriptions', async () => {
+    render(
+      <TestWrapper>
+        <TestComponent />
+      </TestWrapper>
+    );
+
+    // Add subscription
+    fireEvent.click(screen.getByTestId('add-subscription'));
+    
+    await waitFor(() => {
+      expect(screen.getByTestId('subscription-count')).toHaveTextContent('1');
+    });
+
+    // Remove subscription
+    fireEvent.click(screen.getByTestId('remove-subscription'));
+    
+    await waitFor(() => {
+      expect(screen.getByTestId('subscription-count')).toHaveTextContent('0');
+    });
+
+    // Add multiple subscriptions and clear all
+    fireEvent.click(screen.getByTestId('add-subscription'));
+    fireEvent.click(screen.getByTestId('add-subscription-2'));
+    
+    await waitFor(() => {
+      expect(screen.getByTestId('subscription-count')).toHaveTextContent('2');
+    });
+
+    fireEvent.click(screen.getByTestId('clear-subscriptions'));
+    
+    await waitFor(() => {
+      expect(screen.getByTestId('subscription-count')).toHaveTextContent('0');
+    });
+  });
+
+  it('handles vehicle operations', async () => {
+    render(
+      <TestWrapper>
+        <TestComponent />
+      </TestWrapper>
+    );
+
+    // Add vehicle
+    fireEvent.click(screen.getByTestId('add-vehicle'));
+    
+    await waitFor(() => {
+      expect(screen.getByTestId('vehicles-count')).toHaveTextContent('1');
+    });
+
+    // Update vehicle
+    fireEvent.click(screen.getByTestId('update-vehicle'));
+    
+    await waitFor(() => {
+      expect(screen.getByTestId('vehicles-count')).toHaveTextContent('1');
+    });
+
+    // Remove vehicle
+    fireEvent.click(screen.getByTestId('remove-vehicle'));
+    
+    await waitFor(() => {
       expect(screen.getByTestId('vehicles-count')).toHaveTextContent('0');
-      expect(screen.getByTestId('repairs-count')).toHaveTextContent('0');
-      expect(screen.getByTestId('sales-count')).toHaveTextContent('0');
-      expect(screen.getByTestId('invoices-count')).toHaveTextContent('0');
-      expect(screen.getByTestId('inventory-count')).toHaveTextContent('0');
     });
   });
 
-  describe('Data Actions', () => {
-    it('sets customers data', async () => {
-      renderWithProvider(<TestComponent />);
-
-      fireEvent.click(screen.getByTestId('set-customers'));
-
-      await waitFor(() => {
-        expect(screen.getByTestId('customers-count')).toHaveTextContent('1');
-      });
-    });
-
-    it('sets vehicles data', async () => {
-      renderWithProvider(<TestComponent />);
-
-      fireEvent.click(screen.getByTestId('set-vehicles'));
-
-      await waitFor(() => {
-        expect(screen.getByTestId('vehicles-count')).toHaveTextContent('1');
-      });
-    });
-
-    it('adds a customer', async () => {
-      renderWithProvider(<TestComponent />);
-
-      // First set some customers
-      fireEvent.click(screen.getByTestId('set-customers'));
-      
-      // Then add another customer
-      fireEvent.click(screen.getByTestId('add-customer'));
-
-      await waitFor(() => {
-        expect(screen.getByTestId('customers-count')).toHaveTextContent('2');
-      });
-    });
-
-    it('updates a customer', async () => {
-      renderWithProvider(<TestComponent />);
-
-      // First set some customers
-      fireEvent.click(screen.getByTestId('set-customers'));
-      
-      // Then update the customer
-      fireEvent.click(screen.getByTestId('update-customer'));
-
-      await waitFor(() => {
-        expect(screen.getByTestId('customers-count')).toHaveTextContent('1');
-      });
-    });
-
-    it('deletes a customer', async () => {
-      renderWithProvider(<TestComponent />);
-
-      // First set some customers
-      fireEvent.click(screen.getByTestId('set-customers'));
-      
-      // Then delete the customer
-      fireEvent.click(screen.getByTestId('delete-customer'));
-
-      await waitFor(() => {
-        expect(screen.getByTestId('customers-count')).toHaveTextContent('0');
-      });
-    });
-  });
-
-  describe('Error Handling', () => {
-    it('handles unknown action types gracefully', () => {
-             const TestErrorComponent = () => {
-         const { dispatch } = useData();
-         
-         return (
-           <button
-             data-testid="unknown-action"
-             onClick={() => dispatch({ type: 'UNKNOWN_ACTION' as never, payload: null })}
-           >
-             Unknown Action
-           </button>
-         );
-       };
-
-      renderWithProvider(<TestErrorComponent />);
-
-      // Should not throw an error
-      expect(() => {
-        fireEvent.click(screen.getByTestId('unknown-action'));
-      }).not.toThrow();
-    });
-  });
-
-  describe('Context Usage', () => {
-    it('throws error when used outside provider', () => {
-      // Suppress console.error for this test
-      const originalError = console.error;
-      console.error = jest.fn();
-
-      expect(() => {
-        render(<TestComponent />);
-      }).toThrow('useData must be used within a DataProvider');
-
-      console.error = originalError;
-    });
+  it('throws error when used outside provider', () => {
+    // Suppress console.error for this test
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+    
+    expect(() => {
+      render(<TestComponent />);
+    }).toThrow('useData must be used within a DataProvider');
+    
+    consoleSpy.mockRestore();
   });
 }); 

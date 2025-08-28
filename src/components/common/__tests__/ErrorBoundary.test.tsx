@@ -84,7 +84,8 @@ describe('ErrorBoundary', () => {
     );
 
     expect(screen.getByText('Error Details (Development)')).toBeInTheDocument();
-    expect(screen.getByText('Test error')).toBeInTheDocument();
+    // The error text is in a pre element, so we need to look for it differently
+    expect(screen.getByText(/Error: Test error/)).toBeInTheDocument();
 
     process.env.NODE_ENV = originalEnv;
   });
@@ -191,7 +192,7 @@ describe('ErrorBoundary', () => {
   });
 
   it('resets error state when error boundary is unmounted and remounted', () => {
-    const { unmount, rerender } = render(
+    const { unmount } = render(
       <ErrorBoundary>
         <ThrowError shouldThrow={true} />
       </ErrorBoundary>
@@ -201,7 +202,8 @@ describe('ErrorBoundary', () => {
 
     unmount();
 
-    rerender(
+    // Render a new instance to test reset behavior
+    render(
       <ErrorBoundary>
         <ThrowError shouldThrow={false} />
       </ErrorBoundary>
