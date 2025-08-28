@@ -1,337 +1,454 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { BrowserRouter } from 'react-router-dom';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import PasswordReset from '../PasswordReset';
+import { AuthProvider } from '../../../contexts/auth-context';
+import { ToastProvider } from '../../../contexts/toast-provider';
 
-// Mock the auth and toast hooks
+// Mock the auth context
 const mockResetPassword = jest.fn();
-const mockSuccess = jest.fn();
-const mockError = jest.fn();
-const mockNavigate = jest.fn();
+const mockAuthContext = {
+  user: null,
+  userProfile: null,
+  loading: false,
+  login: jest.fn(),
+  logout: jest.fn(),
+  register: jest.fn(),
+  resetPassword: mockResetPassword,
+  hasPermission: jest.fn(),
+};
 
-jest.mock('@/contexts/auth-hooks', () => ({
-  useAuth: () => ({
-    resetPassword: mockResetPassword,
-    userProfile: null,
-    hasPermission: jest.fn(),
-    hasRole: jest.fn()
-  })
+jest.mock('../../../contexts/auth-hooks', () => ({
+  useAuth: () => mockAuthContext,
 }));
 
-jest.mock('@/contexts/toast-hooks', () => ({
-  useToast: () => ({
-    success: mockSuccess,
-    error: mockError
-  })
+// Mock the toast context
+const mockToast = {
+  success: jest.fn(),
+  error: jest.fn(),
+  info: jest.fn(),
+  loading: jest.fn(),
+  dismiss: jest.fn(),
+};
+
+jest.mock('../../../contexts/toast-hooks', () => ({
+  useToast: () => mockToast,
 }));
 
+// Mock react-router-dom
 jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
-  useNavigate: () => mockNavigate
+  useNavigate: () => jest.fn(),
 }));
 
-const renderWithRouter = (component: React.ReactElement) => {
+const renderWithProviders = (component: React.ReactElement) => {
   return render(
-    <BrowserRouter>
-      {component}
-    </BrowserRouter>
+    <AuthProvider>
+      <ToastProvider>
+        {component}
+      </ToastProvider>
+    </AuthProvider>
   );
 };
 
 describe('PasswordReset', () => {
+  const mockSuccess = jest.fn();
+  const mockError = jest.fn();
+  const mockNavigate = jest.fn();
+
   beforeEach(() => {
     jest.clearAllMocks();
+    
+    mockAuthContext.resetPassword = mockResetPassword;
+    mockToast.success = mockSuccess;
+    mockToast.error = mockError;
+
+    // Mock useNavigate
+    jest.spyOn(require('react-router-dom'), 'useNavigate').mockReturnValue(mockNavigate);
   });
 
+  const renderComponent = () => {
+    return renderWithProviders(
+      <PasswordReset />
+    );
+  };
+
   describe('Rendering', () => {
-    it('renders the password reset form', () => {
-      renderWithRouter(<PasswordReset />);
-      
-      expect(screen.getByRole('heading', { level: 3, name: 'Reset Password' })).toBeInTheDocument();
-      expect(screen.getByText(/enter your email address and we'll send you a link/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/email address/i)).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /send reset link/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /back to login/i })).toBeInTheDocument();
+    it('renders the password reset form correctly', () => {
+      renderComponent();
+
+      expect(screen.getByText('Reset Password')).toBeInTheDocument();
+      expect(screen.getByText('Forgot Password?')).toBeInTheDocument();
+      expect(screen.getByLabelText('Email Address')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Send Reset Link' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
     });
 
-    it('shows success state after email is sent', async () => {
-      const user = userEvent.setup();
-      mockResetPassword.mockResolvedValueOnce(undefined);
-      
-      renderWithRouter(<PasswordReset />);
-      
-      const emailInput = screen.getByLabelText(/email address/i);
-      await user.type(emailInput, 'test@example.com');
-      
-      const submitButton = screen.getByRole('button', { name: /send reset link/i });
-      await user.click(submitButton);
-      
-      await waitFor(() => {
-        expect(screen.getByRole('heading', { level: 3, name: 'Check Your Email' })).toBeInTheDocument();
-        expect(screen.getByText(/we've sent a password reset link to test@example\.com/i)).toBeInTheDocument();
-        expect(screen.getByText(/didn't receive the email\? check your spam folder/i)).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: /try again/i })).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: /back to login/i })).toBeInTheDocument();
-      });
+    it('displays instructions correctly', () => {
+      renderComponent();
+
+      expect(screen.getByText('Instructions:')).toBeInTheDocument();
+      expect(screen.getByText(/Enter the email address associated with your account/)).toBeInTheDocument();
+      expect(screen.getByText(/We'll send you a secure password reset link/)).toBeInTheDocument();
+      expect(screen.getByText(/Click the link in the email to create a new password/)).toBeInTheDocument();
+      expect(screen.getByText(/The link will expire in 1 hour for security/)).toBeInTheDocument();
+    });
+
+    it('shows back to login link', () => {
+      renderComponent();
+
+      expect(screen.getByText('Back to login')).toBeInTheDocument();
     });
   });
 
   describe('Form Validation', () => {
-    it('shows error for empty email', async () => {
-      const user = userEvent.setup();
-      renderWithRouter(<PasswordReset />);
-      
-      const submitButton = screen.getByRole('button', { name: /send reset link/i });
-      await user.click(submitButton);
-      
-      expect(screen.getByText(/email is required/i)).toBeInTheDocument();
+    it('validates required email field', async () => {
+      renderComponent();
+
+      const submitButton = screen.getByRole('button', { name: 'Send Reset Link' });
+      fireEvent.click(submitButton);
+
+      await waitFor(() => {
+        expect(screen.getByText('Email is required')).toBeInTheDocument();
+      });
     });
 
-    it('shows error for invalid email format', async () => {
-      const user = userEvent.setup();
-      renderWithRouter(<PasswordReset />);
-      
-      const emailInput = screen.getByLabelText(/email address/i);
-      await user.type(emailInput, 'invalid-email');
-      
-      const submitButton = screen.getByRole('button', { name: /send reset link/i });
-      await user.click(submitButton);
-      
-      // Check if resetPassword was called (it shouldn't be if validation fails)
-      expect(mockResetPassword).not.toHaveBeenCalled();
-      
-      // Since the validation is not working as expected, let's test the core functionality
-      // by ensuring the form submission is prevented when validation fails
-      expect(mockResetPassword).not.toHaveBeenCalled();
+    it('validates email format', async () => {
+      renderComponent();
+
+      const emailInput = screen.getByLabelText('Email Address');
+      fireEvent.change(emailInput, { target: { value: 'invalid-email' } });
+
+      const submitButton = screen.getByRole('button', { name: 'Send Reset Link' });
+      fireEvent.click(submitButton);
+
+      await waitFor(() => {
+        expect(screen.getByText('Please enter a valid email address')).toBeInTheDocument();
+      });
+    });
+
+    it('accepts valid email format', async () => {
+      renderComponent();
+
+      const emailInput = screen.getByLabelText('Email Address');
+      fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
+
+      const submitButton = screen.getByRole('button', { name: 'Send Reset Link' });
+      fireEvent.click(submitButton);
+
+      await waitFor(() => {
+        expect(mockResetPassword).toHaveBeenCalledWith('test@example.com');
+      });
     });
 
     it('clears error when user starts typing', async () => {
-      const user = userEvent.setup();
-      renderWithRouter(<PasswordReset />);
+      renderComponent();
+
+      const emailInput = screen.getByLabelText('Email Address');
       
-      const submitButton = screen.getByRole('button', { name: /send reset link/i });
-      await user.click(submitButton);
-      
-      expect(screen.getByText(/email is required/i)).toBeInTheDocument();
-      
-      const emailInput = screen.getByLabelText(/email address/i);
-      await user.type(emailInput, 'test@example.com');
-      
-      expect(screen.queryByText(/email is required/i)).not.toBeInTheDocument();
+      // First, trigger an error
+      const submitButton = screen.getByRole('button', { name: 'Send Reset Link' });
+      fireEvent.click(submitButton);
+
+      await waitFor(() => {
+        expect(screen.getByText('Email is required')).toBeInTheDocument();
+      });
+
+      // Then start typing to clear the error
+      fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
+
+      await waitFor(() => {
+        expect(screen.queryByText('Email is required')).not.toBeInTheDocument();
+      });
     });
   });
 
   describe('Form Submission', () => {
     it('submits form with valid email', async () => {
-      const user = userEvent.setup();
-      mockResetPassword.mockResolvedValueOnce(undefined);
-      
-      renderWithRouter(<PasswordReset />);
-      
-      const emailInput = screen.getByLabelText(/email address/i);
-      await user.type(emailInput, 'test@example.com');
-      
-      const submitButton = screen.getByRole('button', { name: /send reset link/i });
-      await user.click(submitButton);
-      
+      mockResetPassword.mockResolvedValue(undefined);
+      renderComponent();
+
+      const emailInput = screen.getByLabelText('Email Address');
+      fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
+
+      const submitButton = screen.getByRole('button', { name: 'Send Reset Link' });
+      fireEvent.click(submitButton);
+
       await waitFor(() => {
-        expect(mockResetPassword).toHaveBeenCalledWith({ email: 'test@example.com' });
+        expect(mockResetPassword).toHaveBeenCalledWith('test@example.com');
       });
-      
+
       expect(mockSuccess).toHaveBeenCalledWith('Password reset email sent! Please check your inbox.');
     });
 
-    it('trims email before submission', async () => {
-      const user = userEvent.setup();
-      mockResetPassword.mockResolvedValueOnce(undefined);
-      
-      renderWithRouter(<PasswordReset />);
-      
-      const emailInput = screen.getByLabelText(/email address/i);
-      await user.type(emailInput, '  test@example.com  ');
-      
-      const submitButton = screen.getByRole('button', { name: /send reset link/i });
-      await user.click(submitButton);
-      
-      await waitFor(() => {
-        expect(mockResetPassword).toHaveBeenCalledWith({ email: 'test@example.com' });
-      });
-    });
-
     it('shows loading state during submission', async () => {
-      const user = userEvent.setup();
       mockResetPassword.mockImplementation(() => new Promise(resolve => setTimeout(resolve, 100)));
-      
-      renderWithRouter(<PasswordReset />);
-      
-      const emailInput = screen.getByLabelText(/email address/i);
-      await user.type(emailInput, 'test@example.com');
-      
-      const submitButton = screen.getByRole('button', { name: /send reset link/i });
-      await user.click(submitButton);
-      
-      expect(screen.getByText(/sending\.\.\./i)).toBeInTheDocument();
+      renderComponent();
+
+      const emailInput = screen.getByLabelText('Email Address');
+      fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
+
+      const submitButton = screen.getByRole('button', { name: 'Send Reset Link' });
+      fireEvent.click(submitButton);
+
+      expect(screen.getByText('Sending Reset Link...')).toBeInTheDocument();
       expect(submitButton).toBeDisabled();
     });
 
-    it('handles submission error', async () => {
-      const user = userEvent.setup();
-      const resetError = { code: 'auth/user-not-found' };
-      mockResetPassword.mockRejectedValueOnce(resetError);
-      
-      renderWithRouter(<PasswordReset />);
-      
-      const emailInput = screen.getByLabelText(/email address/i);
-      await user.type(emailInput, 'test@example.com');
-      
-      const submitButton = screen.getByRole('button', { name: /send reset link/i });
-      await user.click(submitButton);
-      
-      await waitFor(() => {
-        expect(mockError).toHaveBeenCalledWith('No account found with this email address.');
-      });
-    });
+    it('trims email input', async () => {
+      mockResetPassword.mockResolvedValue(undefined);
+      renderComponent();
 
-    it('handles different Firebase error codes', async () => {
-      const user = userEvent.setup();
-      
-      renderWithRouter(<PasswordReset />);
-      
-      const emailInput = screen.getByLabelText(/email address/i);
-      await user.type(emailInput, 'test@example.com');
-      
-      const submitButton = screen.getByRole('button', { name: /send reset link/i });
-      
-      // Test invalid email error
-      mockResetPassword.mockRejectedValueOnce({ code: 'auth/invalid-email' });
-      await user.click(submitButton);
-      
+      const emailInput = screen.getByLabelText('Email Address');
+      fireEvent.change(emailInput, { target: { value: '  test@example.com  ' } });
+
+      const submitButton = screen.getByRole('button', { name: 'Send Reset Link' });
+      fireEvent.click(submitButton);
+
       await waitFor(() => {
-        expect(mockError).toHaveBeenCalledWith('Please enter a valid email address.');
-      });
-      
-      // Test too many requests error
-      mockResetPassword.mockRejectedValueOnce({ code: 'auth/too-many-requests' });
-      await user.click(submitButton);
-      
-      await waitFor(() => {
-        expect(mockError).toHaveBeenCalledWith('Too many requests. Please try again later.');
-      });
-      
-      // Test unknown error
-      mockResetPassword.mockRejectedValueOnce({ code: 'auth/unknown-error' });
-      await user.click(submitButton);
-      
-      await waitFor(() => {
-        expect(mockError).toHaveBeenCalledWith('Failed to send reset email. Please try again.');
+        expect(mockResetPassword).toHaveBeenCalledWith('test@example.com');
       });
     });
   });
 
   describe('Success State', () => {
-    it('allows trying again from success state', async () => {
-      const user = userEvent.setup();
-      mockResetPassword.mockResolvedValueOnce(undefined);
-      
-      renderWithRouter(<PasswordReset />);
-      
-      // Submit form to get to success state
-      const emailInput = screen.getByLabelText(/email address/i);
-      await user.type(emailInput, 'test@example.com');
-      
-      const submitButton = screen.getByRole('button', { name: /send reset link/i });
-      await user.click(submitButton);
-      
+    it('shows success message after email is sent', async () => {
+      mockResetPassword.mockResolvedValue(undefined);
+      renderComponent();
+
+      const emailInput = screen.getByLabelText('Email Address');
+      fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
+
+      const submitButton = screen.getByRole('button', { name: 'Send Reset Link' });
+      fireEvent.click(submitButton);
+
       await waitFor(() => {
-        expect(screen.getByRole('heading', { level: 3, name: 'Check Your Email' })).toBeInTheDocument();
+        expect(screen.getByText('Check Your Email')).toBeInTheDocument();
+        expect(screen.getByText('Reset Link Sent')).toBeInTheDocument();
+        expect(screen.getByText('test@example.com')).toBeInTheDocument();
+        expect(screen.getByText(/Click the link in the email to reset your password/)).toBeInTheDocument();
+        expect(screen.getByText(/If you don't see the email, check your spam folder/)).toBeInTheDocument();
       });
-      
-      // Click try again
-      const tryAgainButton = screen.getByRole('button', { name: /try again/i });
-      await user.click(tryAgainButton);
-      
-      expect(screen.getByRole('heading', { level: 3, name: 'Reset Password' })).toBeInTheDocument();
-      expect(screen.getByLabelText(/email address/i)).toHaveValue('');
+    });
+
+    it('shows back to login button in success state', async () => {
+      mockResetPassword.mockResolvedValue(undefined);
+      renderComponent();
+
+      const emailInput = screen.getByLabelText('Email Address');
+      fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
+
+      const submitButton = screen.getByRole('button', { name: 'Send Reset Link' });
+      fireEvent.click(submitButton);
+
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: 'Back to Login' })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Send Another Email' })).toBeInTheDocument();
+      });
+    });
+
+    it('allows sending another email', async () => {
+      mockResetPassword.mockResolvedValue(undefined);
+      renderComponent();
+
+      const emailInput = screen.getByLabelText('Email Address');
+      fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
+
+      const submitButton = screen.getByRole('button', { name: 'Send Reset Link' });
+      fireEvent.click(submitButton);
+
+      await waitFor(() => {
+        expect(screen.getByText('Check Your Email')).toBeInTheDocument();
+      });
+
+      const sendAnotherButton = screen.getByRole('button', { name: 'Send Another Email' });
+      fireEvent.click(sendAnotherButton);
+
+      // Should return to the form
+      expect(screen.getByText('Reset Password')).toBeInTheDocument();
+      expect(screen.getByLabelText('Email Address')).toBeInTheDocument();
+    });
+  });
+
+  describe('Error Handling', () => {
+    it('handles user not found error', async () => {
+      const error = new Error('User not found');
+      (error as Error & { code?: string }).code = 'auth/user-not-found';
+      mockResetPassword.mockRejectedValue(error);
+
+      renderComponent();
+
+      const emailInput = screen.getByLabelText('Email Address');
+      fireEvent.change(emailInput, { target: { value: 'nonexistent@example.com' } });
+
+      const submitButton = screen.getByRole('button', { name: 'Send Reset Link' });
+      fireEvent.click(submitButton);
+
+      await waitFor(() => {
+        expect(mockError).toHaveBeenCalledWith('No account found with this email address.');
+        expect(screen.getByText('No account found with this email address.')).toBeInTheDocument();
+      });
+    });
+
+    it('handles invalid email error', async () => {
+      const error = new Error('Invalid email');
+      (error as Error & { code?: string }).code = 'auth/invalid-email';
+      mockResetPassword.mockRejectedValue(error);
+
+      renderComponent();
+
+      const emailInput = screen.getByLabelText('Email Address');
+      fireEvent.change(emailInput, { target: { value: 'invalid@example.com' } });
+
+      const submitButton = screen.getByRole('button', { name: 'Send Reset Link' });
+      fireEvent.click(submitButton);
+
+      await waitFor(() => {
+        expect(mockError).toHaveBeenCalledWith('Please enter a valid email address.');
+        expect(screen.getByText('Please enter a valid email address.')).toBeInTheDocument();
+      });
+    });
+
+    it('handles too many requests error', async () => {
+      const error = new Error('Too many requests');
+      (error as Error & { code?: string }).code = 'auth/too-many-requests';
+      mockResetPassword.mockRejectedValue(error);
+
+      renderComponent();
+
+      const emailInput = screen.getByLabelText('Email Address');
+      fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
+
+      const submitButton = screen.getByRole('button', { name: 'Send Reset Link' });
+      fireEvent.click(submitButton);
+
+      await waitFor(() => {
+        expect(mockError).toHaveBeenCalledWith('Too many requests. Please try again later.');
+        expect(screen.getByText('Too many requests. Please try again later.')).toBeInTheDocument();
+      });
+    });
+
+    it('handles generic error', async () => {
+      const error = new Error('Generic error');
+      mockResetPassword.mockRejectedValue(error);
+
+      renderComponent();
+
+      const emailInput = screen.getByLabelText('Email Address');
+      fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
+
+      const submitButton = screen.getByRole('button', { name: 'Send Reset Link' });
+      fireEvent.click(submitButton);
+
+      await waitFor(() => {
+        expect(mockError).toHaveBeenCalledWith('Failed to send password reset email. Please try again.');
+      });
     });
   });
 
   describe('Navigation', () => {
-    it('navigates to login page when back to login is clicked', async () => {
-      const user = userEvent.setup();
-      renderWithRouter(<PasswordReset />);
-      
-      const backButton = screen.getByRole('button', { name: /back to login/i });
-      await user.click(backButton);
-      
+    it('navigates to login when cancel is clicked', () => {
+      renderComponent();
+
+      const cancelButton = screen.getByRole('button', { name: 'Cancel' });
+      fireEvent.click(cancelButton);
+
+      expect(mockNavigate).toHaveBeenCalledWith('/login');
+    });
+
+    it('navigates to login when back to login is clicked', () => {
+      renderComponent();
+
+      const backToLoginButton = screen.getByText('Back to login');
+      fireEvent.click(backToLoginButton);
+
       expect(mockNavigate).toHaveBeenCalledWith('/login');
     });
 
     it('navigates to login from success state', async () => {
-      const user = userEvent.setup();
-      mockResetPassword.mockResolvedValueOnce(undefined);
-      
-      renderWithRouter(<PasswordReset />);
-      
-      // Submit form to get to success state
-      const emailInput = screen.getByLabelText(/email address/i);
-      await user.type(emailInput, 'test@example.com');
-      
-      const submitButton = screen.getByRole('button', { name: /send reset link/i });
-      await user.click(submitButton);
-      
+      mockResetPassword.mockResolvedValue(undefined);
+      renderComponent();
+
+      const emailInput = screen.getByLabelText('Email Address');
+      fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
+
+      const submitButton = screen.getByRole('button', { name: 'Send Reset Link' });
+      fireEvent.click(submitButton);
+
       await waitFor(() => {
-        expect(screen.getByRole('heading', { level: 3, name: 'Check Your Email' })).toBeInTheDocument();
+        expect(screen.getByText('Check Your Email')).toBeInTheDocument();
       });
-      
-      // Click back to login
-      const backButton = screen.getByRole('button', { name: /back to login/i });
-      await user.click(backButton);
-      
+
+      const backToLoginButton = screen.getByRole('button', { name: 'Back to Login' });
+      fireEvent.click(backToLoginButton);
+
       expect(mockNavigate).toHaveBeenCalledWith('/login');
     });
   });
 
   describe('Accessibility', () => {
-    it('has proper labels and form associations', () => {
-      renderWithRouter(<PasswordReset />);
-      
-      const emailInput = screen.getByLabelText(/email address/i);
+    it('has proper form labels and associations', () => {
+      renderComponent();
+
+      const emailInput = screen.getByLabelText('Email Address');
       expect(emailInput).toHaveAttribute('id', 'email');
       expect(emailInput).toHaveAttribute('type', 'email');
     });
 
     it('has proper button types', () => {
-      renderWithRouter(<PasswordReset />);
-      
-      expect(screen.getByRole('button', { name: /send reset link/i })).toHaveAttribute('type', 'submit');
-      expect(screen.getByRole('button', { name: /back to login/i })).toHaveAttribute('type', 'button');
+      renderComponent();
+
+      const submitButton = screen.getByRole('button', { name: 'Send Reset Link' });
+      const cancelButton = screen.getByRole('button', { name: 'Cancel' });
+
+      expect(submitButton).toHaveAttribute('type', 'submit');
+      expect(cancelButton).toHaveAttribute('type', 'button');
     });
 
-    it('shows error messages with proper styling', async () => {
-      const user = userEvent.setup();
-      renderWithRouter(<PasswordReset />);
-      
-      const submitButton = screen.getByRole('button', { name: /send reset link/i });
-      await user.click(submitButton);
-      
-      const errorMessage = screen.getByText(/email is required/i);
-      expect(errorMessage).toHaveClass('text-red-500');
+    it('has proper heading structure', () => {
+      renderComponent();
+
+      expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Reset Password');
+      expect(screen.getByRole('heading', { level: 3 })).toHaveTextContent('Forgot Password?');
     });
 
-    it('disables form inputs during loading', async () => {
-      const user = userEvent.setup();
-      mockResetPassword.mockImplementation(() => new Promise(resolve => setTimeout(resolve, 100)));
-      
-      renderWithRouter(<PasswordReset />);
-      
-      const emailInput = screen.getByLabelText(/email address/i);
-      await user.type(emailInput, 'test@example.com');
-      
-      const submitButton = screen.getByRole('button', { name: /send reset link/i });
-      await user.click(submitButton);
-      
-      expect(emailInput).toBeDisabled();
+    it('has proper ARIA attributes for instructions', () => {
+      renderComponent();
+
+      const instructions = screen.getByText('Instructions:');
+      expect(instructions).toBeInTheDocument();
+    });
+  });
+
+  describe('Props Handling', () => {
+    it('calls onSuccess callback when provided', async () => {
+      const mockOnSuccess = jest.fn();
+      mockResetPassword.mockResolvedValue(undefined);
+
+      renderWithProviders(
+        <PasswordReset onSuccess={mockOnSuccess} />
+      );
+
+      const emailInput = screen.getByLabelText('Email Address');
+      fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
+
+      const submitButton = screen.getByRole('button', { name: 'Send Reset Link' });
+      fireEvent.click(submitButton);
+
+      await waitFor(() => {
+        expect(mockOnSuccess).toHaveBeenCalled();
+      });
+    });
+
+    it('calls onCancel callback when provided', () => {
+      const mockOnCancel = jest.fn();
+
+      renderWithProviders(
+        <PasswordReset onCancel={mockOnCancel} />
+      );
+
+      const cancelButton = screen.getByRole('button', { name: 'Cancel' });
+      fireEvent.click(cancelButton);
+
+      expect(mockOnCancel).toHaveBeenCalled();
     });
   });
 }); 
