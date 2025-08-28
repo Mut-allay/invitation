@@ -1,6 +1,6 @@
 import * as admin from 'firebase-admin';
 
-// Get or initialize Firebase Admin
+// Initialize Firebase Admin
 try {
     admin.app();
 } catch {
