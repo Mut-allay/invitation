@@ -13,8 +13,15 @@ afterEach(() => {
 });
 
 // Mock TextEncoder/TextDecoder
-(global as any).TextEncoder = TextEncoder;
-(global as any).TextDecoder = TextDecoder;
+Object.defineProperty(global, 'TextEncoder', {
+    writable: true,
+    value: TextEncoder
+});
+
+Object.defineProperty(global, 'TextDecoder', {
+    writable: true,
+    value: TextDecoder
+});
 
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {

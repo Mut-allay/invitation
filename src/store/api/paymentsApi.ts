@@ -4,13 +4,10 @@ import {
     Payment,
     PaymentResponse,
     PaymentVerificationResponse,
-    MobileMoneyPayment,
-    BankTransferPayment,
     PaymentReceipt,
     MobileMoneyProvider,
     BankCode
 } from '../../types/payment';
-import { RootState } from '../index';
 
 // Constants for API configuration
 const PAYMENT_API_BASE_URL = process.env.VITE_PAYMENT_API_URL || 'https://api.garagiflow.com/payments';
@@ -29,7 +26,7 @@ export const paymentsApi = createApi({
     reducerPath: 'paymentsApi',
     baseQuery: fetchBaseQuery({
         baseUrl: PAYMENT_API_BASE_URL,
-        prepareHeaders: (headers, { getState }) => {
+        prepareHeaders: async (headers) => {
             // Add authorization header from auth state
             // Get token from Firebase Auth instead of Redux store
             const token = getAuth().currentUser?.getIdToken() || '';
