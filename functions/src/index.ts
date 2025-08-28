@@ -12,3 +12,7 @@ export * from './parts-ordering/createPartsOrder';
 export * from './parts-ordering/getPartsOrders';
 export * from './parts-ordering/updateOrderStatus';
 export * from './parts-ordering/deletePartsOrder';
+
+// ZRA Integration Functions
+export * from './integrations/zambia/zra';
+export * from './zraFunctions';
