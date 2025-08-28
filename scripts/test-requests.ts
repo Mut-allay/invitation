@@ -1,7 +1,7 @@
 import { createInterface } from 'readline';
 import * as admin from 'firebase-admin';
 import functionsTest from 'firebase-functions-test';
-import functionsModule from '../functions/lib/index';
+import { coreData, paymentData, zraData, analyticsData } from './test-data';
 
 const rl = createInterface({
     input: process.stdin,
@@ -34,9 +34,6 @@ const testUser = {
     }
 };
 
-// Import test data
-import { coreData, paymentData, zraData, analyticsData } from './test-data';
-
 // Combined test data
 const testData = {
     ...coreData,
@@ -53,13 +50,15 @@ const testData = {
     auditLog: analyticsData.audit
 };
 
-async function makeRequest(functionName: string, data?: unknown) {
+async function makeRequest(functionName: string, data?: Record<string, unknown>) {
     try {
         console.log(`\n📡 Calling function ${functionName}...`);
         console.log('Request Data:', data || 'No data');
 
         // Get the function from the test environment
-        const wrapped = testEnv.wrap(functionsModule[functionName as keyof typeof functionsModule]);
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const functionsModule = require('../functions/lib/index');
+        const wrapped = testEnv.wrap(functionsModule[functionName]);
 
         // Call the function with test context
         const result = await wrapped(data, { auth: testUser });
@@ -67,11 +66,13 @@ async function makeRequest(functionName: string, data?: unknown) {
         console.log('\n✅ Response received:');
         console.log(JSON.stringify(result, null, 2));
         return result;
-    } catch (error: unknown) {
-        const testError = error as { message: string; details?: unknown };
-        console.error('\n❌ Error:', testError.message);
-        if (testError.details) {
-            console.error('Details:', testError.details);
+    } catch (error) {
+        if (!(error instanceof Error)) {
+            throw error;
+        }
+        console.error('\n❌ Error:', error.message);
+        if (error.details) {
+            console.error('Details:', error.details);
         }
         throw error;
     }

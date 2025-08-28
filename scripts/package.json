@@ -1,7 +1,11 @@
 {
     "name": "garagiflow-scripts",
     "version": "1.0.0",
+    "description": "Test scripts for GarajiFlow",
     "type": "commonjs",
+    "scripts": {
+        "test": "ts-node test-requests.ts"
+    },
     "dependencies": {
         "@types/node": "^20.11.24",
         "firebase-admin": "^11.11.1",
@@ -9,8 +13,5 @@
         "firebase-functions-test": "^3.1.0",
         "ts-node": "^10.9.2",
         "typescript": "^5.3.3"
-    },
-    "scripts": {
-        "test": "ts-node test-requests.ts"
     }
 }
