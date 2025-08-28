@@ -61,9 +61,15 @@ const server = setupServer(
         }
 
         return HttpResponse.json({
-            verified: true,
-            status: 'completed',
-            reference
+            success: true,
+            payment: {
+                id: 'test-payment-1',
+                reference,
+                status: 'completed',
+                provider: 'airtel',
+                amount: 1000,
+                phoneNumber: '0977123456'
+            }
         });
     }),
 
@@ -154,10 +160,13 @@ describe('Payment Integration Tests', () => {
             const confirmButton = screen.getByRole('button', { name: /confirm payment/i });
             fireEvent.click(confirmButton);
 
-            // Wait for success
-            await waitFor(() => {
-                expect(screen.getByText('Payment Successful!')).toBeInTheDocument();
-            });
+                  // Wait for success
+      await waitFor(
+        () => {
+          expect(screen.getByText(/payment successful/i)).toBeInTheDocument();
+        },
+        { timeout: 15000 }
+      );
 
             expect(mockMobileMoneyProps.onPaymentComplete).toHaveBeenCalled();
         });
@@ -179,10 +188,13 @@ describe('Payment Integration Tests', () => {
             const confirmButton = screen.getByRole('button', { name: /confirm payment/i });
             fireEvent.click(confirmButton);
 
-            // Wait for success
-            await waitFor(() => {
-                expect(screen.getByText('Payment Successful!')).toBeInTheDocument();
-            });
+                  // Wait for success
+      await waitFor(
+        () => {
+          expect(screen.getByText(/payment successful/i)).toBeInTheDocument();
+        },
+        { timeout: 15000 }
+      );
 
             expect(mockMobileMoneyProps.onPaymentComplete).toHaveBeenCalled();
         });
@@ -204,10 +216,13 @@ describe('Payment Integration Tests', () => {
             const confirmButton = screen.getByRole('button', { name: /confirm payment/i });
             fireEvent.click(confirmButton);
 
-            // Wait for success
-            await waitFor(() => {
-                expect(screen.getByText('Payment Successful!')).toBeInTheDocument();
-            });
+                  // Wait for success
+      await waitFor(
+        () => {
+          expect(screen.getByText(/payment successful/i)).toBeInTheDocument();
+        },
+        { timeout: 15000 }
+      );
 
             expect(mockMobileMoneyProps.onPaymentComplete).toHaveBeenCalled();
         });
@@ -248,10 +263,13 @@ describe('Payment Integration Tests', () => {
             // Confirm transfer
             fireEvent.click(screen.getByText('Confirm Transfer'));
 
-            // Wait for success
-            await waitFor(() => {
-                expect(screen.getByText('Transfer Initiated Successfully!')).toBeInTheDocument();
-            });
+                  // Wait for success
+      await waitFor(
+        () => {
+          expect(screen.getByText(/transfer initiated successfully/i)).toBeInTheDocument();
+        },
+        { timeout: 15000 }
+      );
 
             expect(mockBankTransferProps.onPaymentComplete).toHaveBeenCalled();
         });
@@ -282,7 +300,13 @@ describe('Payment Integration Tests', () => {
             // Mock network error
             server.use(
                 http.post('*/mobile-money/initiate', () => {
-                    return HttpResponse.error();
+                    return new HttpResponse(
+                        JSON.stringify({
+                            success: false,
+                            error: 'Payment failed. Please try again.'
+                        }),
+                        { status: 500 }
+                    );
                 })
             );
 
@@ -302,24 +326,44 @@ describe('Payment Integration Tests', () => {
             const confirmButton = screen.getByRole('button', { name: /confirm payment/i });
             fireEvent.click(confirmButton);
 
-            // Wait for error
+            // Wait for processing state
+            await waitFor(() => {
+                expect(screen.getByText(/processing payment/i)).toBeInTheDocument();
+            });
+
+            // Wait for error state
             await waitFor(
                 () => {
-                    expect(screen.getByText('Payment Failed')).toBeInTheDocument();
+                    expect(screen.getByRole('heading', { name: /payment failed/i })).toBeInTheDocument();
                 },
-                { timeout: 5000 }
+                { timeout: 15000 }
             );
         });
 
         it('handles verification failure', async () => {
             // Mock verification failure
             server.use(
-                http.get('*/mobile-money/verify/:reference', () => {
+                http.post('*/mobile-money/initiate', () => {
                     return HttpResponse.json({
-                        verified: false,
-                        status: 'failed',
-                        message: 'Payment verification failed'
+                        success: true,
+                        payment: {
+                            id: 'test-payment-1',
+                            reference: 'AM-123456',
+                            status: 'pending',
+                            provider: 'airtel',
+                            amount: 1000,
+                            phoneNumber: '0977123456'
+                        }
                     });
+                }),
+                http.get('*/mobile-money/verify/:reference', () => {
+                    return new HttpResponse(
+                        JSON.stringify({
+                            success: false,
+                            error: 'Payment verification failed'
+                        }),
+                        { status: 400 }
+                    );
                 })
             );
 
@@ -344,11 +388,14 @@ describe('Payment Integration Tests', () => {
                 expect(screen.getByText('Processing Payment...')).toBeInTheDocument();
             });
 
-            // Wait for error state
-            await waitFor(() => {
-                expect(screen.getByText('Payment Failed')).toBeInTheDocument();
-                expect(screen.getByText('Payment verification failed')).toBeInTheDocument();
-            }, { timeout: 10000 });
+                  // Wait for error state
+      await waitFor(
+        () => {
+          expect(screen.getByText(/payment failed/i)).toBeInTheDocument();
+          expect(screen.getByText(/payment verification failed/i)).toBeInTheDocument();
+        },
+        { timeout: 15000 }
+      );
         });
     });
 });

@@ -115,24 +115,61 @@ const MobileMoneyPayment: React.FC<MobileMoneyPaymentProps> = ({
   };
 
   const handleConfirmPayment = async () => {
-    setCurrentStep('processing');
-    setPaymentError('');
+    try {
+      setCurrentStep('processing');
+      setPaymentError('');
 
-    // Simulate payment processing
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    // Simulate success (in real app, this would be an API call)
-    const reference = `MM-${Date.now()}`;
-    
-    onPaymentComplete({
-      provider: selectedProvider!,
-      phoneNumber,
-      amount,
-      reference,
-      status: 'success'
-    });
-    
-    setCurrentStep('success');
+      // Initiate payment
+      const initiateResponse = await fetch('/api/mobile-money/initiate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          provider: selectedProvider,
+          phoneNumber,
+          amount
+        })
+      });
+
+      if (!initiateResponse.ok) {
+        const errorData = await initiateResponse.json();
+        throw new Error(errorData.error || 'Payment failed. Please try again.');
+      }
+
+      const initiateData = await initiateResponse.json();
+      
+      if (!initiateData.success) {
+        throw new Error(initiateData.error || 'Payment failed. Please try again.');
+      }
+
+      // Verify payment
+      const verifyResponse = await fetch(`/api/mobile-money/verify/${initiateData.payment.reference}`);
+      
+      if (!verifyResponse.ok) {
+        const errorData = await verifyResponse.json();
+        throw new Error(errorData.error || 'Payment verification failed');
+      }
+
+      const verifyData = await verifyResponse.json();
+      
+      if (!verifyData.success) {
+        throw new Error(verifyData.error || 'Payment verification failed');
+      }
+
+      onPaymentComplete({
+        provider: selectedProvider!,
+        phoneNumber,
+        amount,
+        reference: initiateData.payment.reference,
+        status: 'success'
+      });
+      
+      setCurrentStep('success');
+    } catch (error) {
+      setPaymentError(error instanceof Error ? error.message : 'Payment failed. Please try again.');
+      setCurrentStep('error');
+    }
   };
 
   const handleCancel = () => {
