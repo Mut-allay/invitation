@@ -1,4 +1,4 @@
-import { z } from 'zod';
+
 import { BankSchema, BankTransferRequestSchema } from './types';
 
 export const validateBank = (bank: string): boolean => {

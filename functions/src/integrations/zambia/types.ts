@@ -19,8 +19,8 @@ export type BasePaymentRequest = z.infer<typeof BasePaymentRequestSchema>;
 // Bank transfer request
 export const BankTransferRequestSchema = BasePaymentRequestSchema.extend({
     bank: BankSchema,
-    accountNumber: z.string(),
-    accountName: z.string()
+    accountNumber: z.string().min(1, 'Account number is required'),
+    accountName: z.string().min(1, 'Account name is required')
 });
 
 export type BankTransferRequest = z.infer<typeof BankTransferRequestSchema>;
