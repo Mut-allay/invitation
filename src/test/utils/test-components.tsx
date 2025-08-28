@@ -42,9 +42,15 @@ const createTestStore = () => {
 export const MockAuthProvider = ({ children }: { children: React.ReactNode }) => {
   const mockAuthContext = {
     user: null,
+    userProfile: null,
     loading: false, // Always false in tests
     login: jest.fn(),
     logout: jest.fn(),
+    register: jest.fn(),
+    resetPassword: jest.fn(),
+    updateProfile: jest.fn(),
+    hasPermission: jest.fn(),
+    hasRole: jest.fn(),
   };
 
   return (
