@@ -1,12 +1,6 @@
 import { onCall, HttpsError, CallableRequest } from 'firebase-functions/v2/https';
 import { onDocumentUpdated } from 'firebase-functions/v2/firestore';
-import { getFirestore } from 'firebase-admin/firestore';
-import { initializeApp } from 'firebase-admin/app';
-
-// Initialize Firebase Admin
-initializeApp();
-
-const db = getFirestore();
+import { db } from './firebase-admin';
 
 // Type definitions
 interface VehicleData {

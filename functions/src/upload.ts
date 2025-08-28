@@ -1,14 +1,7 @@
 import { onCall, HttpsError, CallableRequest } from 'firebase-functions/v2/https';
-import { getStorage } from 'firebase-admin/storage';
-import { getFirestore } from 'firebase-admin/firestore';
-import { initializeApp } from 'firebase-admin/app';
+import { storage, db } from './firebase-admin';
 
-// Initialize Firebase Admin
-initializeApp();
-
-const storage = getStorage();
 const bucket = storage.bucket();
-const db = getFirestore();
 
 // Type definitions
 interface FileData {

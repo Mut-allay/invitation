@@ -1,57 +1,57 @@
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Allow authenticated users to read their own data
+
+    // Helper function to check if a user belongs to the correct tenant
+    function isUserInTenant(tenantId) {
+      return request.auth != null && request.auth.token.tenantId == tenantId;
+    }
+
+    // Helper function to check for required roles
+    function hasRole(roles) {
+      return request.auth != null && request.auth.token.role in roles;
+    }
+
+    // Secure all collections by default with tenant isolation
+    match /{collection}/{docId} {
+      allow read, write: if isUserInTenant(resource.data.tenantId);
+    }
+
+    // Users can only read/write their own user document
     match /users/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
-    
-    // Vehicle management - users can manage their own vehicles
-    match /vehicles/{vehicleId} {
-      allow read, write: if request.auth != null && 
-        (resource.data.userId == request.auth.uid || 
-         request.auth.token.role == 'admin');
+
+    // Tenants collection can only be read by users within that tenant
+    match /tenants/{tenantId} {
+      allow read: if isUserInTenant(tenantId);
+      // Writes to tenants should be highly restricted (e.g., by an admin Cloud Function)
+      allow write: if false;
     }
-    
-    // Customer management - users can manage their own customers
-    match /customers/{customerId} {
-      allow read, write: if request.auth != null && 
-        (resource.data.userId == request.auth.uid || 
-         request.auth.token.role == 'admin');
+
+    // Parts Orders can be read by users in either the ordering or supplier tenant.
+    // Status can only be updated by the supplier.
+    match /partsOrders/{orderId} {
+      allow read: if isUserInTenant(resource.data.tenantId) || isUserInTenant(resource.data.supplierTenantId);
+      allow create: if isUserInTenant(request.resource.data.tenantId);
+      allow update: if (isUserInTenant(resource.data.supplierTenantId) && onlyStatusChanged()) ||
+                       (isUserInTenant(resource.data.tenantId) && !statusChanged());
     }
-    
-    // Repair jobs - users can manage their own repairs
-    match /repairs/{repairId} {
-      allow read, write: if request.auth != null && 
-        (resource.data.userId == request.auth.uid || 
-         request.auth.token.role == 'admin');
+
+    function onlyStatusChanged() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']);
     }
-    
-    // Sales records - users can manage their own sales
-    match /sales/{saleId} {
-      allow read, write: if request.auth != null && 
-        (resource.data.userId == request.auth.uid || 
-         request.auth.token.role == 'admin');
+    function statusChanged() {
+      return resource.data.status != request.resource.data.status;
     }
-    
-    // Invoices - users can manage their own invoices
-    match /invoices/{invoiceId} {
+
+    // Notifications security rules - strict user-level access control
+    match /notifications/{notificationId} {
+      // Individual document access - user must be in the same tenant AND be the assigned user
       allow read, write: if request.auth != null && 
-        (resource.data.userId == request.auth.uid || 
-         request.auth.token.role == 'admin');
-    }
-    
-    // Inventory - users can manage their own inventory
-    match /inventory/{itemId} {
-      allow read, write: if request.auth != null && 
-        (resource.data.userId == request.auth.uid || 
-         request.auth.token.role == 'admin');
-    }
-    
-    // Admin access for system-wide data
-    match /{document=**} {
-      allow read, write: if request.auth != null && 
-        request.auth.token.role == 'admin';
+                           request.auth.token.tenantId == resource.data.tenantId && 
+                           request.auth.uid == resource.data.userId;
     }
   }
 } 

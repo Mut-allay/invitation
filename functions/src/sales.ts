@@ -1,11 +1,5 @@
 import { onCall, HttpsError, CallableRequest } from 'firebase-functions/v2/https';
-import { getFirestore } from 'firebase-admin/firestore';
-import { initializeApp } from 'firebase-admin/app';
-
-// Initialize Firebase Admin
-initializeApp();
-
-const db = getFirestore();
+import { db } from './firebase-admin';
 
 // Type definitions
 interface SaleData {
@@ -87,11 +81,15 @@ export const getSale = onCall<{ tenantId: string; saleId: string }>(async (reque
   }
 });
 
+import { checkRateLimit } from './rate-limiter';
+
 // Create a new sale
 export const createSale = onCall<{ tenantId: string; sale: SaleData }>(async (request: CallableRequest<{ tenantId: string; sale: SaleData }>) => {
-  if (!request.auth) {
-    throw new HttpsError('unauthenticated', 'User must be authenticated');
+  if (!request.auth || !request.rawRequest.ip) {
+    throw new HttpsError('unauthenticated', 'User must be authenticated and have an IP address.');
   }
+
+  await checkRateLimit(request.rawRequest.ip);
 
   const { tenantId, sale } = request.data;
   const userClaims = request.auth.token;
@@ -119,6 +117,9 @@ export const createSale = onCall<{ tenantId: string; sale: SaleData }>(async (re
     };
   } catch (error) {
     console.error('Error creating sale:', error);
+    if (error instanceof HttpsError) {
+      throw error;
+    }
     throw new HttpsError('internal', 'Failed to create sale');
   }
 });

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense, lazy } from 'react';
 import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/auth-hooks';
 import { useToast } from '../contexts/toast-hooks';
@@ -19,18 +19,18 @@ import {
   Bars3Icon
 } from '@heroicons/react/24/outline';
 
-// Import actual page components
-import DashboardHome from './DashboardHome';
-import SalesPage from './SalesPage';
-import RepairsPage from './RepairsPage';
-import CustomersPage from './CustomersPage';
-import InventoryPage from './InventoryPage';
-import InvoicesPage from './InvoicesPage';
-import BusinessIntelligencePage from './BusinessIntelligencePage';
-import WizardDemo from './WizardDemo';
+// Lazy load page components
+const DashboardHome = lazy(() => import('./DashboardHome'));
+const SalesPage = lazy(() => import('./SalesPage'));
+const RepairsPage = lazy(() => import('./RepairsPage'));
+const CustomersPage = lazy(() => import('./CustomersPage'));
+const InventoryPage = lazy(() => import('./InventoryPage'));
+const InvoicesPage = lazy(() => import('./InvoicesPage'));
+const BusinessIntelligencePage = lazy(() => import('./BusinessIntelligencePage'));
+const WizardDemo = lazy(() => import('./WizardDemo'));
+const SettingsPage = lazy(() => import('./SettingsPage'));
+const ZambianMarketDemo = lazy(() => import('./ZambianMarketDemo'));
 
-import SettingsPage from './SettingsPage';
-import ZambianMarketDemo from './ZambianMarketDemo';
 import CommandMenu from '../components/ui/CommandMenu';
 import ThemeToggle from '@/components/ui/theme-toggle';
 import MobileNav from '@/components/ui/mobile-nav';
@@ -264,18 +264,20 @@ const Dashboard: React.FC = () => {
           <div className="py-6">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
               <PageTransition>
-                <Routes>
-                  <Route path="/" element={<DashboardHome />} />
-                  <Route path="/sales" element={<SalesPage />} />
-                  <Route path="/repairs" element={<RepairsPage />} />
-                  <Route path="/customers" element={<CustomersPage />} />
-                  <Route path="/inventory" element={<InventoryPage />} />
-                  <Route path="/invoices" element={<InvoicesPage />} />
-                  <Route path="/analytics" element={<BusinessIntelligencePage />} />
-                  <Route path="/wizard" element={<WizardDemo />} />
-                  <Route path="/zambian-demo" element={<ZambianMarketDemo />} />
-                  <Route path="/settings" element={<SettingsPage />} />
-                </Routes>
+                <Suspense fallback={<div className="p-4 text-center">Loading...</div>}>
+                  <Routes>
+                    <Route path="/" element={<DashboardHome />} />
+                    <Route path="/sales" element={<SalesPage />} />
+                    <Route path="/repairs" element={<RepairsPage />} />
+                    <Route path="/customers" element={<CustomersPage />} />
+                    <Route path="/inventory" element={<InventoryPage />} />
+                    <Route path="/invoices" element={<InvoicesPage />} />
+                    <Route path="/analytics" element={<BusinessIntelligencePage />} />
+                    <Route path="/wizard" element={<WizardDemo />} />
+                    <Route path="/zambian-demo" element={<ZambianMarketDemo />} />
+                    <Route path="/settings" element={<SettingsPage />} />
+                  </Routes>
+                </Suspense>
               </PageTransition>
             </div>
           </div>
