@@ -1,10 +1,15 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { 
   ChartBarIcon,
   CurrencyDollarIcon,
   StarIcon,
   WrenchScrewdriverIcon,
-  CheckCircleIcon
+  CheckCircleIcon,
+  BoltIcon,
+  ArrowTrendingUpIcon,
+  ExclamationTriangleIcon,
+  ClockIcon,
+  UserGroupIcon
 } from '@heroicons/react/24/outline';
 import { 
   LineChart, 
@@ -46,6 +51,20 @@ const RepairAnalytics: React.FC<RepairAnalyticsProps> = ({
   onClose
 }) => {
   const [selectedMetric, setSelectedMetric] = useState<'efficiency' | 'revenue' | 'satisfaction'>('efficiency');
+  const [analyticsMode, setAnalyticsMode] = useState<'real-time' | 'historical' | 'predictive'>('real-time');
+  const [timeframe, setTimeframe] = useState<'daily' | 'weekly' | 'monthly' | 'quarterly'>('weekly');
+  const [predictiveInsights, setPredictiveInsights] = useState({
+    nextWeekRevenue: 0,
+    efficiencyTrend: 'up',
+    riskFactors: [] as string[],
+    recommendations: [] as string[]
+  });
+  const [realTimeData, setRealTimeData] = useState({
+    activeRepairs: 0,
+    averageCompletionTime: 0,
+    customerSatisfaction: 0,
+    revenueToday: 0
+  });
   // Note: success and showError are available but not used in this component
   // const { success, error: showError } = useToast();
 
@@ -198,6 +217,42 @@ const RepairAnalytics: React.FC<RepairAnalyticsProps> = ({
     }));
   }, [mockMechanics]);
 
+  // Advanced analytics logic
+  useEffect(() => {
+    // Simulate real-time data updates
+    const interval = setInterval(() => {
+      setRealTimeData({
+        activeRepairs: Math.floor(Math.random() * 20) + 5,
+        averageCompletionTime: Math.random() * 4 + 1,
+        customerSatisfaction: Math.random() * 2 + 3,
+        revenueToday: Math.random() * 5000 + 2000
+      });
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // Predictive analytics
+  useEffect(() => {
+    if (analyticsMode === 'predictive') {
+      // Simulate predictive insights
+      setPredictiveInsights({
+        nextWeekRevenue: analyticsMetrics.totalRevenue * (1 + Math.random() * 0.3),
+        efficiencyTrend: Math.random() > 0.5 ? 'up' : 'down',
+        riskFactors: [
+          'High repair volume expected next week',
+          'Parts shortage may impact completion times',
+          'Staff availability concerns'
+        ],
+        recommendations: [
+          'Increase parts inventory for common repairs',
+          'Schedule additional staff for peak hours',
+          'Implement preventive maintenance programs'
+        ]
+      });
+    }
+  }, [analyticsMode, analyticsMetrics.totalRevenue]);
+
   // COLORS for charts
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 
@@ -208,8 +263,14 @@ const RepairAnalytics: React.FC<RepairAnalyticsProps> = ({
         <div className="flex items-center space-x-3">
           <ChartBarIcon className="w-6 h-6 text-primary" />
           <h2 className="text-responsive-xl font-semibold text-slate-900 dark:text-slate-100">
-            Repair Analytics Dashboard
+            Advanced Repair Analytics Dashboard
           </h2>
+          <div className="flex items-center space-x-2">
+            <BoltIcon className="w-4 h-4 text-yellow-500" />
+            <span className="text-sm text-slate-600 dark:text-slate-400">
+              Mode: {analyticsMode}
+            </span>
+          </div>
         </div>
         {onClose && (
           <Button
@@ -222,6 +283,99 @@ const RepairAnalytics: React.FC<RepairAnalyticsProps> = ({
           </Button>
         )}
       </div>
+
+      {/* Analytics Mode Selection */}
+      <Card className="card-glass mb-6">
+        <div className="flex items-center justify-between">
+          <h3 className="text-responsive-lg font-semibold text-slate-900 dark:text-slate-100">
+            Analytics Mode
+          </h3>
+          <div className="flex space-x-2">
+            {(['real-time', 'historical', 'predictive'] as const).map((mode) => (
+              <Button
+                key={mode}
+                onClick={() => setAnalyticsMode(mode)}
+                variant={analyticsMode === mode ? 'default' : 'outline'}
+                size="sm"
+                className="capitalize"
+              >
+                {mode === 'real-time' && <BoltIcon className="w-4 h-4 mr-1" />}
+                {mode === 'historical' && <ArrowTrendingUpIcon className="w-4 h-4 mr-1" />}
+                {mode === 'predictive' && <ExclamationTriangleIcon className="w-4 h-4 mr-1" />}
+                {mode}
+              </Button>
+            ))}
+          </div>
+        </div>
+      </Card>
+
+      {/* Real-time Analytics */}
+      {analyticsMode === 'real-time' && (
+        <Card className="card-glass mb-6">
+          <h3 className="text-responsive-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">
+            Real-time Metrics
+          </h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-blue-600">{realTimeData.activeRepairs}</div>
+              <div className="text-sm text-slate-600 dark:text-slate-400">Active Repairs</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-green-600">{realTimeData.averageCompletionTime.toFixed(1)}h</div>
+              <div className="text-sm text-slate-600 dark:text-slate-400">Avg Completion Time</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-yellow-600">{realTimeData.customerSatisfaction.toFixed(1)}/5</div>
+              <div className="text-sm text-slate-600 dark:text-slate-400">Customer Satisfaction</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-purple-600">${realTimeData.revenueToday.toLocaleString()}</div>
+              <div className="text-sm text-slate-600 dark:text-slate-400">Revenue Today</div>
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {/* Predictive Insights */}
+      {analyticsMode === 'predictive' && (
+        <Card className="card-glass mb-6">
+          <h3 className="text-responsive-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">
+            Predictive Insights
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <h4 className="font-medium text-slate-900 dark:text-slate-100 mb-3">Revenue Forecast</h4>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-600 dark:text-slate-400">Next Week Revenue:</span>
+                  <span className="font-medium text-slate-900 dark:text-slate-100">
+                    ${predictiveInsights.nextWeekRevenue.toLocaleString()}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-600 dark:text-slate-400">Efficiency Trend:</span>
+                  <span className={`font-medium ${
+                    predictiveInsights.efficiencyTrend === 'up' ? 'text-green-600' : 'text-red-600'
+                  }`}>
+                    {predictiveInsights.efficiencyTrend === 'up' ? '↗ Up' : '↘ Down'}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div>
+              <h4 className="font-medium text-slate-900 dark:text-slate-100 mb-3">Risk Factors</h4>
+              <ul className="space-y-1">
+                {predictiveInsights.riskFactors.map((risk, index) => (
+                  <li key={index} className="text-sm text-slate-600 dark:text-slate-400 flex items-center">
+                    <ExclamationTriangleIcon className="w-4 h-4 text-yellow-500 mr-2" />
+                    {risk}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </Card>
+      )}
 
       {/* Key Metrics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

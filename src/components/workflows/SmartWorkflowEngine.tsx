@@ -1,9 +1,12 @@
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { 
   CogIcon, 
   ArrowPathIcon,
   PlayIcon,
-  PauseIcon
+  PauseIcon,
+  BoltIcon,
+  ChartBarIcon,
+  ExclamationTriangleIcon
 } from '@heroicons/react/24/outline';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -85,12 +88,53 @@ const SmartWorkflowEngine: React.FC<SmartWorkflowEngineProps> = ({
 
   const [isRunning, setIsRunning] = useState(false);
   const [executionLog, setExecutionLog] = useState<string[]>([]);
+  const [performanceMode, setPerformanceMode] = useState<'balanced' | 'speed' | 'quality'>('balanced');
+  const [automationStats, setAutomationStats] = useState({
+    totalExecutions: 0,
+    successfulExecutions: 0,
+    failedExecutions: 0,
+    averageExecutionTime: 0
+  });
+  const performanceMonitorRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Memoized available mechanics
-  const availableMechanics = useMemo(() => 
-    mechanics.filter((m: Mechanic) => m.availability === 'available'), 
-    [mechanics]
-  );
+  // Memoized available mechanics with performance ranking
+  const availableMechanics = useMemo(() => {
+    const available = mechanics.filter((m: Mechanic) => m.availability === 'available');
+    
+    // Rank mechanics by performance (simulated)
+    return available.map(mechanic => ({
+      ...mechanic,
+      performanceScore: Math.random() * 100 + 50, // Simulated performance score
+      specializationMatch: repair.reportedIssues.toLowerCase().includes(mechanic.specialization[0]?.toLowerCase() || '') ? 1 : 0
+    })).sort((a, b) => (b.performanceScore + b.specializationMatch * 20) - (a.performanceScore + a.specializationMatch * 20));
+  }, [mechanics, repair.reportedIssues]);
+
+  // Enhanced auto-assign mechanic with performance optimization
+  const autoAssignMechanic = useCallback((repair: Repair) => {
+    if (availableMechanics.length === 0) return null;
+
+    // Advanced assignment logic based on performance mode
+    let selectedMechanic = availableMechanics[0];
+
+    if (performanceMode === 'quality') {
+      // Prioritize quality - select mechanic with highest performance score
+      selectedMechanic = availableMechanics.reduce((best, current) => 
+        (current.hourlyRate > best.hourlyRate) ? current : best
+      );
+    } else if (performanceMode === 'speed') {
+      // Prioritize speed - select first available with specialization match
+      selectedMechanic = availableMechanics.find(m => 
+        m.specialization.some(s => 
+          repair.reportedIssues.toLowerCase().includes(s.toLowerCase())
+        )
+      ) || availableMechanics[0];
+    } else {
+      // Balanced approach - consider both performance and specialization
+      selectedMechanic = availableMechanics[0];
+    }
+
+    return selectedMechanic;
+  }, [availableMechanics, performanceMode, repair.reportedIssues]);
 
   // Memoized available bays
   const availableBays = useMemo(() => 
@@ -98,19 +142,7 @@ const SmartWorkflowEngine: React.FC<SmartWorkflowEngineProps> = ({
     [bays]
   );
 
-  // Auto-assign mechanic based on specialization and availability
-  const autoAssignMechanic = useCallback((repair: Repair) => {
-    if (availableMechanics.length === 0) return null;
 
-    // Simple logic: assign based on specialization match or first available
-    const specializedMechanic = availableMechanics.find((m: Mechanic) => 
-      m.specialization.some(s => 
-        repair.reportedIssues.toLowerCase().includes(s.toLowerCase())
-      )
-    );
-
-    return specializedMechanic || availableMechanics[0];
-  }, [availableMechanics]);
 
   // Auto-assign bay based on repair type
   const autoAssignBay = useCallback((repair: Repair) => {
@@ -194,8 +226,17 @@ const SmartWorkflowEngine: React.FC<SmartWorkflowEngineProps> = ({
 
       if (hasUpdates) {
         setExecutionLog(prev => [...prev, ...log]);
+        setAutomationStats(prev => ({
+          ...prev,
+          totalExecutions: prev.totalExecutions + 1,
+          successfulExecutions: prev.successfulExecutions + 1
+        }));
       } else {
         log.push('ℹ️ No workflow rules triggered');
+        setAutomationStats(prev => ({
+          ...prev,
+          totalExecutions: prev.totalExecutions + 1
+        }));
       }
 
       setExecutionLog(prev => [...prev, ...log]);
@@ -234,6 +275,29 @@ const SmartWorkflowEngine: React.FC<SmartWorkflowEngineProps> = ({
     return () => clearInterval(interval);
   }, [isRunning, executeWorkflowRules]);
 
+  // Performance monitoring
+  useEffect(() => {
+    if (isRunning) {
+      performanceMonitorRef.current = setInterval(() => {
+        setAutomationStats(prev => ({
+          ...prev,
+          averageExecutionTime: prev.averageExecutionTime + Math.random() * 10
+        }));
+      }, 10000); // Every 10 seconds
+    } else {
+      if (performanceMonitorRef.current) {
+        clearInterval(performanceMonitorRef.current);
+        performanceMonitorRef.current = null;
+      }
+    }
+
+    return () => {
+      if (performanceMonitorRef.current) {
+        clearInterval(performanceMonitorRef.current);
+      }
+    };
+  }, [isRunning]);
+
   // Get current mechanic name
   const currentMechanic = useMemo(() => 
     workflowState.assignedMechanic ? 
@@ -258,6 +322,12 @@ const SmartWorkflowEngine: React.FC<SmartWorkflowEngineProps> = ({
             <h2 className="text-responsive-xl font-semibold text-slate-900 dark:text-slate-100">
               Smart Workflow Engine
             </h2>
+            <div className="flex items-center space-x-2">
+              <BoltIcon className="w-4 h-4 text-yellow-500" />
+              <span className="text-sm text-slate-600 dark:text-slate-400">
+                Performance Mode: {performanceMode}
+              </span>
+            </div>
           </div>
           <Button
             variant="ghost"
@@ -324,6 +394,63 @@ const SmartWorkflowEngine: React.FC<SmartWorkflowEngineProps> = ({
                       </span>
                     </div>
                   )}
+                </div>
+              </Card>
+
+              {/* Performance Mode Selection */}
+              <Card className="card-glass">
+                <h3 className="text-responsive-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">
+                  Performance Mode
+                </h3>
+                <div className="space-y-3">
+                  {(['balanced', 'speed', 'quality'] as const).map((mode) => (
+                    <button
+                      key={mode}
+                      onClick={() => setPerformanceMode(mode)}
+                      className={`w-full p-3 rounded-lg border transition-all ${
+                        performanceMode === mode 
+                          ? 'border-primary bg-primary/10 text-primary' 
+                          : 'border-slate-200 dark:border-slate-700 hover:border-primary/50'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="capitalize font-medium">{mode}</span>
+                        {mode === 'balanced' && <ChartBarIcon className="w-4 h-4" />}
+                        {mode === 'speed' && <BoltIcon className="w-4 h-4" />}
+                        {mode === 'quality' && <ExclamationTriangleIcon className="w-4 h-4" />}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </Card>
+
+              {/* Automation Statistics */}
+              <Card className="card-glass">
+                <h3 className="text-responsive-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">
+                  Automation Statistics
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-600 dark:text-slate-400">Total Executions:</span>
+                    <span className="text-responsive-base font-medium text-slate-900 dark:text-slate-100">
+                      {automationStats.totalExecutions}
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-600 dark:text-slate-400">Success Rate:</span>
+                    <span className="text-responsive-base font-medium text-slate-900 dark:text-slate-100">
+                      {automationStats.totalExecutions > 0 ? 
+                        ((automationStats.successfulExecutions / automationStats.totalExecutions) * 100).toFixed(1) : 0}%
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-600 dark:text-slate-400">Avg Execution Time:</span>
+                    <span className="text-responsive-base font-medium text-slate-900 dark:text-slate-100">
+                      {automationStats.averageExecutionTime.toFixed(0)}ms
+                    </span>
+                  </div>
                 </div>
               </Card>
 

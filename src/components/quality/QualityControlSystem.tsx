@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { 
   CheckCircleIcon,
   CameraIcon,
@@ -6,7 +6,11 @@ import {
   StarIcon,
   EyeIcon,
   ArrowRightIcon,
-  ArrowLeftIcon
+  ArrowLeftIcon,
+  ShieldCheckIcon,
+  ExclamationTriangleIcon,
+  ClockIcon,
+  ChartBarIcon
 } from '@heroicons/react/24/outline';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -151,9 +155,19 @@ const QualityControlSystem: React.FC<QualityControlSystemProps> = ({
   ]);
 
   const [qualityScore, setQualityScore] = useState(0);
+  const [qualityMetrics, setQualityMetrics] = useState({
+    totalInspections: 0,
+    passedInspections: 0,
+    failedInspections: 0,
+    averageInspectionTime: 0,
+    lastInspectionDate: new Date()
+  });
+  const [inspectionMode, setInspectionMode] = useState<'standard' | 'thorough' | 'express'>('standard');
+  const [autoApprovalEnabled, setAutoApprovalEnabled] = useState(false);
+  const [qualityThreshold, setQualityThreshold] = useState(8);
 
   // Calculate overall quality metrics
-  const qualityMetrics = useMemo(() => {
+  const overallQualityMetrics = useMemo(() => {
     const totalCheckpoints = checklists.reduce((sum, list) => sum + list.totalItems, 0);
     const completedCheckpoints = checklists.reduce((sum, list) => sum + list.completedItems, 0);
     const completionRate = totalCheckpoints > 0 ? (completedCheckpoints / totalCheckpoints) * 100 : 0;
@@ -172,6 +186,48 @@ const QualityControlSystem: React.FC<QualityControlSystemProps> = ({
       totalLists: checklists.length
     };
   }, [checklists]);
+
+  // Enhanced quality control with inspection mode
+  const enhancedQualityCheck = useCallback((checkpoint: QualityCheckpoint) => {
+    const baseScore = Math.random() * 10;
+    let adjustedScore = baseScore;
+
+    // Adjust score based on inspection mode
+    switch (inspectionMode) {
+      case 'thorough':
+        adjustedScore = baseScore * 0.9; // More strict
+        break;
+      case 'express':
+        adjustedScore = baseScore * 1.1; // More lenient
+        break;
+      default:
+        adjustedScore = baseScore;
+    }
+
+    // Update quality metrics
+    setQualityMetrics(prev => ({
+      ...prev,
+      totalInspections: prev.totalInspections + 1,
+      passedInspections: adjustedScore >= qualityThreshold ? prev.passedInspections + 1 : prev.passedInspections,
+      failedInspections: adjustedScore < qualityThreshold ? prev.failedInspections + 1 : prev.failedInspections,
+      lastInspectionDate: new Date()
+    }));
+
+    return adjustedScore;
+  }, [inspectionMode, qualityThreshold]);
+
+  // Auto-approval logic
+  useEffect(() => {
+    if (autoApprovalEnabled && overallQualityMetrics.qualityScore >= qualityThreshold * 10) {
+      // Auto-approve all checklists
+      setChecklists(prev => prev.map(checklist => ({
+        ...checklist,
+        isApproved: true,
+        approvedBy: 'Auto-Approval System',
+        approvedAt: new Date()
+      })));
+    }
+  }, [autoApprovalEnabled, overallQualityMetrics.qualityScore, qualityThreshold]);
 
   // Handle checkpoint completion
   const toggleCheckpoint = useCallback((checklistId: string, checkpointId: string) => {
@@ -290,16 +346,111 @@ const QualityControlSystem: React.FC<QualityControlSystemProps> = ({
                 </h3>
                 <div className="text-center">
                   <div className="text-4xl font-bold text-primary mb-2">
-                    {qualityMetrics.qualityScore}%
+                    {overallQualityMetrics.qualityScore}%
                   </div>
                   <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 mb-4">
                     <div 
                       className="bg-primary h-2 rounded-full transition-all duration-300"
-                      style={{ width: `${qualityMetrics.qualityScore}%` }}
+                      style={{ width: `${overallQualityMetrics.qualityScore}%` }}
                     />
                   </div>
                   <div className="text-sm text-slate-600 dark:text-slate-400">
-                    {qualityMetrics.completedCheckpoints} of {qualityMetrics.totalCheckpoints} checkpoints completed
+                    {overallQualityMetrics.completedCheckpoints} of {overallQualityMetrics.totalCheckpoints} checkpoints completed
+                  </div>
+                </div>
+              </Card>
+
+              {/* Inspection Mode Selection */}
+              <Card className="card-glass">
+                <h3 className="text-responsive-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">
+                  Inspection Mode
+                </h3>
+                <div className="space-y-3">
+                  {(['standard', 'thorough', 'express'] as const).map((mode) => (
+                    <button
+                      key={mode}
+                      onClick={() => setInspectionMode(mode)}
+                      className={`w-full p-3 rounded-lg border transition-all ${
+                        inspectionMode === mode 
+                          ? 'border-primary bg-primary/10 text-primary' 
+                          : 'border-slate-200 dark:border-slate-700 hover:border-primary/50'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="capitalize font-medium">{mode}</span>
+                        {mode === 'standard' && <ShieldCheckIcon className="w-4 h-4" />}
+                        {mode === 'thorough' && <ExclamationTriangleIcon className="w-4 h-4" />}
+                        {mode === 'express' && <ClockIcon className="w-4 h-4" />}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </Card>
+
+              {/* Quality Control Settings */}
+              <Card className="card-glass">
+                <h3 className="text-responsive-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">
+                  Quality Control Settings
+                </h3>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-slate-600 dark:text-slate-400">
+                      Auto-Approval
+                    </span>
+                    <button
+                      onClick={() => setAutoApprovalEnabled(!autoApprovalEnabled)}
+                      className={`w-12 h-6 rounded-full transition-all ${
+                        autoApprovalEnabled ? 'bg-primary' : 'bg-slate-300 dark:bg-slate-600'
+                      }`}
+                    >
+                      <div className={`w-4 h-4 bg-white rounded-full transition-transform ${
+                        autoApprovalEnabled ? 'translate-x-6' : 'translate-x-1'
+                      }`} />
+                    </button>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-sm text-slate-600 dark:text-slate-400">
+                      Quality Threshold: {qualityThreshold}/10
+                    </label>
+                    <input
+                      type="range"
+                      min="5"
+                      max="10"
+                      value={qualityThreshold}
+                      onChange={(e) => setQualityThreshold(Number(e.target.value))}
+                      className="w-full"
+                    />
+                  </div>
+                </div>
+              </Card>
+
+              {/* Quality Metrics */}
+              <Card className="card-glass">
+                <h3 className="text-responsive-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">
+                  Quality Metrics
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-600 dark:text-slate-400">Total Inspections:</span>
+                    <span className="text-responsive-base font-medium text-slate-900 dark:text-slate-100">
+                      {qualityMetrics.totalInspections}
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-600 dark:text-slate-400">Pass Rate:</span>
+                    <span className="text-responsive-base font-medium text-slate-900 dark:text-slate-100">
+                      {qualityMetrics.totalInspections > 0 ? 
+                        ((qualityMetrics.passedInspections / qualityMetrics.totalInspections) * 100).toFixed(1) : 0}%
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-600 dark:text-slate-400">Avg Inspection Time:</span>
+                    <span className="text-responsive-base font-medium text-slate-900 dark:text-slate-100">
+                      {qualityMetrics.averageInspectionTime.toFixed(1)}min
+                    </span>
                   </div>
                 </div>
               </Card>

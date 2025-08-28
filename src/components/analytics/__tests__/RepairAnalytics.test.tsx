@@ -105,7 +105,7 @@ describe('RepairAnalytics', () => {
       />
     );
 
-    expect(screen.getByText('Repair Analytics Dashboard')).toBeInTheDocument();
+    expect(screen.getByText('Advanced Repair Analytics Dashboard')).toBeInTheDocument();
   });
 
   it('displays efficiency metrics overview', () => {
@@ -115,7 +115,7 @@ describe('RepairAnalytics', () => {
       />
     );
 
-    expect(screen.getByText('Repair Analytics Dashboard')).toBeInTheDocument();
+    expect(screen.getByText('Advanced Repair Analytics Dashboard')).toBeInTheDocument();
     expect(screen.getByText('Total Repairs')).toBeInTheDocument();
     expect(screen.getByText('Completion Rate')).toBeInTheDocument();
   });
@@ -127,7 +127,7 @@ describe('RepairAnalytics', () => {
       />
     );
 
-    expect(screen.getByText('Repair Analytics Dashboard')).toBeInTheDocument();
+    expect(screen.getByText('Advanced Repair Analytics Dashboard')).toBeInTheDocument();
   });
 
   it('displays mechanic performance table', () => {
@@ -137,7 +137,7 @@ describe('RepairAnalytics', () => {
       />
     );
 
-    expect(screen.getByText('Repair Analytics Dashboard')).toBeInTheDocument();
+    expect(screen.getByText('Advanced Repair Analytics Dashboard')).toBeInTheDocument();
     expect(screen.getByText('John Smith')).toBeInTheDocument();
     expect(screen.getByText('Mike Johnson')).toBeInTheDocument();
   });
@@ -149,7 +149,7 @@ describe('RepairAnalytics', () => {
       />
     );
 
-    expect(screen.getByText('Repair Analytics Dashboard')).toBeInTheDocument();
+    expect(screen.getByText('Advanced Repair Analytics Dashboard')).toBeInTheDocument();
     expect(screen.getByTestId('pie-chart')).toBeInTheDocument();
   });
 
@@ -160,7 +160,7 @@ describe('RepairAnalytics', () => {
       />
     );
 
-    expect(screen.getByText('Repair Analytics Dashboard')).toBeInTheDocument();
+    expect(screen.getByText('Advanced Repair Analytics Dashboard')).toBeInTheDocument();
   });
 
   it('shows seasonal trends', () => {
@@ -170,7 +170,7 @@ describe('RepairAnalytics', () => {
       />
     );
 
-    expect(screen.getByText('Repair Analytics Dashboard')).toBeInTheDocument();
+    expect(screen.getByText('Advanced Repair Analytics Dashboard')).toBeInTheDocument();
   });
 
   it('displays risk factors', () => {
@@ -180,7 +180,7 @@ describe('RepairAnalytics', () => {
       />
     );
 
-    expect(screen.getByText('Repair Analytics Dashboard')).toBeInTheDocument();
+    expect(screen.getByText('Advanced Repair Analytics Dashboard')).toBeInTheDocument();
   });
 
   it('handles timeframe selection', () => {
@@ -190,7 +190,7 @@ describe('RepairAnalytics', () => {
       />
     );
 
-    expect(screen.getByText('Repair Analytics Dashboard')).toBeInTheDocument();
+    expect(screen.getByText('Advanced Repair Analytics Dashboard')).toBeInTheDocument();
   });
 
   it('displays mechanic specializations correctly', () => {
@@ -200,7 +200,7 @@ describe('RepairAnalytics', () => {
       />
     );
 
-    expect(screen.getByText('Repair Analytics Dashboard')).toBeInTheDocument();
+    expect(screen.getByText('Advanced Repair Analytics Dashboard')).toBeInTheDocument();
   });
 
   it('shows customer satisfaction ratings', () => {
@@ -210,7 +210,7 @@ describe('RepairAnalytics', () => {
       />
     );
 
-    expect(screen.getByText('Repair Analytics Dashboard')).toBeInTheDocument();
+    expect(screen.getByText('Advanced Repair Analytics Dashboard')).toBeInTheDocument();
   });
 
   it('displays revenue data in charts', () => {
@@ -220,7 +220,7 @@ describe('RepairAnalytics', () => {
       />
     );
 
-    expect(screen.getByText('Repair Analytics Dashboard')).toBeInTheDocument();
+    expect(screen.getByText('Advanced Repair Analytics Dashboard')).toBeInTheDocument();
     expect(screen.getByTestId('line-chart')).toBeInTheDocument();
     expect(screen.getByTestId('pie-chart')).toBeInTheDocument();
   });
@@ -233,10 +233,10 @@ describe('RepairAnalytics', () => {
     );
 
     // Component should render without errors
-    expect(screen.getByText('Repair Analytics Dashboard')).toBeInTheDocument();
+    expect(screen.getByText('Advanced Repair Analytics Dashboard')).toBeInTheDocument();
     
     // Metrics should show 0 values
-    expect(screen.getByText('0')).toBeInTheDocument();
+    expect(screen.getAllByText('0').length).toBeGreaterThan(0);
   });
 
   it('shows mechanic performance metrics', () => {
@@ -246,7 +246,7 @@ describe('RepairAnalytics', () => {
       />
     );
 
-    expect(screen.getByText('Repair Analytics Dashboard')).toBeInTheDocument();
+    expect(screen.getByText('Advanced Repair Analytics Dashboard')).toBeInTheDocument();
   });
 
   it('displays chart tooltips and legends', () => {
@@ -256,7 +256,7 @@ describe('RepairAnalytics', () => {
       />
     );
 
-    expect(screen.getByText('Repair Analytics Dashboard')).toBeInTheDocument();
+    expect(screen.getByText('Advanced Repair Analytics Dashboard')).toBeInTheDocument();
   });
 
   it('shows revenue breakdown by category', () => {
@@ -266,7 +266,7 @@ describe('RepairAnalytics', () => {
       />
     );
 
-    expect(screen.getByText('Repair Analytics Dashboard')).toBeInTheDocument();
+    expect(screen.getByText('Advanced Repair Analytics Dashboard')).toBeInTheDocument();
   });
 
   it('handles chart errors gracefully', () => {
@@ -277,6 +277,6 @@ describe('RepairAnalytics', () => {
     );
 
     // The component should render without errors even if charts fail
-    expect(screen.getByText('Repair Analytics Dashboard')).toBeInTheDocument();
+    expect(screen.getByText('Advanced Repair Analytics Dashboard')).toBeInTheDocument();
   });
 });
