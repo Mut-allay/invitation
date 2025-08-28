@@ -160,13 +160,13 @@ describe('Payment Integration Tests', () => {
             const confirmButton = screen.getByRole('button', { name: /confirm payment/i });
             fireEvent.click(confirmButton);
 
-                  // Wait for success
-      await waitFor(
-        () => {
-          expect(screen.getByText(/payment successful/i)).toBeInTheDocument();
-        },
-        { timeout: 15000 }
-      );
+            // Wait for success
+            await waitFor(
+                () => {
+                    expect(screen.getByText(/payment successful/i)).toBeInTheDocument();
+                },
+                { timeout: 15000 }
+            );
 
             expect(mockMobileMoneyProps.onPaymentComplete).toHaveBeenCalled();
         });
@@ -188,13 +188,13 @@ describe('Payment Integration Tests', () => {
             const confirmButton = screen.getByRole('button', { name: /confirm payment/i });
             fireEvent.click(confirmButton);
 
-                  // Wait for success
-      await waitFor(
-        () => {
-          expect(screen.getByText(/payment successful/i)).toBeInTheDocument();
-        },
-        { timeout: 15000 }
-      );
+            // Wait for success
+            await waitFor(
+                () => {
+                    expect(screen.getByText(/payment successful/i)).toBeInTheDocument();
+                },
+                { timeout: 15000 }
+            );
 
             expect(mockMobileMoneyProps.onPaymentComplete).toHaveBeenCalled();
         });
@@ -216,13 +216,13 @@ describe('Payment Integration Tests', () => {
             const confirmButton = screen.getByRole('button', { name: /confirm payment/i });
             fireEvent.click(confirmButton);
 
-                  // Wait for success
-      await waitFor(
-        () => {
-          expect(screen.getByText(/payment successful/i)).toBeInTheDocument();
-        },
-        { timeout: 15000 }
-      );
+            // Wait for success
+            await waitFor(
+                () => {
+                    expect(screen.getByText(/payment successful/i)).toBeInTheDocument();
+                },
+                { timeout: 15000 }
+            );
 
             expect(mockMobileMoneyProps.onPaymentComplete).toHaveBeenCalled();
         });
@@ -263,13 +263,13 @@ describe('Payment Integration Tests', () => {
             // Confirm transfer
             fireEvent.click(screen.getByText('Confirm Transfer'));
 
-                  // Wait for success
-      await waitFor(
-        () => {
-          expect(screen.getByText(/transfer initiated successfully/i)).toBeInTheDocument();
-        },
-        { timeout: 15000 }
-      );
+            // Wait for success
+            await waitFor(
+                () => {
+                    expect(screen.getByText(/transfer initiated successfully/i)).toBeInTheDocument();
+                },
+                { timeout: 15000 }
+            );
 
             expect(mockBankTransferProps.onPaymentComplete).toHaveBeenCalled();
         });
@@ -388,14 +388,14 @@ describe('Payment Integration Tests', () => {
                 expect(screen.getByText('Processing Payment...')).toBeInTheDocument();
             });
 
-                  // Wait for error state
-      await waitFor(
-        () => {
-          expect(screen.getByText(/payment failed/i)).toBeInTheDocument();
-          expect(screen.getByText(/payment verification failed/i)).toBeInTheDocument();
-        },
-        { timeout: 15000 }
-      );
+            // Wait for error state
+            await waitFor(
+                () => {
+                    expect(screen.getByText(/payment failed/i)).toBeInTheDocument();
+                    expect(screen.getByText(/payment verification failed/i)).toBeInTheDocument();
+                },
+                { timeout: 15000 }
+            );
         });
     });
 });
