@@ -2,6 +2,14 @@ import type { User as FirebaseUser } from 'firebase/auth';
 
 export type UserRole = 'admin' | 'manager' | 'technician' | 'cashier';
 
+export enum UserRoleEnum {
+  ADMIN = 'admin',
+  MANAGER = 'manager',
+  TECHNICIAN = 'technician',
+  CASHIER = 'cashier',
+  VIEWER = 'viewer'
+}
+
 export interface UserProfile {
   uid: string;
   email: string;

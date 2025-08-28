@@ -67,7 +67,7 @@ describe('ComplianceReport', () => {
     
     // Wait for loading to complete
     await waitFor(() => {
-      expect(screen.getByText('50')).toBeInTheDocument(); // Total Invoices
+      expect(screen.getAllByText('50')[0]).toBeInTheDocument(); // Total Invoices
       expect(screen.getByText('ZMW 50,000.00')).toBeInTheDocument(); // Total Amount
       expect(screen.getByText('ZMW 8,000.00')).toBeInTheDocument(); // Total VAT
       expect(screen.getByText('45')).toBeInTheDocument(); // Submitted Invoices

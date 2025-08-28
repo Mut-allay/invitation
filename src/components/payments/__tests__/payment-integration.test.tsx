@@ -41,7 +41,7 @@ const server = setupServer(
     // Mobile Money endpoints
     http.post('*/mobile-money/initiate', async ({ request }) => {
         const body = await request.json();
-        const { provider } = body;
+        const { provider } = body as { provider: string };
 
         if (!provider || !['airtel', 'mtn', 'zamtel'].includes(provider)) {
             return new HttpResponse(null, { status: 400 });

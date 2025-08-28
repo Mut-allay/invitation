@@ -62,7 +62,7 @@ export const validateEmail = (email: string): { isValid: boolean; error?: string
     return { isValid: true };
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return { isValid: false, error: error.errors[0]?.message || 'Invalid email format' };
+      return { isValid: false, error: (error as any).errors[0]?.message || 'Invalid email format' };
     }
     return { isValid: false, error: 'Invalid email format' };
   }
@@ -74,7 +74,7 @@ export const validatePassword = (password: string): { isValid: boolean; error?: 
     return { isValid: true };
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return { isValid: false, error: error.errors[0]?.message || 'Invalid password format' };
+      return { isValid: false, error: (error as any).errors[0]?.message || 'Invalid password format' };
     }
     return { isValid: false, error: 'Invalid password format' };
   }
@@ -86,7 +86,7 @@ export const validatePhone = (phone: string): { isValid: boolean; error?: string
     return { isValid: true };
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return { isValid: false, error: error.errors[0]?.message || 'Invalid phone number format' };
+      return { isValid: false, error: (error as any).errors[0]?.message || 'Invalid phone number format' };
     }
     return { isValid: false, error: 'Invalid phone number format' };
   }
@@ -98,7 +98,7 @@ export const validateName = (name: string): { isValid: boolean; error?: string }
     return { isValid: true };
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return { isValid: false, error: error.errors[0]?.message || 'Invalid name format' };
+      return { isValid: false, error: (error as any).errors[0]?.message || 'Invalid name format' };
     }
     return { isValid: false, error: 'Invalid name format' };
   }
@@ -110,7 +110,7 @@ export const validateUrl = (url: string): { isValid: boolean; error?: string } =
     return { isValid: true };
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return { isValid: false, error: error.errors[0]?.message || 'Invalid URL format' };
+      return { isValid: false, error: (error as any).errors[0]?.message || 'Invalid URL format' };
     }
     return { isValid: false, error: 'Invalid URL format' };
   }

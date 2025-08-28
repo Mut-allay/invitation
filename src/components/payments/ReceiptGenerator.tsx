@@ -222,7 +222,7 @@ const ReceiptGenerator: React.FC<ReceiptGeneratorProps> = ({ paymentId, onClose 
             </div>
 
             {/* Print Styles */}
-            <style jsx>{`
+            <style>{`
         @media print {
           @page {
             size: A4;

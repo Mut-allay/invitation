@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { UserRegistration } from '../UserRegistration';
+import UserRegistration from '../UserRegistration';
 import { AuthProvider } from '../../../contexts/auth-context';
 import { ToastProvider } from '../../../contexts/toast-provider';
 
@@ -62,6 +62,7 @@ describe('UserRegistration', () => {
     mockToast.error = mockError;
 
     // Mock useNavigate
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     jest.spyOn(require('react-router-dom'), 'useNavigate').mockReturnValue(mockNavigate);
   });
 
@@ -332,7 +333,7 @@ describe('UserRegistration', () => {
 
     it('handles invalid email error', async () => {
       const error = new Error('Invalid email');
-      (error as any).code = 'auth/invalid-email';
+      (error as Error & { code?: string }).code = 'auth/invalid-email';
       mockRegister.mockRejectedValue(error);
 
       renderComponent();

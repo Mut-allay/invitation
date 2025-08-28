@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Badge } from '../components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
-import { useAuth } from '../contexts/auth-hooks';
-import { UserRole } from '../contexts/auth-types';
+// import { useAuth } from '../contexts/auth-hooks';
+import { UserRole, UserRoleEnum } from '../contexts/auth-types';
 
 interface User {
   id: string;
@@ -26,12 +26,12 @@ const UserManagement: React.FC = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   // Mock users data
-  const mockUsers: User[] = [
+  const mockUsers: User[] = useMemo(() => [
     {
       id: '1',
       name: 'John Doe',
       email: 'john@example.com',
-      role: UserRole.ADMIN,
+      role: UserRoleEnum.ADMIN,
       isActive: true,
       lastLoginAt: new Date('2024-01-15'),
     },
@@ -39,7 +39,7 @@ const UserManagement: React.FC = () => {
       id: '2',
       name: 'Jane Smith',
       email: 'jane@example.com',
-      role: UserRole.MANAGER,
+      role: UserRoleEnum.MANAGER,
       isActive: true,
       lastLoginAt: new Date('2024-01-14'),
     },
@@ -47,7 +47,7 @@ const UserManagement: React.FC = () => {
       id: '3',
       name: 'Bob Johnson',
       email: 'bob@example.com',
-      role: UserRole.MECHANIC,
+      role: UserRoleEnum.TECHNICIAN,
       isActive: false,
       lastLoginAt: new Date('2024-01-10'),
     },
@@ -55,11 +55,11 @@ const UserManagement: React.FC = () => {
       id: '4',
       name: 'Alice Brown',
       email: 'alice@example.com',
-      role: UserRole.CASHIER,
+      role: UserRoleEnum.CASHIER,
       isActive: true,
       lastLoginAt: new Date('2024-01-13'),
     },
-  ];
+  ], []);
 
   useEffect(() => {
     // Simulate API call
@@ -67,7 +67,7 @@ const UserManagement: React.FC = () => {
       setUsers(mockUsers);
       setLoading(false);
     }, 1000);
-  }, []);
+  }, [mockUsers]);
 
   const filteredUsers = users.filter(user => {
     const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -209,11 +209,11 @@ const UserManagement: React.FC = () => {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value={UserRole.ADMIN}>Admin</SelectItem>
-                      <SelectItem value={UserRole.MANAGER}>Manager</SelectItem>
-                      <SelectItem value={UserRole.MECHANIC}>Mechanic</SelectItem>
-                      <SelectItem value={UserRole.CASHIER}>Cashier</SelectItem>
-                      <SelectItem value={UserRole.VIEWER}>Viewer</SelectItem>
+                                              <SelectItem value={UserRoleEnum.ADMIN}>Admin</SelectItem>
+                        <SelectItem value={UserRoleEnum.MANAGER}>Manager</SelectItem>
+                        <SelectItem value={UserRoleEnum.TECHNICIAN}>Technician</SelectItem>
+                        <SelectItem value={UserRoleEnum.CASHIER}>Cashier</SelectItem>
+                        <SelectItem value={UserRoleEnum.VIEWER}>Viewer</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

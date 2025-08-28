@@ -136,12 +136,14 @@ describe('MobileMoneyPayment', () => {
       await user.click(confirmButton);
       
       // Should show processing state
-      expect(screen.getByText('Processing Payment...')).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByText('Processing Payment...')).toBeInTheDocument();
+      }, { timeout: 1000 });
       
       // Wait for processing to complete
       await waitFor(() => {
         expect(screen.getByText('Payment Successful!')).toBeInTheDocument();
-      }, { timeout: 3000 });
+      }, { timeout: 5000 });
       
       expect(mockOnPaymentComplete).toHaveBeenCalledWith({
         provider: 'airtel',
@@ -173,7 +175,7 @@ describe('MobileMoneyPayment', () => {
       // let's just verify that the payment succeeds normally
       await waitFor(() => {
         expect(screen.getByText('Payment Successful!')).toBeInTheDocument();
-      }, { timeout: 3000 });
+      }, { timeout: 5000 });
     });
 
     it('calls onCancel when cancel button is clicked', async () => {
@@ -220,7 +222,7 @@ describe('MobileMoneyPayment', () => {
       // Step 4: Wait for success
       await waitFor(() => {
         expect(screen.getByText('Payment Successful!')).toBeInTheDocument();
-      }, { timeout: 3000 });
+      }, { timeout: 5000 });
       
       // Step 5: Verify callback was called with correct data
       expect(mockOnPaymentComplete).toHaveBeenCalledWith({

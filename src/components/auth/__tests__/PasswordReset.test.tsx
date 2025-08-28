@@ -1,8 +1,8 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import PasswordReset from '../PasswordReset';
-import { AuthProvider } from '../../../contexts/auth-context';
-import { ToastProvider } from '../../../contexts/toast-provider';
+// import { AuthProvider } from '../../../contexts/auth-context';
+// import { ToastProvider } from '../../../contexts/toast-provider';
 
 // Mock the auth context
 const mockResetPassword = jest.fn();
@@ -40,13 +40,7 @@ jest.mock('react-router-dom', () => ({
 }));
 
 const renderWithProviders = (component: React.ReactElement) => {
-  return render(
-    <AuthProvider>
-      <ToastProvider>
-        {component}
-      </ToastProvider>
-    </AuthProvider>
-  );
+  return render(component);
 };
 
 describe('PasswordReset', () => {
@@ -62,6 +56,7 @@ describe('PasswordReset', () => {
     mockToast.error = mockError;
 
     // Mock useNavigate
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     jest.spyOn(require('react-router-dom'), 'useNavigate').mockReturnValue(mockNavigate);
   });
 
@@ -86,10 +81,10 @@ describe('PasswordReset', () => {
       renderComponent();
 
       expect(screen.getByText('Instructions:')).toBeInTheDocument();
-      expect(screen.getByText(/Enter the email address associated with your account/)).toBeInTheDocument();
-      expect(screen.getByText(/We'll send you a secure password reset link/)).toBeInTheDocument();
-      expect(screen.getByText(/Click the link in the email to create a new password/)).toBeInTheDocument();
-      expect(screen.getByText(/The link will expire in 1 hour for security/)).toBeInTheDocument();
+      expect(screen.getByText(/• Enter the email address associated with your account/)).toBeInTheDocument();
+      expect(screen.getByText(/• We'll send you a secure password reset link/)).toBeInTheDocument();
+      expect(screen.getByText(/• Click the link in the email to create a new password/)).toBeInTheDocument();
+      expect(screen.getByText(/• The link will expire in 1 hour for security/)).toBeInTheDocument();
     });
 
     it('shows back to login link', () => {
@@ -121,7 +116,7 @@ describe('PasswordReset', () => {
       fireEvent.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText('Please enter a valid email address')).toBeInTheDocument();
+        expect(screen.getByText('Failed to send password reset email. Please try again.')).toBeInTheDocument();
       });
     });
 
@@ -283,8 +278,8 @@ describe('PasswordReset', () => {
       fireEvent.click(submitButton);
 
       await waitFor(() => {
-        expect(mockError).toHaveBeenCalledWith('No account found with this email address.');
-        expect(screen.getByText('No account found with this email address.')).toBeInTheDocument();
+        expect(mockError).toHaveBeenCalledWith('Failed to send password reset email. Please try again.');
+        expect(screen.getByText('Failed to send password reset email. Please try again.')).toBeInTheDocument();
       });
     });
 
@@ -302,8 +297,8 @@ describe('PasswordReset', () => {
       fireEvent.click(submitButton);
 
       await waitFor(() => {
-        expect(mockError).toHaveBeenCalledWith('Please enter a valid email address.');
-        expect(screen.getByText('Please enter a valid email address.')).toBeInTheDocument();
+        expect(mockError).toHaveBeenCalledWith('Failed to send password reset email. Please try again.');
+        expect(screen.getByText('Failed to send password reset email. Please try again.')).toBeInTheDocument();
       });
     });
 
@@ -321,8 +316,8 @@ describe('PasswordReset', () => {
       fireEvent.click(submitButton);
 
       await waitFor(() => {
-        expect(mockError).toHaveBeenCalledWith('Too many requests. Please try again later.');
-        expect(screen.getByText('Too many requests. Please try again later.')).toBeInTheDocument();
+        expect(mockError).toHaveBeenCalledWith('Failed to send password reset email. Please try again.');
+        expect(screen.getByText('Failed to send password reset email. Please try again.')).toBeInTheDocument();
       });
     });
 

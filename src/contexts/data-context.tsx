@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import React, { createContext, useReducer, useEffect, useCallback } from 'react';
 import type { ReactNode } from 'react';
 import { useAuth } from './auth-hooks';
 import type { Vehicle } from '../types/vehicle';
@@ -231,10 +231,10 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  const clearAllSubscriptions = () => {
+  const clearAllSubscriptions = useCallback(() => {
     Object.values(state.realTimeSubscriptions).forEach(unsubscribe => unsubscribe());
     dispatch({ type: 'CLEAR_ALL_SUBSCRIPTIONS' });
-  };
+  }, [state.realTimeSubscriptions, dispatch]);
 
   // Vehicle utilities
   const updateVehicle = (vehicle: Vehicle) => {
@@ -254,7 +254,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return () => {
       clearAllSubscriptions();
     };
-  }, []);
+  }, [clearAllSubscriptions]);
 
   // Clear cache when user changes
   useEffect(() => {
@@ -280,13 +280,5 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
 };
 
-// Hook to use the data context
-export const useData = (): DataContextType => {
-  const context = useContext(DataContext);
-  if (context === undefined) {
-    throw new Error('useData must be used within a DataProvider');
-  }
-  return context;
-};
-
+export type { DataContextType };
 export default DataContext; 

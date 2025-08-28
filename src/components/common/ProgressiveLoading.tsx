@@ -158,7 +158,7 @@ export const ProgressiveLoading: React.FC<ProgressiveLoadingProps> = ({
         <div className="relative">
           {skeleton}
           <div className="absolute inset-0">
-            {React.cloneElement(children as React.ReactElement<any>, {
+            {React.cloneElement(children as React.ReactElement<{ onLoad?: () => void; onError?: (error: Event | Error) => void }>, {
               onLoad: handleLoadComplete,
               onError: handleLoadError,
             })}
@@ -167,7 +167,7 @@ export const ProgressiveLoading: React.FC<ProgressiveLoadingProps> = ({
       );
     }
 
-    return React.cloneElement(children as React.ReactElement<any>, {
+    return React.cloneElement(children as React.ReactElement<{ onLoad?: () => void; onError?: (error: Event | Error) => void }>, {
       onLoad: handleLoadComplete,
       onError: handleLoadError,
     });

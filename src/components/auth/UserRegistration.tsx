@@ -6,7 +6,8 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { UserRole } from '../../contexts/auth-types';
+import type { UserRole } from '../../contexts/auth-types';
+import { UserRoleEnum } from '../../contexts/auth-types';
 
 interface UserRegistrationProps {
   onSuccess?: () => void;
@@ -19,7 +20,7 @@ const UserRegistration: React.FC<UserRegistrationProps> = ({ onSuccess, onCancel
     email: '',
     password: '',
     confirmPassword: '',
-    role: UserRole.MECHANIC,
+    role: UserRoleEnum.TECHNICIAN,
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -29,22 +30,22 @@ const UserRegistration: React.FC<UserRegistrationProps> = ({ onSuccess, onCancel
 
   const roles: { value: UserRole; label: string; description: string }[] = [
     {
-      value: UserRole.ADMIN,
+      value: UserRoleEnum.ADMIN,
       label: 'Administrator',
       description: 'Full system access and user management',
     },
     {
-      value: UserRole.MANAGER,
+      value: UserRoleEnum.MANAGER,
       label: 'Manager',
       description: 'Manage operations and view reports',
     },
     {
-      value: UserRole.MECHANIC,
-      label: 'Mechanic',
+      value: UserRoleEnum.TECHNICIAN,
+      label: 'Technician',
       description: 'Perform repairs and update vehicle status',
     },
     {
-      value: UserRole.CASHIER,
+      value: UserRoleEnum.CASHIER,
       label: 'Cashier',
       description: 'Process payments and manage invoices',
     },
@@ -87,14 +88,12 @@ const UserRegistration: React.FC<UserRegistrationProps> = ({ onSuccess, onCancel
     setLoading(true);
 
     try {
-      await register(
-        formData.email,
-        formData.password,
-        {
-          name: formData.name,
-          role: formData.role,
-        }
-      );
+      await register({
+        email: formData.email,
+        password: formData.password,
+        displayName: formData.name,
+        role: formData.role as UserRole,
+      });
 
       success('User registered successfully');
       onSuccess?.();
