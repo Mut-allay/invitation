@@ -71,12 +71,12 @@ export interface TPINValidationResponse {
 }
 
 export class ZRAService {
-    private apiKey: string;
-    private baseUrl: string;
-
     constructor() {
-        this.apiKey = process.env.ZRA_API_KEY || '';
-        this.baseUrl = process.env.ZRA_API_URL || 'https://api.zra.org.zm/v1';
+        // Configuration will be used in production
+        if (process.env.NODE_ENV === 'production') {
+            if (!process.env.ZRA_API_KEY) throw new Error('ZRA_API_KEY is required in production');
+            if (!process.env.ZRA_API_URL) throw new Error('ZRA_API_URL is required in production');
+        }
     }
 
     public async createSmartInvoice(invoice: SmartInvoice): Promise<SmartInvoiceResponse> {
@@ -87,8 +87,8 @@ export class ZRAService {
             // Return mock data in sandbox mode
             const processedItems = invoice.items.map(item => ({
                 ...item,
-                vatAmount: item.unitPrice * item.quantity * (item.vatRate / 100),
-                total: item.unitPrice * item.quantity * (1 + item.vatRate / 100)
+                vatAmount: Math.round(item.unitPrice * item.quantity * (item.vatRate / 100)),
+                total: Math.round(item.unitPrice * item.quantity * (1 + item.vatRate / 100))
             }));
 
             const totalVat = processedItems.reduce((sum, item) => sum + item.vatAmount, 0);
@@ -113,7 +113,7 @@ export class ZRAService {
         VATCalculationSchema.parse(calculation);
 
         const processedItems = calculation.items.map(item => {
-            const vatAmount = item.amount * (item.vatRate / 100);
+            const vatAmount = Math.round(item.amount * (item.vatRate / 100));
             return {
                 ...item,
                 vatAmount,
