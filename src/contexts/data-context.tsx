@@ -1,177 +1,191 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import type { ReactNode } from 'react';
+import { useAuth } from './auth-hooks';
+import type { Vehicle } from '../types/vehicle';
 
-// Define data types
-interface Customer {
-  id: string;
-  name: string;
-  email?: string;
-  phone?: string;
-  [key: string]: unknown;
-}
-
-interface Vehicle {
-  id: string;
-  make: string;
-  model?: string;
-  [key: string]: unknown;
-}
-
-// State interface
+// Data state interface
 interface DataState {
-  customers: Customer[];
-  vehicles: Vehicle[];
-  repairs: unknown[];
-  sales: unknown[];
-  invoices: unknown[];
-  inventory: unknown[];
+  vehicles: {
+    data: Vehicle[];
+    loading: boolean;
+    error: string | null;
+    lastUpdated: Date | null;
+  };
+  cache: {
+    [key: string]: {
+      data: unknown;
+      timestamp: number;
+      ttl: number; // Time to live in milliseconds
+    };
+  };
+  realTimeSubscriptions: {
+    [key: string]: () => void;
+  };
 }
 
 // Action types
 type DataAction =
-  | { type: 'SET_CUSTOMERS'; payload: Customer[] }
-  | { type: 'SET_VEHICLES'; payload: Vehicle[] }
-  | { type: 'SET_REPAIRS'; payload: unknown[] }
-  | { type: 'SET_SALES'; payload: unknown[] }
-  | { type: 'SET_INVOICES'; payload: unknown[] }
-  | { type: 'SET_INVENTORY'; payload: unknown[] }
-  | { type: 'ADD_CUSTOMER'; payload: Customer }
-  | { type: 'UPDATE_CUSTOMER'; payload: Customer }
-  | { type: 'DELETE_CUSTOMER'; payload: string }
-  | { type: 'ADD_VEHICLE'; payload: Vehicle }
+  | { type: 'SET_VEHICLES_LOADING'; payload: boolean }
+  | { type: 'SET_VEHICLES_DATA'; payload: Vehicle[] }
+  | { type: 'SET_VEHICLES_ERROR'; payload: string | null }
   | { type: 'UPDATE_VEHICLE'; payload: Vehicle }
-  | { type: 'DELETE_VEHICLE'; payload: string }
-  | { type: 'ADD_REPAIR'; payload: unknown }
-  | { type: 'UPDATE_REPAIR'; payload: unknown }
-  | { type: 'DELETE_REPAIR'; payload: string }
-  | { type: 'ADD_SALE'; payload: unknown }
-  | { type: 'UPDATE_SALE'; payload: unknown }
-  | { type: 'DELETE_SALE'; payload: string }
-  | { type: 'ADD_INVOICE'; payload: unknown }
-  | { type: 'UPDATE_INVOICE'; payload: unknown }
-  | { type: 'DELETE_INVOICE'; payload: string }
-  | { type: 'ADD_INVENTORY_ITEM'; payload: unknown }
-  | { type: 'UPDATE_INVENTORY_ITEM'; payload: unknown }
-  | { type: 'DELETE_INVENTORY_ITEM'; payload: string };
+  | { type: 'ADD_VEHICLE'; payload: Vehicle }
+  | { type: 'REMOVE_VEHICLE'; payload: string }
+  | { type: 'SET_CACHE'; payload: { key: string; data: unknown; ttl?: number } }
+  | { type: 'CLEAR_CACHE'; payload?: string }
+  | { type: 'ADD_SUBSCRIPTION'; payload: { key: string; unsubscribe: () => void } }
+  | { type: 'REMOVE_SUBSCRIPTION'; payload: string }
+  | { type: 'CLEAR_ALL_SUBSCRIPTIONS' };
 
 // Initial state
 const initialState: DataState = {
-  customers: [],
-  vehicles: [],
-  repairs: [],
-  sales: [],
-  invoices: [],
-  inventory: [],
+  vehicles: {
+    data: [],
+    loading: false,
+    error: null,
+    lastUpdated: null,
+  },
+  cache: {},
+  realTimeSubscriptions: {},
 };
 
 // Reducer function
-const dataReducer = (state: DataState, action: DataAction): DataState => {
+function dataReducer(state: DataState, action: DataAction): DataState {
   switch (action.type) {
-    case 'SET_CUSTOMERS':
-      return { ...state, customers: action.payload };
-    case 'SET_VEHICLES':
-      return { ...state, vehicles: action.payload };
-    case 'SET_REPAIRS':
-      return { ...state, repairs: action.payload };
-    case 'SET_SALES':
-      return { ...state, sales: action.payload };
-    case 'SET_INVOICES':
-      return { ...state, invoices: action.payload };
-    case 'SET_INVENTORY':
-      return { ...state, inventory: action.payload };
-    case 'ADD_CUSTOMER':
-      return { ...state, customers: [...state.customers, action.payload] };
-    case 'UPDATE_CUSTOMER':
+    case 'SET_VEHICLES_LOADING':
       return {
         ...state,
-        customers: state.customers.map(customer =>
-          customer.id === action.payload.id ? action.payload : customer
-        ),
+        vehicles: {
+          ...state.vehicles,
+          loading: action.payload,
+        },
       };
-    case 'DELETE_CUSTOMER':
+
+    case 'SET_VEHICLES_DATA':
       return {
         ...state,
-        customers: state.customers.filter(customer => customer.id !== action.payload),
+        vehicles: {
+          data: action.payload,
+          loading: false,
+          error: null,
+          lastUpdated: new Date(),
+        },
       };
-    case 'ADD_VEHICLE':
-      return { ...state, vehicles: [...state.vehicles, action.payload] };
+
+    case 'SET_VEHICLES_ERROR':
+      return {
+        ...state,
+        vehicles: {
+          ...state.vehicles,
+          loading: false,
+          error: action.payload,
+        },
+      };
+
     case 'UPDATE_VEHICLE':
       return {
         ...state,
-        vehicles: state.vehicles.map(vehicle =>
-          vehicle.id === action.payload.id ? action.payload : vehicle
-        ),
+        vehicles: {
+          ...state.vehicles,
+          data: state.vehicles.data.map(vehicle =>
+            vehicle.id === action.payload.id ? action.payload : vehicle
+          ),
+          lastUpdated: new Date(),
+        },
       };
-    case 'DELETE_VEHICLE':
+
+    case 'ADD_VEHICLE':
       return {
         ...state,
-        vehicles: state.vehicles.filter(vehicle => vehicle.id !== action.payload),
+        vehicles: {
+          ...state.vehicles,
+          data: [...state.vehicles.data, action.payload],
+          lastUpdated: new Date(),
+        },
       };
-    case 'ADD_REPAIR':
-      return { ...state, repairs: [...state.repairs, action.payload] };
-    case 'UPDATE_REPAIR':
+
+    case 'REMOVE_VEHICLE':
       return {
         ...state,
-        repairs: state.repairs.map((repair, index) =>
-          index === 0 ? action.payload : repair
-        ),
+        vehicles: {
+          ...state.vehicles,
+          data: state.vehicles.data.filter(vehicle => vehicle.id !== action.payload),
+          lastUpdated: new Date(),
+        },
       };
-    case 'DELETE_REPAIR':
+
+    case 'SET_CACHE':
       return {
         ...state,
-        repairs: state.repairs.filter((_, index) => index !== 0),
+        cache: {
+          ...state.cache,
+          [action.payload.key]: {
+            data: action.payload.data,
+            timestamp: Date.now(),
+            ttl: action.payload.ttl || 5 * 60 * 1000, // Default 5 minutes
+          },
+        },
       };
-    case 'ADD_SALE':
-      return { ...state, sales: [...state.sales, action.payload] };
-    case 'UPDATE_SALE':
+
+    case 'CLEAR_CACHE':
+      if (action.payload) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { [action.payload]: _, ...rest } = state.cache;
+        return {
+          ...state,
+          cache: rest,
+        };
+      }
       return {
         ...state,
-        sales: state.sales.map((sale, index) =>
-          index === 0 ? action.payload : sale
-        ),
+        cache: {},
       };
-    case 'DELETE_SALE':
+
+    case 'ADD_SUBSCRIPTION':
       return {
         ...state,
-        sales: state.sales.filter((_, index) => index !== 0),
+        realTimeSubscriptions: {
+          ...state.realTimeSubscriptions,
+          [action.payload.key]: action.payload.unsubscribe,
+        },
       };
-    case 'ADD_INVOICE':
-      return { ...state, invoices: [...state.invoices, action.payload] };
-    case 'UPDATE_INVOICE':
+
+    case 'REMOVE_SUBSCRIPTION': {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { [action.payload]: _, ...rest } = state.realTimeSubscriptions;
       return {
         ...state,
-        invoices: state.invoices.map((invoice, index) =>
-          index === 0 ? action.payload : invoice
-        ),
+        realTimeSubscriptions: rest,
       };
-    case 'DELETE_INVOICE':
+    }
+
+    case 'CLEAR_ALL_SUBSCRIPTIONS':
       return {
         ...state,
-        invoices: state.invoices.filter((_, index) => index !== 0),
+        realTimeSubscriptions: {},
       };
-    case 'ADD_INVENTORY_ITEM':
-      return { ...state, inventory: [...state.inventory, action.payload] };
-    case 'UPDATE_INVENTORY_ITEM':
-      return {
-        ...state,
-        inventory: state.inventory.map((item, index) =>
-          index === 0 ? action.payload : item
-        ),
-      };
-    case 'DELETE_INVENTORY_ITEM':
-      return {
-        ...state,
-        inventory: state.inventory.filter((_, index) => index !== 0),
-      };
+
     default:
       return state;
   }
-};
+}
 
 // Context interface
 interface DataContextType {
   state: DataState;
   dispatch: React.Dispatch<DataAction>;
+  // Cache utilities
+  getCachedData: <T>(key: string) => T | null;
+  setCachedData: <T>(key: string, data: T, ttl?: number) => void;
+  clearCache: (key?: string) => void;
+  // Subscription utilities
+  addSubscription: (key: string, unsubscribe: () => void) => void;
+  removeSubscription: (key: string) => void;
+  clearAllSubscriptions: () => void;
+  // Vehicle utilities
+  updateVehicle: (vehicle: Vehicle) => void;
+  addVehicle: (vehicle: Vehicle) => void;
+  removeVehicle: (vehicleId: string) => void;
 }
 
 // Create context
@@ -180,31 +194,99 @@ const DataContext = createContext<DataContextType | undefined>(undefined);
 // Provider component
 export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(dataReducer, initialState);
+  const { userProfile } = useAuth();
 
+  // Cache utilities
+  const getCachedData = <T,>(key: string): T | null => {
+    const cached = state.cache[key];
+    if (!cached) return null;
+
+    const isExpired = Date.now() - cached.timestamp > cached.ttl;
+    if (isExpired) {
+      dispatch({ type: 'CLEAR_CACHE', payload: key });
+      return null;
+    }
+
+    return cached.data as T;
+  };
+
+  const setCachedData = <T,>(key: string, data: T, ttl?: number) => {
+    dispatch({ type: 'SET_CACHE', payload: { key, data, ttl } });
+  };
+
+  const clearCache = (key?: string) => {
+    dispatch({ type: 'CLEAR_CACHE', payload: key });
+  };
+
+  // Subscription utilities
+  const addSubscription = (key: string, unsubscribe: () => void) => {
+    dispatch({ type: 'ADD_SUBSCRIPTION', payload: { key, unsubscribe } });
+  };
+
+  const removeSubscription = (key: string) => {
+    const unsubscribe = state.realTimeSubscriptions[key];
+    if (unsubscribe) {
+      unsubscribe();
+      dispatch({ type: 'REMOVE_SUBSCRIPTION', payload: key });
+    }
+  };
+
+  const clearAllSubscriptions = () => {
+    Object.values(state.realTimeSubscriptions).forEach(unsubscribe => unsubscribe());
+    dispatch({ type: 'CLEAR_ALL_SUBSCRIPTIONS' });
+  };
+
+  // Vehicle utilities
+  const updateVehicle = (vehicle: Vehicle) => {
+    dispatch({ type: 'UPDATE_VEHICLE', payload: vehicle });
+  };
+
+  const addVehicle = (vehicle: Vehicle) => {
+    dispatch({ type: 'ADD_VEHICLE', payload: vehicle });
+  };
+
+  const removeVehicle = (vehicleId: string) => {
+    dispatch({ type: 'REMOVE_VEHICLE', payload: vehicleId });
+  };
+
+  // Cleanup subscriptions on unmount
   useEffect(() => {
-    // Cleanup function
     return () => {
-      // Any cleanup logic here
+      clearAllSubscriptions();
     };
   }, []);
+
+  // Clear cache when user changes
+  useEffect(() => {
+    if (userProfile?.tenantId) {
+      clearCache();
+    }
+  }, [userProfile?.tenantId]);
 
   const value: DataContextType = {
     state,
     dispatch,
+    getCachedData,
+    setCachedData,
+    clearCache,
+    addSubscription,
+    removeSubscription,
+    clearAllSubscriptions,
+    updateVehicle,
+    addVehicle,
+    removeVehicle,
   };
 
-  return (
-    <DataContext.Provider value={value}>
-      {children}
-    </DataContext.Provider>
-  );
+  return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
 };
 
-// Hook to use the context
+// Hook to use the data context
 export const useData = (): DataContextType => {
   const context = useContext(DataContext);
   if (context === undefined) {
     throw new Error('useData must be used within a DataProvider');
   }
   return context;
-}; 
+};
+
+export default DataContext; 
