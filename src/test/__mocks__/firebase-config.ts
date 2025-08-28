@@ -1,10 +1,4 @@
 // Mock Firebase configuration for testing
-import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
-import { getStorage } from 'firebase/storage';
-import { getFunctions } from 'firebase/functions';
-
 const firebaseConfig = {
   apiKey: 'test-api-key',
   authDomain: 'test-project.firebaseapp.com',
@@ -14,13 +8,44 @@ const firebaseConfig = {
   appId: 'test-app-id',
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+// Mock Firebase app
+const app = {
+  name: 'test-app',
+  options: firebaseConfig,
+};
 
-// Initialize Firebase services
-export const auth = getAuth(app);
-export const db = getFirestore(app);
-export const storage = getStorage(app);
-export const functions = getFunctions(app);
+// Mock Firebase services
+export const auth = {
+  currentUser: null,
+  onAuthStateChanged: jest.fn(),
+  signInWithEmailAndPassword: jest.fn(),
+  signOut: jest.fn(),
+};
+
+export const db = {
+  collection: jest.fn(),
+  doc: jest.fn(),
+  addDoc: jest.fn(),
+  updateDoc: jest.fn(),
+  deleteDoc: jest.fn(),
+  getDoc: jest.fn(),
+  getDocs: jest.fn(),
+  query: jest.fn(),
+  where: jest.fn(),
+  orderBy: jest.fn(),
+  limit: jest.fn(),
+  batch: jest.fn(),
+};
+
+export const storage = {
+  ref: jest.fn(),
+  uploadBytes: jest.fn(),
+  getDownloadURL: jest.fn(),
+  deleteObject: jest.fn(),
+};
+
+export const functions = {
+  httpsCallable: jest.fn(),
+};
 
 export default app;
