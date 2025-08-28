@@ -9,8 +9,7 @@ import {
   ArrowLeftIcon,
   ShieldCheckIcon,
   ExclamationTriangleIcon,
-  ClockIcon,
-  ChartBarIcon
+  ClockIcon
 } from '@heroicons/react/24/outline';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -155,13 +154,13 @@ const QualityControlSystem: React.FC<QualityControlSystemProps> = ({
   ]);
 
   const [qualityScore, setQualityScore] = useState(0);
-  const [qualityMetrics, setQualityMetrics] = useState({
-    totalInspections: 0,
-    passedInspections: 0,
-    failedInspections: 0,
-    averageInspectionTime: 0,
-    lastInspectionDate: new Date()
-  });
+  // const [qualityMetrics, setQualityMetrics] = useState({
+  //   totalInspections: 0,
+  //   passedInspections: 0,
+  //   failedInspections: 0,
+  //   averageInspectionTime: 0,
+  //   lastInspectionDate: new Date()
+  // });
   const [inspectionMode, setInspectionMode] = useState<'standard' | 'thorough' | 'express'>('standard');
   const [autoApprovalEnabled, setAutoApprovalEnabled] = useState(false);
   const [qualityThreshold, setQualityThreshold] = useState(8);
@@ -188,33 +187,33 @@ const QualityControlSystem: React.FC<QualityControlSystemProps> = ({
   }, [checklists]);
 
   // Enhanced quality control with inspection mode
-  const enhancedQualityCheck = useCallback((checkpoint: QualityCheckpoint) => {
-    const baseScore = Math.random() * 10;
-    let adjustedScore = baseScore;
+  // const enhancedQualityCheck = useCallback((checkpoint: QualityCheckpoint) => {
+  //   const baseScore = Math.random() * 10;
+  //   let adjustedScore = baseScore;
 
-    // Adjust score based on inspection mode
-    switch (inspectionMode) {
-      case 'thorough':
-        adjustedScore = baseScore * 0.9; // More strict
-        break;
-      case 'express':
-        adjustedScore = baseScore * 1.1; // More lenient
-        break;
-      default:
-        adjustedScore = baseScore;
-    }
+  //   // Adjust score based on inspection mode
+  //   switch (inspectionMode) {
+  //     case 'thorough':
+  //       adjustedScore = baseScore * 0.9; // More strict
+  //       break;
+  //     case 'express':
+  //       adjustedScore = baseScore * 1.1; // More lenient
+  //       break;
+  //     default:
+  //       adjustedScore = baseScore;
+  //   }
 
-    // Update quality metrics
-    setQualityMetrics(prev => ({
-      ...prev,
-      totalInspections: prev.totalInspections + 1,
-      passedInspections: adjustedScore >= qualityThreshold ? prev.passedInspections + 1 : prev.passedInspections,
-      failedInspections: adjustedScore < qualityThreshold ? prev.failedInspections + 1 : prev.failedInspections,
-      lastInspectionDate: new Date()
-    }));
+  //   // Update quality metrics
+  //   setQualityMetrics(prev => ({
+  //     ...prev,
+  //     totalInspections: prev.totalInspections + 1,
+  //     passedInspections: adjustedScore >= qualityThreshold ? prev.passedInspections + 1 : prev.passedInspections,
+  //     failedInspections: adjustedScore < qualityThreshold ? prev.failedInspections + 1 : prev.failedInspections,
+  //     lastInspectionDate: new Date()
+  //   }));
 
-    return adjustedScore;
-  }, [inspectionMode, qualityThreshold]);
+  //   return adjustedScore;
+  // }, [inspectionMode, qualityThreshold]);
 
   // Auto-approval logic
   useEffect(() => {
@@ -434,22 +433,21 @@ const QualityControlSystem: React.FC<QualityControlSystemProps> = ({
                   <div className="flex items-center justify-between">
                     <span className="text-slate-600 dark:text-slate-400">Total Inspections:</span>
                     <span className="text-responsive-base font-medium text-slate-900 dark:text-slate-100">
-                      {qualityMetrics.totalInspections}
+                      0
                     </span>
                   </div>
                   
                   <div className="flex items-center justify-between">
                     <span className="text-slate-600 dark:text-slate-400">Pass Rate:</span>
                     <span className="text-responsive-base font-medium text-slate-900 dark:text-slate-100">
-                      {qualityMetrics.totalInspections > 0 ? 
-                        ((qualityMetrics.passedInspections / qualityMetrics.totalInspections) * 100).toFixed(1) : 0}%
+                      0%
                     </span>
                   </div>
 
                   <div className="flex items-center justify-between">
                     <span className="text-slate-600 dark:text-slate-400">Avg Inspection Time:</span>
                     <span className="text-responsive-base font-medium text-slate-900 dark:text-slate-100">
-                      {qualityMetrics.averageInspectionTime.toFixed(1)}min
+                      0.0min
                     </span>
                   </div>
                 </div>

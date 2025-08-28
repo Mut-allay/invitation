@@ -7,9 +7,7 @@ import {
   CheckCircleIcon,
   BoltIcon,
   ArrowTrendingUpIcon,
-  ExclamationTriangleIcon,
-  ClockIcon,
-  UserGroupIcon
+  ExclamationTriangleIcon
 } from '@heroicons/react/24/outline';
 import { 
   LineChart, 
@@ -52,7 +50,7 @@ const RepairAnalytics: React.FC<RepairAnalyticsProps> = ({
 }) => {
   const [selectedMetric, setSelectedMetric] = useState<'efficiency' | 'revenue' | 'satisfaction'>('efficiency');
   const [analyticsMode, setAnalyticsMode] = useState<'real-time' | 'historical' | 'predictive'>('real-time');
-  const [timeframe, setTimeframe] = useState<'daily' | 'weekly' | 'monthly' | 'quarterly'>('weekly');
+  // const [timeframe, setTimeframe] = useState<'daily' | 'weekly' | 'monthly' | 'quarterly'>('weekly');
   const [predictiveInsights, setPredictiveInsights] = useState({
     nextWeekRevenue: 0,
     efficiencyTrend: 'up',

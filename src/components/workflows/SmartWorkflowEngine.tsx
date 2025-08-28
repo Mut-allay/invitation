@@ -134,7 +134,7 @@ const SmartWorkflowEngine: React.FC<SmartWorkflowEngineProps> = ({
     }
 
     return selectedMechanic;
-  }, [availableMechanics, performanceMode, repair.reportedIssues]);
+  }, [availableMechanics, performanceMode]);
 
   // Memoized available bays
   const availableBays = useMemo(() => 
