@@ -1,19 +1,28 @@
 import type { User as FirebaseUser } from 'firebase/auth';
 
+export type UserRole = 'admin' | 'manager' | 'technician' | 'cashier';
+
 export interface UserProfile {
-  id: string;
+  uid: string;
   email: string;
-  name: string;
+  displayName: string;
   role: UserRole;
   tenantId?: string;
+  isActive: boolean;
+  createdAt: Date;
+  lastLoginAt?: Date;
+  permissions: string[];
 }
 
-export enum UserRole {
-  ADMIN = 'admin',
-  MANAGER = 'manager',
-  MECHANIC = 'mechanic',
-  CASHIER = 'cashier',
-  VIEWER = 'viewer'
+export interface RegistrationData {
+  email: string;
+  password: string;
+  displayName: string;
+  role: UserRole;
+}
+
+export interface PasswordResetData {
+  email: string;
 }
 
 export interface AuthContextType {
@@ -22,7 +31,9 @@ export interface AuthContextType {
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
-  register: (email: string, password: string, userData: Partial<UserProfile>) => Promise<void>;
-  resetPassword: (email: string) => Promise<void>;
+  register: (data: RegistrationData) => Promise<void>;
+  resetPassword: (data: PasswordResetData) => Promise<void>;
+  updateProfile: (updates: Partial<UserProfile>) => Promise<void>;
   hasPermission: (permission: string) => boolean;
+  hasRole: (role: UserRole) => boolean;
 }

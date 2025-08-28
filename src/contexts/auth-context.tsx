@@ -1,28 +1,79 @@
 import React, { useEffect, useState } from 'react';
-import { onAuthStateChanged, signInWithEmailAndPassword, signOut, createUserWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
+import { 
+  onAuthStateChanged, 
+  signInWithEmailAndPassword, 
+  signOut, 
+  createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
+  updateProfile as updateFirebaseProfile
+} from 'firebase/auth';
+import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import type { User } from 'firebase/auth';
-import { auth } from '../config/firebase';
+import { auth, db } from '../config/firebase';
 import { AuthContext } from './auth-context-definition';
-import type { UserProfile } from './auth-types';
-import { UserRole } from './auth-types';
+import type { UserProfile, UserRole, RegistrationData, PasswordResetData } from './auth-types';
 
 const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const fetchUserProfile = async (uid: string): Promise<UserProfile | null> => {
+    try {
+      const userDoc = await getDoc(doc(db, 'users', uid));
+      if (userDoc.exists()) {
+        return userDoc.data() as UserProfile;
+      }
+      return null;
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+      return null;
+    }
+  };
+
+  const createUserProfile = async (uid: string, data: RegistrationData): Promise<UserProfile> => {
+    const userProfile: UserProfile = {
+      uid,
+      email: data.email,
+      displayName: data.displayName,
+      role: data.role,
+      isActive: true,
+      createdAt: new Date(),
+      permissions: getDefaultPermissions(data.role)
+    };
+
+    await setDoc(doc(db, 'users', uid), userProfile);
+    return userProfile;
+  };
+
+  const getDefaultPermissions = (role: UserRole): string[] => {
+    switch (role) {
+      case 'admin':
+        return ['manage_users', 'manage_vehicles', 'manage_customers', 'manage_invoices', 'view_reports'];
+      case 'manager':
+        return ['manage_vehicles', 'manage_customers', 'manage_invoices', 'view_reports'];
+      case 'technician':
+        return ['manage_repairs', 'view_vehicles', 'view_customers'];
+      case 'cashier':
+        return ['manage_invoices', 'view_vehicles', 'view_customers'];
+      default:
+        return [];
+    }
+  };
+
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setUser(user);
-      // Mock user profile for testing - in real app this would come from Firestore
       if (user) {
-        setUserProfile({
-          id: user.uid,
-          email: user.email || '',
-          name: user.displayName || 'User',
-          role: UserRole.ADMIN,
-          tenantId: 'test-tenant'
-        });
+        const profile = await fetchUserProfile(user.uid);
+        setUserProfile(profile);
+        
+        // Update last login time
+        if (profile) {
+          await updateDoc(doc(db, 'users', user.uid), {
+            lastLoginAt: new Date()
+          });
+        }
       } else {
         setUserProfile(null);
       }
@@ -40,21 +91,40 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
     await signOut(auth);
   };
 
-  const register = async (email: string, password: string, userData: Partial<UserProfile>) => {
-    const result = await createUserWithEmailAndPassword(auth, email, password);
-    // In real app, you would save userData to Firestore here
-    console.log('User registered:', result.user, 'with data:', userData);
+  const register = async (data: RegistrationData) => {
+    const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
+    const user = userCredential.user;
+    
+    // Update Firebase profile
+    await updateFirebaseProfile(user, {
+      displayName: data.displayName
+    });
+    
+    // Create user profile in Firestore
+    const profile = await createUserProfile(user.uid, data);
+    setUserProfile(profile);
   };
 
-  const resetPassword = async (email: string) => {
-    await sendPasswordResetEmail(auth, email);
+  const resetPassword = async (data: PasswordResetData) => {
+    await sendPasswordResetEmail(auth, data.email);
+  };
+
+  const updateProfile = async (updates: Partial<UserProfile>) => {
+    if (!user) throw new Error('No user logged in');
+    
+    await updateDoc(doc(db, 'users', user.uid), updates);
+    
+    if (userProfile) {
+      setUserProfile({ ...userProfile, ...updates });
+    }
   };
 
   const hasPermission = (permission: string): boolean => {
-    // Mock permission check - in real app this would check user role and permissions
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const _permission = permission; // Use permission parameter to avoid linting error
-    return userProfile?.role === UserRole.ADMIN || userProfile?.role === UserRole.MANAGER;
+    return userProfile?.permissions?.includes(permission) || false;
+  };
+
+  const hasRole = (role: UserRole): boolean => {
+    return userProfile?.role === role;
   };
 
   const value = {
@@ -65,7 +135,9 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
     logout,
     register,
     resetPassword,
+    updateProfile,
     hasPermission,
+    hasRole,
   };
 
   return (
