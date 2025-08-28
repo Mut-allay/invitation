@@ -16,6 +16,7 @@
     "test:unit": "jest --testPathPattern=src/.*\\.test\\.(ts|tsx)$",
     "test:integration": "jest --testPathPattern=src/.*\\.integration\\.(ts|tsx)$",
     "test:api": "jest --testPathPattern=functions/.*\\.test\\.(ts|js)$",
+    "test:payments": "vitest run src/components/payments/__tests__/payment-integration.test.tsx",
     "type-check": "tsc --noEmit",
     "pre-commit": "npm run lint && npm run type-check && npm run test:ci",
     "deploy:dev": "firebase use garaji-flow-dev && firebase deploy",
