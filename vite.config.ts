@@ -12,6 +12,18 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  server: {
+    headers: {
+      // Security headers
+      'X-Content-Type-Options': 'nosniff',
+      'X-Frame-Options': 'DENY',
+      'X-XSS-Protection': '1; mode=block',
+      'Referrer-Policy': 'strict-origin-when-cross-origin',
+      'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
+      'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https:; frame-ancestors 'none';",
+      'Cache-Control': 'public, max-age=31536000',
+    }
+  },
   build: {
     target: 'es2015',
     minify: 'terser',
@@ -29,6 +41,7 @@ export default defineConfig({
           charts: ['recharts'],
           firebase: ['firebase'],
           redux: ['@reduxjs/toolkit', 'react-redux'],
+          security: ['crypto']
         },
         chunkFileNames: 'assets/js/[name]-[hash].js',
         entryFileNames: 'assets/js/[name]-[hash].js',
@@ -45,10 +58,5 @@ export default defineConfig({
       '@heroicons/react',
       'lucide-react',
     ],
-  },
-  server: {
-    headers: {
-      'Cache-Control': 'public, max-age=31536000',
-    },
   },
 })

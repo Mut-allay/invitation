@@ -153,4 +153,62 @@ export class ZRAService {
         // In real implementation, this would call the ZRA API
         throw new Error('ZRA TPIN validation not implemented for production');
     }
+
+    // Generate QR code for ZRA compliance
+    public async generateQRCode(invoiceData: any): Promise<string> {
+        // In a real implementation, this would generate a proper QR code
+        // For now, return a simple SVG representation
+        const qrData = {
+            invoiceNumber: invoiceData.invoiceNumber,
+            businessTpin: invoiceData.businessTpin,
+            customerTpin: invoiceData.customerTpin,
+            totalAmount: invoiceData.totalAmount,
+            totalVat: invoiceData.totalVat,
+            invoiceDate: invoiceData.invoiceDate,
+            zraReference: invoiceData.zraReference
+        };
+        
+        const qrString = JSON.stringify(qrData);
+        return `data:image/svg+xml;base64,${Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="white"/><text x="50" y="50" text-anchor="middle" font-size="8">ZRA:${invoiceData.invoiceNumber}</text></svg>`).toString('base64')}`;
+    }
+
+    // Check ZRA API status
+    public async checkStatus(): Promise<{ status: 'ONLINE' | 'OFFLINE'; message: string }> {
+        if (process.env.NODE_ENV !== 'production') {
+            // Return mock status in sandbox mode
+            return {
+                status: 'ONLINE',
+                message: 'ZRA API is available (sandbox mode)'
+            };
+        }
+
+        // In real implementation, this would ping the ZRA API
+        throw new Error('ZRA status check not implemented for production');
+    }
+
+    // Get ZRA VAT rates
+    public async getVATRates(): Promise<Array<{ value: number; label: string; description: string }>> {
+        return [
+            { value: 0, label: '0% (Exempt)', description: 'VAT Exempt items' },
+            { value: 16, label: '16% (Standard)', description: 'Standard VAT rate in Zambia' }
+        ];
+    }
+
+    // Generate compliance report
+    public async generateComplianceReport(period: string): Promise<any> {
+        // Mock compliance report data
+        const now = new Date();
+        const report = {
+            period,
+            totalInvoices: Math.floor(Math.random() * 100) + 10,
+            totalAmount: Math.floor(Math.random() * 100000) + 10000,
+            totalVAT: Math.floor(Math.random() * 16000) + 1600,
+            submittedInvoices: Math.floor(Math.random() * 80) + 5,
+            pendingInvoices: Math.floor(Math.random() * 20) + 1,
+            complianceStatus: ['COMPLIANT', 'NON_COMPLIANT', 'PENDING'][Math.floor(Math.random() * 3)] as 'COMPLIANT' | 'NON_COMPLIANT' | 'PENDING',
+            lastSubmissionDate: new Date(now.getTime() - Math.random() * 7 * 24 * 60 * 60 * 1000)
+        };
+
+        return report;
+    }
 }

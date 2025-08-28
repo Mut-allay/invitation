@@ -468,9 +468,12 @@ describe('InvoiceDashboard', () => {
       
       // Check that dates are formatted (exact format may vary based on locale)
       // The component displays both issue dates and due dates
-      // Note: Due to timezone conversion, some dates may appear on different days
-      expect(screen.getAllByText(/Dec.*2024/)).toHaveLength(2); // 2 Dec dates (from 2024-12-31)
-      expect(screen.getAllByText(/Nov.*2024/)).toHaveLength(3); // 3 Nov dates (from timezone-adjusted dates)
+      // Invoice 1: Dec 1 (issue) + Dec 31 (due) = 2 Dec dates
+      // Invoice 2: Nov 1 (issue) + Nov 30 (due) = 2 Nov dates  
+      // Invoice 3: Dec 1 (issue) + Dec 31 (due) = 2 Dec dates
+      // Total: 4 Dec dates, 2 Nov dates
+      expect(screen.getAllByText(/Dec.*2024/)).toHaveLength(4); // 4 Dec dates
+      expect(screen.getAllByText(/Nov.*2024/)).toHaveLength(2); // 2 Nov dates
     });
   });
 
