@@ -328,7 +328,7 @@ const RepairAnalytics: React.FC<RepairAnalyticsProps> = ({
               <div className="text-sm text-slate-600 dark:text-slate-400">Customer Satisfaction</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-purple-600">${realTimeData.revenueToday.toLocaleString()}</div>
+              <div className="text-2xl font-bold text-purple-600">${(realTimeData.revenueToday || 0).toLocaleString()}</div>
               <div className="text-sm text-slate-600 dark:text-slate-400">Revenue Today</div>
             </div>
           </div>
@@ -348,7 +348,7 @@ const RepairAnalytics: React.FC<RepairAnalyticsProps> = ({
                 <div className="flex items-center justify-between">
                   <span className="text-slate-600 dark:text-slate-400">Next Week Revenue:</span>
                   <span className="font-medium text-slate-900 dark:text-slate-100">
-                    ${predictiveInsights.nextWeekRevenue.toLocaleString()}
+                    ${(predictiveInsights.nextWeekRevenue || 0).toLocaleString()}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
@@ -414,7 +414,7 @@ const RepairAnalytics: React.FC<RepairAnalyticsProps> = ({
             <div>
               <p className="text-sm text-slate-600 dark:text-slate-400">Total Revenue</p>
               <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-                ${analyticsMetrics.totalRevenue.toLocaleString()}
+                ${(analyticsMetrics.totalRevenue || 0).toLocaleString()}
               </p>
             </div>
           </div>
@@ -582,7 +582,7 @@ const RepairAnalytics: React.FC<RepairAnalyticsProps> = ({
                     </div>
                   </td>
                   <td className="p-3 text-sm text-slate-600 dark:text-slate-400">
-                    ${mechanic.revenue.toLocaleString()}
+                    ${(mechanic.revenue || 0).toLocaleString()}
                   </td>
                   <td className="p-3 text-sm text-slate-600 dark:text-slate-400">
                     <div className="flex items-center space-x-2">

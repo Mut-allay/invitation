@@ -16,7 +16,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ invoice, isOpen, onC
         <h2 className="text-2xl font-bold text-gray-900 mb-4">Process Payment</h2>
         {invoice && (
           <p className="text-gray-600 mb-4">
-            Invoice: {invoice.invoiceNumber} - Amount: K{invoice.totalAmount.toLocaleString()}
+            Invoice: {invoice.invoiceNumber} - Amount: K{(invoice.totalAmount || 0).toLocaleString()}
           </p>
         )}
         <p className="text-gray-700 mb-4">Payment processing form will be implemented here with mobile money integration.</p>

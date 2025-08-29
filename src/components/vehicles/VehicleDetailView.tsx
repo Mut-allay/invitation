@@ -124,22 +124,22 @@ const VehicleDetailView: React.FC<VehicleDetailViewProps> = ({ vehicle, onEdit, 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <p className="text-sm font-medium text-gray-900">Cost Price</p>
-              <p className="text-lg font-bold text-gray-900">{formatCurrency(vehicle.costPrice)}</p>
+              <p className="text-lg font-bold text-gray-900">{formatCurrency(vehicle.costPrice || 0)}</p>
             </div>
             <div>
               <p className="text-sm font-medium text-gray-900">Selling Price</p>
-              <p className="text-lg font-bold text-blue-600">{formatCurrency(vehicle.sellingPrice)}</p>
+              <p className="text-lg font-bold text-blue-600">{formatCurrency(vehicle.sellingPrice || 0)}</p>
             </div>
             <div>
               <p className="text-sm font-medium text-gray-900">Potential Profit</p>
               <p className="text-lg font-bold text-green-600">
-                {formatCurrency(vehicle.sellingPrice - vehicle.costPrice)}
+                {formatCurrency((vehicle.sellingPrice || 0) - (vehicle.costPrice || 0))}
               </p>
             </div>
             <div>
               <p className="text-sm font-medium text-gray-900">Profit Margin</p>
               <p className="text-lg font-bold text-green-600">
-                {(((vehicle.sellingPrice - vehicle.costPrice) / vehicle.costPrice) * 100).toFixed(1)}%
+                {vehicle.costPrice ? ((((vehicle.sellingPrice || 0) - vehicle.costPrice) / vehicle.costPrice) * 100).toFixed(1) : '0.0'}%
               </p>
             </div>
           </div>
@@ -167,7 +167,7 @@ const VehicleDetailView: React.FC<VehicleDetailViewProps> = ({ vehicle, onEdit, 
             </div>
             <div>
               <p className="text-sm font-medium text-gray-900">Mileage</p>
-              <p className="text-sm text-gray-600">{vehicle.mileage ? `${vehicle.mileage.toLocaleString()} km` : 'Not specified'}</p>
+              <p className="text-sm text-gray-600">{vehicle.mileage ? `${(vehicle.mileage || 0).toLocaleString()} km` : 'Not specified'}</p>
             </div>
           </div>
         </CardContent>

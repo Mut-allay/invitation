@@ -95,11 +95,11 @@ export const InvoiceCard: React.FC<InvoiceCardProps> = ({ invoice, onView, onEdi
         <div className="bg-gray-50 p-3 rounded-lg">
           <div className="flex justify-between items-center">
             <span className="text-sm font-medium text-gray-600">Total Amount</span>
-            <span className="text-lg font-bold text-green-600">K{invoice.totalAmount.toLocaleString()}</span>
+            <span className="text-lg font-bold text-green-600">K{(invoice.totalAmount || 0).toLocaleString()}</span>
           </div>
           <div className="flex justify-between items-center mt-1">
             <span className="text-xs text-gray-500">VAT (16%):</span>
-            <span className="text-sm text-gray-700">K{invoice.vatAmount.toLocaleString()}</span>
+            <span className="text-sm text-gray-700">K{(invoice.vatAmount || 0).toLocaleString()}</span>
           </div>
         </div>
 

@@ -23,7 +23,7 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
 
   const handleInvoiceGenerated = (zraInvoice: { invoiceNumber: string; totalAmount: number }) => {
     console.log('ZRA Invoice Generated:', zraInvoice);
-    alert(`ZRA Invoice Generated Successfully!\nInvoice Number: ${zraInvoice.invoiceNumber}\nTotal Amount: K${zraInvoice.totalAmount.toLocaleString()}`);
+    alert(`ZRA Invoice Generated Successfully!\nInvoice Number: ${zraInvoice.invoiceNumber}\nTotal Amount: K${(zraInvoice.totalAmount || 0).toLocaleString()}`);
     onClose();
   };
 
@@ -52,7 +52,7 @@ export const InvoiceModal: React.FC<InvoiceModalProps> = ({
           {invoice && !isCreating && (
             <div className="mb-6 p-4 bg-gray-50 rounded-lg">
               <p className="text-gray-600">
-                <strong>Invoice:</strong> {invoice.invoiceNumber} - K{invoice.totalAmount.toLocaleString()}
+                <strong>Invoice:</strong> {invoice.invoiceNumber} - K{(invoice.totalAmount || 0).toLocaleString()}
               </p>
             </div>
           )}

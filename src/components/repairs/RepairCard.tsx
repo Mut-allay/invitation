@@ -78,17 +78,17 @@ export const RepairCard: React.FC<RepairCardProps> = ({ repair, onView, onAddJob
           <div className="flex justify-between items-center mb-2">
             <span className="text-sm font-medium text-gray-600">Total Cost:</span>
             <span className="text-lg font-bold text-green-600">
-              K{repair.totalCost.toLocaleString()}
+              K{(repair.totalCost || 0).toLocaleString()}
             </span>
           </div>
           <div className="grid grid-cols-2 gap-2 text-xs">
             <div className="flex justify-between">
               <span className="text-gray-500">Labor:</span>
-              <span className="text-gray-700">K{repair.laborCost.toLocaleString()}</span>
+              <span className="text-gray-700">K{(repair.laborCost || 0).toLocaleString()}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-500">Parts:</span>
-              <span className="text-gray-700">K{repair.partsCost.toLocaleString()}</span>
+              <span className="text-gray-700">K{(repair.partsCost || 0).toLocaleString()}</span>
             </div>
           </div>
         </div>

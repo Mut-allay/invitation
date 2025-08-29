@@ -315,7 +315,7 @@ export const PartsManagementInterface: React.FC<PartsManagementInterfaceProps> =
   };
 
   const formatCurrency = (amount: number) => {
-    return `K${amount.toLocaleString()}`;
+    return `K${(amount || 0).toLocaleString()}`;
   };
 
   return (

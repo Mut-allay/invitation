@@ -66,7 +66,7 @@ const PerformanceOptimizationDemo: React.FC = () => {
         <p className="text-gray-600 mb-2">{vehicle.make} {vehicle.model}</p>
         <p className="text-gray-600 mb-2">Year: {vehicle.year}</p>
         <p className="text-lg font-bold text-green-600">
-          ${vehicle.price.toLocaleString()}
+          ${(vehicle.price || 0).toLocaleString()}
         </p>
       </CardContent>
     </Card>

@@ -431,7 +431,7 @@ const RepairsPage: React.FC = () => {
                 {repair.totalCost > 0 && (
                   <div className="flex items-center text-responsive-sm text-muted-foreground">
                     <CurrencyDollarIcon className="h-4 w-4 mr-2" />
-                    <span>Total Cost: K{repair.totalCost.toLocaleString()}</span>
+                    <span>Total Cost: K{(repair.totalCost || 0).toLocaleString()}</span>
                   </div>
                 )}
               </div>

@@ -105,7 +105,7 @@ export const SaleModal: React.FC<SaleModalProps> = ({ vehicle, isOpen, onClose }
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-600">Original Price</label>
-                <p className="text-gray-900">K{vehicle.sellingPrice.toLocaleString()}</p>
+                <p className="text-gray-900">K{(vehicle.sellingPrice || 0).toLocaleString()}</p>
               </div>
             </div>
           </div>
@@ -172,7 +172,7 @@ export const SaleModal: React.FC<SaleModalProps> = ({ vehicle, isOpen, onClose }
             <div className="bg-blue-50 p-4 rounded-lg">
               <div className="flex justify-between items-center">
                 <span className="text-sm font-medium text-gray-700">Balance Due:</span>
-                <span className="text-lg font-bold text-blue-600">K{balance.toLocaleString()}</span>
+                <span className="text-lg font-bold text-blue-600">K{(balance || 0).toLocaleString()}</span>
               </div>
             </div>
 

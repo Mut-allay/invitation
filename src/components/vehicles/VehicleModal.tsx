@@ -104,7 +104,7 @@ export const VehicleModal: React.FC<VehicleModalProps> = ({ vehicle, isOpen, onC
                   {vehicle.mileage && (
                     <div>
                       <label className="text-sm font-medium text-gray-600">Mileage</label>
-                      <p className="text-gray-900">{vehicle.mileage.toLocaleString()} km</p>
+                      <p className="text-gray-900">{(vehicle.mileage || 0).toLocaleString()} km</p>
                     </div>
                   )}
                   {vehicle.color && (
@@ -134,16 +134,16 @@ export const VehicleModal: React.FC<VehicleModalProps> = ({ vehicle, isOpen, onC
                 <div className="bg-gray-50 p-4 rounded-lg space-y-3">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Cost Price:</span>
-                    <span className="font-medium">K{vehicle.costPrice.toLocaleString()}</span>
+                    <span className="font-medium">K{(vehicle.costPrice || 0).toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Selling Price:</span>
-                    <span className="font-bold text-green-600 text-lg">K{vehicle.sellingPrice.toLocaleString()}</span>
+                    <span className="font-bold text-green-600 text-lg">K{(vehicle.sellingPrice || 0).toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Profit Margin:</span>
                     <span className="font-medium text-green-600">
-                      K{(vehicle.sellingPrice - vehicle.costPrice).toLocaleString()}
+                      K{((vehicle.sellingPrice || 0) - (vehicle.costPrice || 0)).toLocaleString()}
                     </span>
                   </div>
                 </div>

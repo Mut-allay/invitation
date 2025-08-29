@@ -349,7 +349,7 @@ export const CustomerProfileManager: React.FC<CustomerProfileManagerProps> = ({
                         </div>
                       </div>
                       <div className="mt-2 flex items-center space-x-4 text-sm text-gray-600">
-                        <span>Mileage: {service.mileage.toLocaleString()} km</span>
+                        <span>Mileage: {(service.mileage || 0).toLocaleString()} km</span>
                         {service.technician && <span>Technician: {service.technician}</span>}
                         <span className={`px-2 py-1 rounded-full text-xs ${
                           service.status === 'completed' ? 'bg-green-100 text-green-800' :
@@ -400,7 +400,7 @@ export const CustomerProfileManager: React.FC<CustomerProfileManagerProps> = ({
                           </div>
                           <div className="flex justify-between">
                             <span className="text-gray-600">Mileage:</span>
-                            <span className="text-gray-900">{mockVehicle.mileage?.toLocaleString()} km</span>
+                            <span className="text-gray-900">{(mockVehicle.mileage || 0).toLocaleString()} km</span>
                           </div>
                         </div>
                       </div>

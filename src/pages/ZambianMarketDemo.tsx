@@ -87,7 +87,7 @@ const ZambianMarketDemo: React.FC = () => {
                 <div className="space-y-2">
                   {sampleAmounts.map((amount, index) => (
                     <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded">
-                      <span className="text-sm text-gray-600">K {amount.toLocaleString()}</span>
+                      <span className="text-sm text-gray-600">K {(amount || 0).toLocaleString()}</span>
                       <ZambianCurrencyFormatter amount={amount} size="md" />
                     </div>
                   ))}

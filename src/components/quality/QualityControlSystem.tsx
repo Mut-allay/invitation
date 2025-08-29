@@ -582,7 +582,7 @@ const QualityControlSystem: React.FC<QualityControlSystemProps> = ({
                           {item.isCompleted && (
                             <div className="ml-9 space-y-2">
                               <div className="text-xs text-slate-500 dark:text-slate-400">
-                                Completed by {item.completedBy} on {item.completedAt?.toLocaleString()}
+                                Completed by {item.completedBy} on {item.completedAt ? item.completedAt.toLocaleString() : 'N/A'}
                               </div>
                               
                               {/* Photo Upload Section */}

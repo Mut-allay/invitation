@@ -141,7 +141,7 @@ const PredictiveAnalytics: React.FC<PredictiveAnalyticsProps> = ({ className = '
 
   const formatValue = (value: number, title: string) => {
     if (title.includes('Sales') || title.includes('Revenue')) {
-      return `K ${value.toLocaleString()}`;
+      return `K ${(value || 0).toLocaleString()}`;
     }
     return value.toString();
   };

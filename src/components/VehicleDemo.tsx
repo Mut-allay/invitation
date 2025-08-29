@@ -155,16 +155,16 @@ const VehicleDemo: React.FC = () => {
                 <div className="space-y-2 mb-4">
                   <div className="flex justify-between">
                     <span className="text-gray-500">Cost Price:</span>
-                    <span className="font-medium">K{vehicle.costPrice.toLocaleString()}</span>
+                    <span className="font-medium">K{(vehicle.costPrice || 0).toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-500">Selling Price:</span>
-                    <span className="font-medium text-green-600">K{vehicle.sellingPrice.toLocaleString()}</span>
+                    <span className="font-medium text-green-600">K{(vehicle.sellingPrice || 0).toLocaleString()}</span>
                   </div>
                   {vehicle.mileage && (
                     <div className="flex justify-between">
                       <span className="text-gray-500">Mileage:</span>
-                      <span className="font-medium">{vehicle.mileage.toLocaleString()} km</span>
+                      <span className="font-medium">{(vehicle.mileage || 0).toLocaleString()} km</span>
                     </div>
                   )}
                 </div>

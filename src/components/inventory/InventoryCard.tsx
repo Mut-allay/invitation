@@ -112,11 +112,11 @@ export const InventoryCard: React.FC<InventoryCardProps> = ({ item, onView, onEd
         <div className="bg-gray-50 p-3 rounded-lg">
           <div className="flex justify-between items-center mb-1">
             <span className="text-xs text-gray-600">Cost:</span>
-            <span className="text-sm font-medium">K{item.cost.toLocaleString()}</span>
+            <span className="text-sm font-medium">K{(item.cost || 0).toLocaleString()}</span>
           </div>
           <div className="flex justify-between items-center">
             <span className="text-xs text-gray-600">Selling Price:</span>
-            <span className="text-sm font-bold text-green-600">K{item.sellingPrice.toLocaleString()}</span>
+            <span className="text-sm font-bold text-green-600">K{(item.sellingPrice || 0).toLocaleString()}</span>
           </div>
         </div>
 

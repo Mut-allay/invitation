@@ -49,7 +49,7 @@ const NotificationList: React.FC = () => {
           >
             {notification.message}
             <div className="text-xs text-gray-500">
-              {notification.createdAt.toDate().toLocaleString()}
+                              {notification.createdAt?.toDate()?.toLocaleString() || 'N/A'}
             </div>
           </a>
         ))}

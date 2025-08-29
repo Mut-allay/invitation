@@ -127,7 +127,7 @@ const RealTimeAnalytics: React.FC<RealTimeAnalyticsProps> = ({ className = '' })
 
   const formatValue = (value: number, label: string) => {
     if (label.includes('Revenue')) {
-      return `K ${value.toLocaleString()}`;
+      return `K ${(value || 0).toLocaleString()}`;
     }
     return value.toString();
   };

@@ -239,7 +239,7 @@ export const ServiceReminderSystem: React.FC<ServiceReminderSystemProps> = ({
                                 {reminder.dueMileage && (
                                   <span className="flex items-center space-x-1">
                                     <TruckIcon className="h-4 w-4" />
-                                    <span>At {reminder.dueMileage.toLocaleString()} km</span>
+                                    <span>At {(reminder.dueMileage || 0).toLocaleString()} km</span>
                                   </span>
                                 )}
                                 <span className={`px-2 py-1 rounded-full text-xs ${getStatusColor(reminder.status)}`}>

@@ -61,11 +61,11 @@ const AppDemo: React.FC = () => {
             <div className="space-y-2 mb-4">
               <div className="flex justify-between">
                 <span className="text-gray-500">Cost Price:</span>
-                <span className="font-medium">K{vehicle.costPrice.toLocaleString()}</span>
+                <span className="font-medium">K{(vehicle.costPrice || 0).toLocaleString()}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-500">Selling Price:</span>
-                <span className="font-medium text-green-600">K{vehicle.sellingPrice.toLocaleString()}</span>
+                <span className="font-medium text-green-600">K{(vehicle.sellingPrice || 0).toLocaleString()}</span>
               </div>
             </div>
           </div>
@@ -156,12 +156,12 @@ const AppDemo: React.FC = () => {
           <div className="space-y-2 mb-4">
             <div className="flex justify-between">
               <span className="text-gray-500">Estimated Cost:</span>
-              <span className="font-medium">K{repair.totalCost.toLocaleString()}</span>
+              <span className="font-medium">K{(repair.totalCost || 0).toLocaleString()}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-500">Actual Cost:</span>
               <span className="font-medium">
-                {repair.totalCost > 0 ? `K${repair.totalCost.toLocaleString()}` : 'Pending'}
+                {repair.totalCost > 0 ? `K${(repair.totalCost || 0).toLocaleString()}` : 'Pending'}
               </span>
             </div>
             <div className="flex justify-between">
@@ -198,11 +198,11 @@ const AppDemo: React.FC = () => {
             </div>
             <div className="flex justify-between">
               <span className="text-gray-500">Cost Price:</span>
-              <span className="font-medium">K{item.cost.toLocaleString()}</span>
+              <span className="font-medium">K{(item.cost || 0).toLocaleString()}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-500">Selling Price:</span>
-              <span className="font-medium text-green-600">K{item.sellingPrice.toLocaleString()}</span>
+              <span className="font-medium text-green-600">K{(item.sellingPrice || 0).toLocaleString()}</span>
             </div>
           </div>
         </div>
@@ -228,15 +228,15 @@ const AppDemo: React.FC = () => {
           <div className="space-y-2 mb-4">
             <div className="flex justify-between">
               <span className="text-gray-500">Subtotal:</span>
-              <span className="font-medium">K{invoice.subtotal.toLocaleString()}</span>
+              <span className="font-medium">K{(invoice.subtotal || 0).toLocaleString()}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-500">Tax:</span>
-              <span className="font-medium">K{invoice.vatAmount.toLocaleString()}</span>
+              <span className="font-medium">K{(invoice.vatAmount || 0).toLocaleString()}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-500">Total:</span>
-              <span className="font-medium text-green-600">K{invoice.totalAmount.toLocaleString()}</span>
+              <span className="font-medium text-green-600">K{(invoice.totalAmount || 0).toLocaleString()}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-500">Due Date:</span>

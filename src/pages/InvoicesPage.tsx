@@ -253,7 +253,7 @@ const InvoicesPage: React.FC = () => {
             </div>
             <div className="ml-4">
               <p className="text-responsive-sm font-medium text-muted-foreground">Total Amount</p>
-              <p className="text-responsive-2xl font-bold text-foreground">K{stats.totalAmount.toLocaleString()}</p>
+              <p className="text-responsive-2xl font-bold text-foreground">K{(stats.totalAmount || 0).toLocaleString()}</p>
             </div>
           </div>
         </div>
@@ -265,7 +265,7 @@ const InvoicesPage: React.FC = () => {
             </div>
             <div className="ml-4">
               <p className="text-responsive-sm font-medium text-muted-foreground">Pending Amount</p>
-              <p className="text-responsive-2xl font-bold text-foreground">K{stats.pendingAmount.toLocaleString()}</p>
+              <p className="text-responsive-2xl font-bold text-foreground">K{(stats.pendingAmount || 0).toLocaleString()}</p>
             </div>
           </div>
         </div>
@@ -296,7 +296,7 @@ const InvoicesPage: React.FC = () => {
             </div>
           </div>
           <p className="text-responsive-sm text-muted-foreground mt-2">
-            Total Paid: K{stats.paidAmount.toLocaleString()}
+            Total Paid: K{(stats.paidAmount || 0).toLocaleString()}
           </p>
         </div>
 
