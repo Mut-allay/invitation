@@ -232,6 +232,7 @@ const SalesPage: React.FC = () => {
                       <VehicleCard
                         vehicle={vehicle}
                         onView={() => handleViewVehicle(vehicle)}
+                        onEdit={() => handleEditVehicle(vehicle)}
                         onSale={() => handleStartSale(vehicle)}
                       />
                     </div>
@@ -270,19 +271,17 @@ const SalesPage: React.FC = () => {
       </ResizablePanelGroup>
 
       {/* Modals */}
+      <VehicleModal
+        vehicle={selectedVehicle || { id: '', make: '', model: '', year: 0, plateNumber: '', tenantId: '', createdAt: new Date(), updatedAt: new Date() }}
+        isOpen={showVehicleModal}
+        onClose={() => setShowVehicleModal(false)}
+      />
       {selectedVehicle && (
-        <>
-          <VehicleModal
-            vehicle={selectedVehicle}
-            isOpen={showVehicleModal}
-            onClose={() => setShowVehicleModal(false)}
-          />
-          <SaleModal
-            vehicle={selectedVehicle}
-            isOpen={showSaleModal}
-            onClose={() => setShowSaleModal(false)}
-          />
-        </>
+        <SaleModal
+          vehicle={selectedVehicle}
+          isOpen={showSaleModal}
+          onClose={() => setShowSaleModal(false)}
+        />
       )}
     </div>
   );

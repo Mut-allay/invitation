@@ -516,19 +516,17 @@ const RepairsPage: React.FC = () => {
       )}
 
       {/* Modals */}
+      <RepairModal
+        repair={selectedRepair || { id: '', tenantId: '', customerId: '', vehicleId: '', description: '', status: 'pending', createdAt: new Date(), updatedAt: new Date() }}
+        isOpen={showRepairModal}
+        onClose={() => setShowRepairModal(false)}
+      />
       {selectedRepair && (
-        <>
-          <RepairModal
-            repair={selectedRepair}
-            isOpen={showRepairModal}
-            onClose={() => setShowRepairModal(false)}
-          />
-          <JobCardModal
-            repair={selectedRepair}
-            isOpen={showJobCardModal}
-            onClose={() => setShowJobCardModal(false)}
-          />
-        </>
+        <JobCardModal
+          repair={selectedRepair}
+          isOpen={showJobCardModal}
+          onClose={() => setShowJobCardModal(false)}
+        />
       )}
 
       {/* Advanced Workflow & Quality Modals */}
