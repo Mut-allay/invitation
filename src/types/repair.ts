@@ -4,7 +4,7 @@ export interface Repair {
   customerId: string;
   vehicleId: string;
   status: 'pending' | 'in_progress' | 'completed' | 'cancelled';
-  reportedIssues: string;
+  description: string; // Changed from reportedIssues to match actual data
   estimatedCompletion?: Date;
   actualCompletion?: Date;
   totalCost: number;

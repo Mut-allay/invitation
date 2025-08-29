@@ -1,5 +1,14 @@
 import { onCall, HttpsError, CallableRequest } from 'firebase-functions/v2/https';
-import { db } from './firebase-admin';
+import * as admin from 'firebase-admin';
+import { logger } from 'firebase-functions/v1';
+import { z } from 'zod';
+
+// Initialize Firebase Admin if not already initialized
+if (admin.apps.length === 0) {
+  admin.initializeApp();
+}
+
+const db = admin.firestore();
 
 // Type definitions
 interface CustomerData {
@@ -8,6 +17,17 @@ interface CustomerData {
   updatedAt?: FirebaseFirestore.Timestamp;
   [key: string]: any;
 }
+
+// Zod schema for validation
+const CustomerSchema = z.object({
+  tenantId: z.string(),
+  name: z.string().min(1),
+  email: z.string().email().optional(),
+  phone: z.string().optional(),
+  address: z.string().optional(),
+  createdAt: z.date().optional(),
+  updatedAt: z.date().optional(),
+}).passthrough();
 
 // Get customers for a tenant
 export const getCustomers = onCall<{ tenantId: string }>(async (request: CallableRequest<{ tenantId: string }>) => {
@@ -38,7 +58,7 @@ export const getCustomers = onCall<{ tenantId: string }>(async (request: Callabl
 
     return { customers };
   } catch (error) {
-    console.error('Error fetching customers:', error);
+    logger.error('Error fetching customers:', error);
     throw new HttpsError('internal', 'Failed to fetch customers');
   }
 });
@@ -76,7 +96,7 @@ export const getCustomer = onCall<{ tenantId: string; customerId: string }>(asyn
       updatedAt: customerData.updatedAt?.toDate(),
     };
   } catch (error) {
-    console.error('Error fetching customer:', error);
+    logger.error('Error fetching customer:', error);
     throw new HttpsError('internal', 'Failed to fetch customer');
   }
 });
@@ -102,7 +122,8 @@ export const createCustomer = onCall<{ tenantId: string; customer: CustomerData 
       updatedAt: new Date(),
     };
 
-    const customerRef = await db.collection('customers').add(customerData);
+    const validatedData = CustomerSchema.parse(customerData);
+    const customerRef = await db.collection('customers').add(validatedData);
     const newCustomerDoc = await customerRef.get();
 
     return {
@@ -112,7 +133,7 @@ export const createCustomer = onCall<{ tenantId: string; customer: CustomerData 
       updatedAt: newCustomerDoc.data()?.updatedAt?.toDate(),
     };
   } catch (error) {
-    console.error('Error creating customer:', error);
+    logger.error('Error creating customer:', error);
     throw new HttpsError('internal', 'Failed to create customer');
   }
 });
@@ -145,10 +166,12 @@ export const updateCustomer = onCall<{ tenantId: string; customerId: string; cus
 
     const updateData = {
       ...customer,
+      tenantId,
       updatedAt: new Date(),
     };
 
-    await customerRef.update(updateData);
+    const validatedData = CustomerSchema.parse(updateData);
+    await customerRef.update(validatedData);
 
     return {
       id: customerId,
@@ -156,7 +179,7 @@ export const updateCustomer = onCall<{ tenantId: string; customerId: string; cus
       ...updateData,
     };
   } catch (error) {
-    console.error('Error updating customer:', error);
+    logger.error('Error updating customer:', error);
     throw new HttpsError('internal', 'Failed to update customer');
   }
 });
@@ -191,7 +214,7 @@ export const deleteCustomer = onCall<{ tenantId: string; customerId: string }>(a
 
     return { success: true };
   } catch (error) {
-    console.error('Error deleting customer:', error);
+    logger.error('Error deleting customer:', error);
     throw new HttpsError('internal', 'Failed to delete customer');
   }
 }); 

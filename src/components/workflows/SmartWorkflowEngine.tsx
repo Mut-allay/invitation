@@ -100,14 +100,15 @@ const SmartWorkflowEngine: React.FC<SmartWorkflowEngineProps> = ({
   // Memoized available mechanics with performance ranking
   const availableMechanics = useMemo(() => {
     const available = mechanics.filter((m: Mechanic) => m.availability === 'available');
+    const description = repair.description || '';
     
     // Rank mechanics by performance (simulated)
     return available.map(mechanic => ({
       ...mechanic,
       performanceScore: Math.random() * 100 + 50, // Simulated performance score
-      specializationMatch: repair.reportedIssues.toLowerCase().includes(mechanic.specialization[0]?.toLowerCase() || '') ? 1 : 0
+      specializationMatch: description.toLowerCase().includes(mechanic.specialization[0]?.toLowerCase() || '') ? 1 : 0
     })).sort((a, b) => (b.performanceScore + b.specializationMatch * 20) - (a.performanceScore + a.specializationMatch * 20));
-  }, [mechanics, repair.reportedIssues]);
+  }, [mechanics, repair.description]);
 
   // Enhanced auto-assign mechanic with performance optimization
   const autoAssignMechanic = useCallback((repair: Repair) => {
@@ -115,6 +116,7 @@ const SmartWorkflowEngine: React.FC<SmartWorkflowEngineProps> = ({
 
     // Advanced assignment logic based on performance mode
     let selectedMechanic = availableMechanics[0];
+    const description = repair.description || '';
 
     if (performanceMode === 'quality') {
       // Prioritize quality - select mechanic with highest performance score
@@ -125,7 +127,7 @@ const SmartWorkflowEngine: React.FC<SmartWorkflowEngineProps> = ({
       // Prioritize speed - select first available with specialization match
       selectedMechanic = availableMechanics.find(m => 
         m.specialization.some(s => 
-          repair.reportedIssues.toLowerCase().includes(s.toLowerCase())
+          description.toLowerCase().includes(s.toLowerCase())
         )
       ) || availableMechanics[0];
     } else {
@@ -142,15 +144,14 @@ const SmartWorkflowEngine: React.FC<SmartWorkflowEngineProps> = ({
     [bays]
   );
 
-
-
   // Auto-assign bay based on repair type
   const autoAssignBay = useCallback((repair: Repair) => {
     if (availableBays.length === 0) return null;
 
     // Simple logic: assign diagnostic bay for electrical issues, standard for others
-    const isElectrical = repair.reportedIssues.toLowerCase().includes('electrical') || 
-                        repair.reportedIssues.toLowerCase().includes('ac');
+    const description = repair.description || '';
+    const isElectrical = description.toLowerCase().includes('electrical') || 
+                        description.toLowerCase().includes('ac');
     
     const preferredBay = availableBays.find((b: Bay) => 
       isElectrical ? b.type === 'diagnostic' : b.type === 'standard'

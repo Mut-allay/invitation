@@ -1,9 +1,48 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.onVehicleUpdated = exports.deleteVehicle = exports.updateVehicle = exports.createVehicle = exports.getVehicle = exports.getVehicles = void 0;
 const https_1 = require("firebase-functions/v2/https");
 const firestore_1 = require("firebase-functions/v2/firestore");
-const firebase_admin_1 = require("./firebase-admin");
+const v1_1 = require("firebase-functions/v1");
+const admin = __importStar(require("firebase-admin"));
+// Initialize Firebase Admin if not already initialized
+if (admin.apps.length === 0) {
+    admin.initializeApp();
+}
+const db = admin.firestore();
 // Get vehicles for a tenant
 exports.getVehicles = (0, https_1.onCall)(async (request) => {
     if (!request.auth) {
@@ -15,7 +54,7 @@ exports.getVehicles = (0, https_1.onCall)(async (request) => {
         throw new https_1.HttpsError('permission-denied', 'Access denied to this tenant');
     }
     try {
-        const vehiclesRef = firebase_admin_1.db.collection('vehicles');
+        const vehiclesRef = db.collection('vehicles');
         const snapshot = await vehiclesRef.where('tenantId', '==', tenantId).get();
         const vehicles = snapshot.docs.map(doc => {
             var _a, _b;
@@ -41,7 +80,7 @@ exports.getVehicle = (0, https_1.onCall)(async (request) => {
         throw new https_1.HttpsError('permission-denied', 'Access denied to this tenant');
     }
     try {
-        const vehicleRef = firebase_admin_1.db.collection('vehicles').doc(vehicleId);
+        const vehicleRef = db.collection('vehicles').doc(vehicleId);
         const vehicleDoc = await vehicleRef.get();
         if (!vehicleDoc.exists) {
             throw new https_1.HttpsError('not-found', 'Vehicle not found');
@@ -70,7 +109,7 @@ exports.createVehicle = (0, https_1.onCall)(async (request) => {
     }
     try {
         const vehicleData = Object.assign(Object.assign({}, vehicle), { tenantId, createdAt: new Date(), updatedAt: new Date() });
-        const vehicleRef = await firebase_admin_1.db.collection('vehicles').add(vehicleData);
+        const vehicleRef = await db.collection('vehicles').add(vehicleData);
         const newVehicleDoc = await vehicleRef.get();
         return Object.assign(Object.assign({ id: vehicleRef.id }, newVehicleDoc.data()), { createdAt: (_b = (_a = newVehicleDoc.data()) === null || _a === void 0 ? void 0 : _a.createdAt) === null || _b === void 0 ? void 0 : _b.toDate(), updatedAt: (_d = (_c = newVehicleDoc.data()) === null || _c === void 0 ? void 0 : _c.updatedAt) === null || _d === void 0 ? void 0 : _d.toDate() });
     }
@@ -90,7 +129,7 @@ exports.updateVehicle = (0, https_1.onCall)(async (request) => {
         throw new https_1.HttpsError('permission-denied', 'Access denied to this tenant');
     }
     try {
-        const vehicleRef = firebase_admin_1.db.collection('vehicles').doc(vehicleId);
+        const vehicleRef = db.collection('vehicles').doc(vehicleId);
         const vehicleDoc = await vehicleRef.get();
         if (!vehicleDoc.exists) {
             throw new https_1.HttpsError('not-found', 'Vehicle not found');
@@ -119,7 +158,7 @@ exports.deleteVehicle = (0, https_1.onCall)(async (request) => {
         throw new https_1.HttpsError('permission-denied', 'Access denied to this tenant');
     }
     try {
-        const vehicleRef = firebase_admin_1.db.collection('vehicles').doc(vehicleId);
+        const vehicleRef = db.collection('vehicles').doc(vehicleId);
         const vehicleDoc = await vehicleRef.get();
         if (!vehicleDoc.exists) {
             throw new https_1.HttpsError('not-found', 'Vehicle not found');
@@ -143,18 +182,13 @@ exports.onVehicleUpdated = (0, firestore_1.onDocumentUpdated)('vehicles/{vehicle
     const beforeData = (_a = event.data) === null || _a === void 0 ? void 0 : _a.before.data();
     const afterData = (_b = event.data) === null || _b === void 0 ? void 0 : _b.after.data();
     if (!beforeData || !afterData) {
-        console.log('No data available for vehicle update trigger');
+        v1_1.logger.warn('No vehicle data found for update:', vehicleId);
         return;
     }
-    // Log the vehicle update
-    console.log(`Vehicle ${vehicleId} updated:`, {
+    // Log the update for audit purposes
+    v1_1.logger.info(`Vehicle ${vehicleId} updated:`, {
         before: beforeData,
         after: afterData,
     });
-    // You can add additional logic here, such as:
-    // - Updating related documents
-    // - Sending notifications
-    // - Creating audit logs
-    // - Triggering workflows
 });
 //# sourceMappingURL=vehicles.js.map

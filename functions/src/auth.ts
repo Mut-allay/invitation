@@ -1,6 +1,16 @@
 import { onCall, HttpsError, CallableRequest } from 'firebase-functions/v2/https';
 import { onDocumentCreated } from 'firebase-functions/v2/firestore';
-import { auth, db } from './firebase-admin';
+import { logger } from 'firebase-functions/v1';
+import * as admin from 'firebase-admin';
+import { z } from 'zod';
+
+// Initialize Firebase Admin if not already initialized
+if (admin.apps.length === 0) {
+  admin.initializeApp();
+}
+
+const auth = admin.auth();
+const db = admin.firestore();
 
 // Type definitions
 interface UserData {
@@ -16,27 +26,22 @@ export const onUserCreate = onDocumentCreated('users/{uid}', async (event) => {
   const uid = event.params.uid;
 
   if (!userData) {
-    console.error('No user data found');
+    logger.error('No user data found for uid:', uid);
     return;
   }
 
   try {
-    // Get the user from Firebase Auth
-    const userRecord = await auth.getUser(uid);
-    
-    // Update the user document with additional information
-    await db.collection('users').doc(uid).set({
-      email: userRecord.email,
-      displayName: userRecord.displayName || userRecord.email?.split('@')[0],
-      phoneNumber: userRecord.phoneNumber,
-      createdAt: new Date(),
-      lastLoginAt: new Date(),
-      isActive: true,
-    }, { merge: true });
+    // Set default custom claims
+    const defaultClaims = {
+      role: 'user',
+      tenantId: userData.tenantId || 'default',
+      permissions: ['view_own_data'],
+    };
 
-    console.log(`User document created for ${uid}`);
+    await auth.setCustomUserClaims(uid, defaultClaims);
+    logger.info('Default custom claims set for user:', uid);
   } catch (error) {
-    console.error('Error creating user document:', error);
+    logger.error('Error setting custom claims for user:', uid, error);
   }
 });
 

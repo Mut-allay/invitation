@@ -27,4 +27,7 @@ __exportStar(require("./parts-ordering/createPartsOrder"), exports);
 __exportStar(require("./parts-ordering/getPartsOrders"), exports);
 __exportStar(require("./parts-ordering/updateOrderStatus"), exports);
 __exportStar(require("./parts-ordering/deletePartsOrder"), exports);
+// ZRA Integration Functions
+__exportStar(require("./integrations/zambia/zra"), exports);
+__exportStar(require("./zraFunctions"), exports);
 //# sourceMappingURL=index.js.map

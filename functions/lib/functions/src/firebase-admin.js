@@ -41,4 +41,5 @@ if (admin.apps.length === 0) {
 exports.db = admin.firestore();
 exports.auth = admin.auth();
 exports.storage = admin.storage();
+exports.default = admin;
 //# sourceMappingURL=firebase-admin.js.map

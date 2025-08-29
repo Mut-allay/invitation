@@ -184,8 +184,11 @@ const RepairsPage: React.FC = () => {
   const { repairs: apiRepairs, loading, error } = useRepairs();
   const { success } = useToast();
 
+  // Ensure repairs is always an array to prevent undefined errors
+  const safeApiRepairs = apiRepairs || [];
+  
   // Use mock data if API returns empty or undefined
-  const repairs = (!apiRepairs || apiRepairs.length === 0) && !loading ? mockRepairs : (apiRepairs || []);
+  const repairs = (safeApiRepairs.length === 0) && !loading ? mockRepairs : safeApiRepairs;
 
   const statuses = ['pending', 'in_progress', 'completed', 'cancelled'];
 

@@ -186,10 +186,11 @@ const RepairAnalytics: React.FC<RepairAnalyticsProps> = ({
 
     // Repair type distribution
     const repairTypes = repairs.reduce((acc, repair) => {
-      const type = repair.reportedIssues.toLowerCase().includes('engine') ? 'Engine' :
-                  repair.reportedIssues.toLowerCase().includes('brake') ? 'Brake' :
-                  repair.reportedIssues.toLowerCase().includes('electrical') ? 'Electrical' :
-                  repair.reportedIssues.toLowerCase().includes('ac') ? 'AC' : 'Other';
+      const description = repair.description || '';
+      const type = description.toLowerCase().includes('engine') ? 'Engine' :
+                  description.toLowerCase().includes('brake') ? 'Brake' :
+                  description.toLowerCase().includes('electrical') ? 'Electrical' :
+                  description.toLowerCase().includes('ac') ? 'AC' : 'Other';
       
       acc[type] = (acc[type] || 0) + 1;
       return acc;

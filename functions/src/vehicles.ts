@@ -1,6 +1,8 @@
 import { onCall, HttpsError, CallableRequest } from 'firebase-functions/v2/https';
 import { onDocumentUpdated } from 'firebase-functions/v2/firestore';
-import { db } from './firebase-admin';
+import { logger } from 'firebase-functions/v1';
+import { db } from './config/admin';
+import { z } from 'zod';
 
 // Type definitions
 interface VehicleData {
@@ -204,19 +206,13 @@ export const onVehicleUpdated = onDocumentUpdated('vehicles/{vehicleId}', async 
   const afterData = event.data?.after.data();
 
   if (!beforeData || !afterData) {
-    console.log('No data available for vehicle update trigger');
+    logger.warn('No vehicle data found for update:', vehicleId);
     return;
   }
 
-  // Log the vehicle update
-  console.log(`Vehicle ${vehicleId} updated:`, {
+  // Log the update for audit purposes
+  logger.info(`Vehicle ${vehicleId} updated:`, {
     before: beforeData,
     after: afterData,
   });
-
-  // You can add additional logic here, such as:
-  // - Updating related documents
-  // - Sending notifications
-  // - Creating audit logs
-  // - Triggering workflows
 });

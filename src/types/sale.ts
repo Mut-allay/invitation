@@ -3,10 +3,8 @@ export interface Sale {
   tenantId: string;
   customerId: string;
   vehicleId: string;
-  salePrice: number;
-  deposit: number;
-  balance: number;
-  status: 'pending' | 'completed' | 'cancelled';
+  amount: number; // Changed from salePrice to match actual data
+  currency: string;
   paymentMethod: 'cash' | 'bank_transfer' | 'mobile_money';
   notes?: string;
   createdAt: Date;
@@ -16,9 +14,8 @@ export interface Sale {
 export interface SaleFormData {
   customerId: string;
   vehicleId: string;
-  salePrice: number;
-  deposit: number;
-  balance: number;
+  amount: number; // Changed from salePrice to match actual data
+  currency: string;
   paymentMethod: 'cash' | 'bank_transfer' | 'mobile_money';
   notes?: string;
 } 

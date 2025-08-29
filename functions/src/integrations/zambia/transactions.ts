@@ -1,6 +1,14 @@
-import { db } from '@/config/firebase-admin';
+import * as admin from 'firebase-admin';
+import { logger } from 'firebase-functions/v1';
 import { z } from 'zod';
 import type { Transaction } from './types';
+
+// Initialize Firebase Admin if not already initialized
+if (admin.apps.length === 0) {
+  admin.initializeApp();
+}
+
+const db = admin.firestore();
 
 // Schema for transaction tracking
 export const TransactionTrackingSchema = z.object({

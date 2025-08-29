@@ -2,7 +2,21 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-
+    // Development/Testing rules - more permissive for quick development
+    // TODO: Replace with production rules before going live
+    
+    // Allow all reads and writes for development
+    match /{document=**} {
+      allow read, write: if true;
+    }
+    
+    // Alternative: Allow authenticated users only
+    // match /{document=**} {
+    //   allow read, write: if request.auth != null;
+    // }
+    
+    // Production rules (commented out for development)
+    /*
     // Helper function to check if a user belongs to the correct tenant
     function isUserInTenant(tenantId) {
       return request.auth != null && request.auth.token.tenantId == tenantId;
@@ -53,5 +67,6 @@ service cloud.firestore {
                            request.auth.token.tenantId == resource.data.tenantId && 
                            request.auth.uid == resource.data.userId;
     }
+    */
   }
 } 

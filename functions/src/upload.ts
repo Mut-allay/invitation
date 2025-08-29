@@ -1,5 +1,15 @@
 import { onCall, HttpsError, CallableRequest } from 'firebase-functions/v2/https';
-import { storage, db } from './firebase-admin';
+import * as admin from 'firebase-admin';
+import { logger } from 'firebase-functions/v1';
+import { z } from 'zod';
+
+// Initialize Firebase Admin if not already initialized
+if (admin.apps.length === 0) {
+  admin.initializeApp();
+}
+
+const storage = admin.storage();
+const db = admin.firestore();
 
 const bucket = storage.bucket();
 

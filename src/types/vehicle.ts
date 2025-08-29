@@ -1,21 +1,11 @@
 export interface Vehicle {
   id: string;
   tenantId: string;
-  vin: string;
-  regNumber: string;
   make: string;
   model: string;
   year: number;
-  status: 'available' | 'sold' | 'reserved' | 'in_repair';
-  costPrice: number;
-  sellingPrice: number;
-  images: string[];
-  description?: string;
-  mileage?: number;
-  fuelType?: 'petrol' | 'diesel' | 'hybrid' | 'electric';
-  transmission?: 'manual' | 'automatic';
-  color?: string;
-  features?: string[];
+  plateNumber: string; // Changed from regNumber to match actual data
+  customerId?: string; // Added to match actual data
   createdAt: Date;
   updatedAt: Date;
 }

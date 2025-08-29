@@ -31,6 +31,14 @@ const DashboardHome: React.FC = () => {
   const { inventory } = useInventory();
   const { invoices } = useInvoices();
 
+  // Ensure all data arrays are safe to use
+  const safeVehicles = vehicles || [];
+  const safeSales = sales || [];
+  const safeRepairs = repairs || [];
+  const safeCustomers = customers || [];
+  const safeInventory = inventory || [];
+  const safeInvoices = invoices || [];
+
   const [dateRange, setDateRange] = useState<{ start: Date; end: Date }>({
     start: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 7 days ago
     end: new Date()
@@ -38,31 +46,31 @@ const DashboardHome: React.FC = () => {
 
   // Calculate business metrics based on date range
   const getBusinessMetrics = () => {
-    const totalVehicles = vehicles.length;
-    const availableVehicles = vehicles.filter(v => v.status === 'available').length;
-    const soldVehicles = vehicles.filter(v => v.status === 'sold').length;
+    const totalVehicles = safeVehicles.length;
+    const availableVehicles = safeVehicles.filter(v => v.status === 'available').length;
+    const soldVehicles = safeVehicles.filter(v => v.status === 'sold').length;
     
     // Filter data based on date range
-    const filteredSales = sales.filter(sale => {
+    const filteredSales = safeSales.filter(sale => {
       const saleDate = new Date(sale.createdAt);
       return saleDate >= dateRange.start && saleDate <= dateRange.end;
     });
     
-    const filteredRepairs = repairs.filter(repair => {
+    const filteredRepairs = safeRepairs.filter(repair => {
       const repairDate = new Date(repair.createdAt);
       return repairDate >= dateRange.start && repairDate <= dateRange.end;
     });
 
-    const totalSales = filteredSales.reduce((sum, sale) => sum + sale.salePrice, 0);
-    const totalRepairs = repairs.length;
-    const completedRepairs = repairs.filter(r => r.status === 'completed').length;
-    const totalCustomers = customers.length;
-    const activeCustomers = customers.filter(c => c.vehiclesOwned.length > 0).length;
-    const totalInventory = inventory.length;
-    const lowStockItems = inventory.filter(item => item.currentStock <= item.reorderLevel).length;
-    const totalInvoices = invoices.length;
-    const totalInvoiceAmount = invoices.reduce((sum, inv) => sum + inv.totalAmount, 0);
-    const paidInvoices = invoices.filter(inv => inv.status === 'paid').length;
+    const totalSales = filteredSales.reduce((sum, sale) => sum + (sale.amount || 0), 0);
+    const totalRepairs = safeRepairs.length;
+    const completedRepairs = safeRepairs.filter(r => r.status === 'completed').length;
+    const totalCustomers = safeCustomers.length;
+    const activeCustomers = safeCustomers.filter(c => c.vehiclesOwned && c.vehiclesOwned.length > 0).length;
+    const totalInventory = safeInventory.length;
+    const lowStockItems = safeInventory.filter(item => (item.currentStock || 0) <= (item.reorderLevel || 0)).length;
+    const totalInvoices = safeInvoices.length;
+    const totalInvoiceAmount = safeInvoices.reduce((sum, inv) => sum + (inv.totalAmount || 0), 0);
+    const paidInvoices = safeInvoices.filter(inv => inv.status === 'paid').length;
 
     return {
       totalVehicles,
@@ -77,9 +85,7 @@ const DashboardHome: React.FC = () => {
       lowStockItems,
       totalInvoices,
       totalInvoiceAmount,
-      paidInvoices,
-      recentSales: filteredSales.length,
-      recentRepairs: filteredRepairs.length,
+      paidInvoices
     };
   };
 
@@ -93,7 +99,7 @@ const DashboardHome: React.FC = () => {
       date.setDate(date.getDate() + i);
       const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
       
-      const daySales = sales.filter(sale => {
+      const daySales = safeSales.filter(sale => {
         const saleDate = new Date(sale.createdAt);
         return saleDate.toDateString() === date.toDateString();
       });
@@ -120,7 +126,7 @@ const DashboardHome: React.FC = () => {
       date.setDate(date.getDate() + i);
       const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
       
-      const dayRepairs = repairs.filter(repair => {
+      const dayRepairs = safeRepairs.filter(repair => {
         const repairDate = new Date(repair.createdAt);
         return repairDate.toDateString() === date.toDateString();
       });
@@ -302,17 +308,17 @@ const DashboardHome: React.FC = () => {
           </h3>
         </div>
         <RepairAnalytics
-          repairs={repairs}
+          repairs={safeRepairs}
         />
       </div>
 
       {/* Recent Activity */}
       <RecentActivity
-        sales={sales.slice(0, 5).map(sale => ({
+        sales={safeSales.slice(0, 5).map(sale => ({
           ...sale,
           createdAt: sale.createdAt instanceof Date ? sale.createdAt.toISOString() : sale.createdAt
         }))}
-        repairs={repairs.slice(0, 5).map(repair => ({
+        repairs={safeRepairs.slice(0, 5).map(repair => ({
           ...repair,
           createdAt: repair.createdAt instanceof Date ? repair.createdAt.toISOString() : repair.createdAt
         }))}

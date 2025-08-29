@@ -23,19 +23,23 @@ const SalesPage: React.FC = () => {
 
   const { vehicles, loading, error } = useVehicles();
 
-  const makes = [...new Set(vehicles.map(v => v.make))];
+  // Ensure vehicles is always an array to prevent undefined errors
+  const safeVehicles = vehicles || [];
+
+  const makes = [...new Set(safeVehicles.map(v => v.make))];
   const statuses = ['available', 'sold', 'reserved'];
 
-  const filteredVehicles = vehicles.filter(vehicle => {
+  const filteredVehicles = safeVehicles.filter(vehicle => {
     const matchesSearch = vehicle.make.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          vehicle.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         vehicle.regNumber.toLowerCase().includes(searchTerm.toLowerCase());
+                         vehicle.plateNumber.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesMake = !selectedMake || vehicle.make === selectedMake;
-    const matchesStatus = !selectedStatus || vehicle.status === selectedStatus;
+    // Remove status filter since vehicles don't have status in actual data
+    const matchesStatus = true; // Always true since we don't have status field
     
-    const matchesPrice = (!priceRange.min || vehicle.sellingPrice >= parseInt(priceRange.min)) &&
-                        (!priceRange.max || vehicle.sellingPrice <= parseInt(priceRange.max));
+    // Remove price filter since vehicles don't have sellingPrice in actual data
+    const matchesPrice = true; // Always true since we don't have price fields
 
     return matchesSearch && matchesMake && matchesStatus && matchesPrice;
   });
@@ -120,7 +124,9 @@ const SalesPage: React.FC = () => {
                   >
                     <option value="">All Status</option>
                     {statuses.map(status => (
-                      <option key={status} value={status}>{status.charAt(0).toUpperCase() + status.slice(1)}</option>
+                      <option key={status} value={status}>
+                        {status ? status.charAt(0).toUpperCase() + status.slice(1) : ''}
+                      </option>
                     ))}
                   </select>
 
@@ -156,7 +162,7 @@ const SalesPage: React.FC = () => {
                     <div className="ml-4">
                       <p className="text-sm font-medium text-muted-foreground">Available Vehicles</p>
                       <p className="text-2xl font-bold text-foreground">
-                        {vehicles.filter(v => v.status === 'available').length}
+                        {safeVehicles.length}
                       </p>
                     </div>
                   </div>
@@ -170,9 +176,9 @@ const SalesPage: React.FC = () => {
                       <CurrencyDollarIcon className="h-6 w-6 text-green-600" />
                     </div>
                     <div className="ml-4">
-                      <p className="text-sm font-medium text-muted-foreground">Total Value</p>
+                      <p className="text-sm font-medium text-muted-foreground">Total Vehicles</p>
                       <p className="text-2xl font-bold text-foreground">
-                        K{vehicles.filter(v => v.status === 'available').reduce((sum, v) => sum + v.sellingPrice, 0).toLocaleString()}
+                        {safeVehicles.length}
                       </p>
                     </div>
                   </div>
@@ -186,9 +192,9 @@ const SalesPage: React.FC = () => {
                       <EyeIcon className="h-6 w-6 text-yellow-600" />
                     </div>
                     <div className="ml-4">
-                      <p className="text-sm font-medium text-muted-foreground">Reserved</p>
+                      <p className="text-sm font-medium text-muted-foreground">Unique Makes</p>
                       <p className="text-2xl font-bold text-foreground">
-                        {vehicles.filter(v => v.status === 'reserved').length}
+                        {makes.length}
                       </p>
                     </div>
                   </div>

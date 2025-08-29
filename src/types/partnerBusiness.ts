@@ -1,5 +1,5 @@
 
-import { firestore } from 'firebase-admin';
+import * as admin from 'firebase-admin';
 
 export interface PartnerBusiness {
   id: string;
@@ -10,6 +10,6 @@ export interface PartnerBusiness {
     canViewInventory: boolean;
     canPlaceOrders: boolean;
   };
-  invitationDate: firestore.Timestamp;
-  acceptedDate?: firestore.Timestamp;
+  invitationDate: admin.firestore.Timestamp;
+  acceptedDate?: admin.firestore.Timestamp;
 }

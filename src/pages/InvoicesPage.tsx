@@ -125,8 +125,11 @@ const InvoicesPage: React.FC = () => {
   const { invoices: apiInvoices, loading, error } = useInvoices();
   const { success } = useToast();
 
+  // Ensure invoices is always an array to prevent undefined errors
+  const safeApiInvoices = apiInvoices || [];
+  
   // Use mock data if API returns empty
-  const invoices = apiInvoices.length === 0 && !loading ? mockInvoices : apiInvoices;
+  const invoices = safeApiInvoices.length === 0 && !loading ? mockInvoices : safeApiInvoices;
 
   const statuses = ['draft', 'sent', 'paid', 'overdue', 'cancelled'];
 

@@ -1,34 +1,70 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.setCustomClaims = exports.getUsers = exports.updateUserProfile = exports.getCurrentUser = exports.onUserCreate = void 0;
 const https_1 = require("firebase-functions/v2/https");
 const firestore_1 = require("firebase-functions/v2/firestore");
-const firebase_admin_1 = require("./firebase-admin");
+const v1_1 = require("firebase-functions/v1");
+const admin = __importStar(require("firebase-admin"));
+// Initialize Firebase Admin if not already initialized
+if (admin.apps.length === 0) {
+    admin.initializeApp();
+}
+const auth = admin.auth();
+const db = admin.firestore();
 // Trigger: Create user document when a new user signs up
 exports.onUserCreate = (0, firestore_1.onDocumentCreated)('users/{uid}', async (event) => {
-    var _a, _b;
+    var _a;
     const userData = (_a = event.data) === null || _a === void 0 ? void 0 : _a.data();
     const uid = event.params.uid;
     if (!userData) {
-        console.error('No user data found');
+        v1_1.logger.error('No user data found for uid:', uid);
         return;
     }
     try {
-        // Get the user from Firebase Auth
-        const userRecord = await firebase_admin_1.auth.getUser(uid);
-        // Update the user document with additional information
-        await firebase_admin_1.db.collection('users').doc(uid).set({
-            email: userRecord.email,
-            displayName: userRecord.displayName || ((_b = userRecord.email) === null || _b === void 0 ? void 0 : _b.split('@')[0]),
-            phoneNumber: userRecord.phoneNumber,
-            createdAt: new Date(),
-            lastLoginAt: new Date(),
-            isActive: true,
-        }, { merge: true });
-        console.log(`User document created for ${uid}`);
+        // Set default custom claims
+        const defaultClaims = {
+            role: 'user',
+            tenantId: userData.tenantId || 'default',
+            permissions: ['view_own_data'],
+        };
+        await auth.setCustomUserClaims(uid, defaultClaims);
+        v1_1.logger.info('Default custom claims set for user:', uid);
     }
     catch (error) {
-        console.error('Error creating user document:', error);
+        v1_1.logger.error('Error setting custom claims for user:', uid, error);
     }
 });
 // Get current user profile
@@ -38,7 +74,7 @@ exports.getCurrentUser = (0, https_1.onCall)(async (request) => {
         throw new https_1.HttpsError('unauthenticated', 'User must be authenticated');
     }
     try {
-        const userRef = firebase_admin_1.db.collection('users').doc(request.auth.uid);
+        const userRef = db.collection('users').doc(request.auth.uid);
         const userDoc = await userRef.get();
         if (!userDoc.exists) {
             throw new https_1.HttpsError('not-found', 'User profile not found');
@@ -58,7 +94,7 @@ exports.updateUserProfile = (0, https_1.onCall)(async (request) => {
     }
     const { profile } = request.data;
     try {
-        const userRef = firebase_admin_1.db.collection('users').doc(request.auth.uid);
+        const userRef = db.collection('users').doc(request.auth.uid);
         const userDoc = await userRef.get();
         if (!userDoc.exists) {
             throw new https_1.HttpsError('not-found', 'User profile not found');
@@ -91,7 +127,7 @@ exports.getUsers = (0, https_1.onCall)(async (request) => {
         throw new https_1.HttpsError('permission-denied', 'Admin access required');
     }
     try {
-        const usersRef = firebase_admin_1.db.collection('users');
+        const usersRef = db.collection('users');
         const snapshot = await usersRef.where('tenantId', '==', tenantId).get();
         const users = snapshot.docs.map(doc => {
             var _a, _b;
@@ -114,7 +150,7 @@ exports.setCustomClaims = (0, https_1.onCall)(async (request) => {
     const { uid, role, tenantId, permissions } = request.data;
     try {
         // Verify the caller has admin privileges
-        const callerUser = await firebase_admin_1.auth.getUser(request.auth.uid);
+        const callerUser = await auth.getUser(request.auth.uid);
         const callerClaims = callerUser.customClaims;
         if (!callerClaims || callerClaims.role !== 'admin') {
             throw new https_1.HttpsError('permission-denied', 'Only admins can set custom claims');
@@ -129,9 +165,9 @@ exports.setCustomClaims = (0, https_1.onCall)(async (request) => {
             tenantId,
             permissions: permissions || getDefaultPermissions(role),
         };
-        await firebase_admin_1.auth.setCustomUserClaims(uid, customClaims);
+        await auth.setCustomUserClaims(uid, customClaims);
         // Update the user document
-        await firebase_admin_1.db.collection('users').doc(uid).update({
+        await db.collection('users').doc(uid).update({
             role,
             tenantId,
             permissions: customClaims.permissions,

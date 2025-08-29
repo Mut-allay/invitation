@@ -25,10 +25,12 @@ const CustomersPage: React.FC = () => {
 
   const { customers, loading, error } = useCustomers();
 
-    const filteredCustomers = customers.filter(customer => {
+  // Ensure customers is always an array to prevent undefined errors
+  const safeCustomers = customers || [];
+  
+  const filteredCustomers = safeCustomers.filter(customer => {
     const matchesSearch = customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       customer.phone.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      customer.nrc.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (customer.email?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
     return matchesSearch;
   });
@@ -56,9 +58,9 @@ const CustomersPage: React.FC = () => {
   };
 
   const getCustomerStats = () => {
-    const totalCustomers = customers.length;
-    const activeCustomers = customers.filter(c => c.vehiclesOwned.length > 0).length;
-    const newCustomers = customers.filter(c => {
+    const totalCustomers = safeCustomers.length;
+    const activeCustomers = safeCustomers.length; // All customers are considered active for now
+    const newCustomers = safeCustomers.filter(c => {
       const createdAt = new Date(c.createdAt);
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -70,17 +72,39 @@ const CustomersPage: React.FC = () => {
 
   const stats = getCustomerStats();
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-2 text-muted-foreground">Loading customers...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className="text-center">
+          <div className="text-red-500 mb-2">⚠️</div>
+          <p className="text-red-500">Error loading customers: {getErrorMessage(error)}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="h-full flex flex-col">
       <ResizablePanelGroup direction="horizontal" className="h-full">
         {/* Left Pane - Customer List */}
         <ResizablePanel defaultSize={40} minSize={30}>
-          <div className="h-full flex flex-col responsive-p space-y-6">
+          <div className="h-full flex flex-col space-y-6 p-6">
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
               <div>
-                                 <h1 className="text-responsive-2xl font-bold text-foreground">Customer Management</h1>
-                 <p className="text-responsive-sm text-muted-foreground">Manage your customer database and relationships</p>
+                <h1 className="text-2xl font-bold text-foreground">Customer Management</h1>
+                <p className="text-sm text-muted-foreground">Manage your customer database and relationships</p>
               </div>
               <Button onClick={handleCreateCustomer} className="flex items-center space-x-2 w-full sm:w-auto">
                 <PlusIcon className="h-5 w-5" />
@@ -89,44 +113,44 @@ const CustomersPage: React.FC = () => {
             </div>
 
             {/* Stats Cards */}
-            <div className="fluid-grid">
-              <Card className="card-glass">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Card>
                 <CardContent className="p-4">
                   <div className="flex items-center">
                     <div className="p-2 bg-primary/10 rounded-lg">
                       <UserGroupIcon className="h-6 w-6 text-primary" />
                     </div>
                     <div className="ml-4">
-                                             <p className="text-responsive-sm font-medium text-muted-foreground">Total Customers</p>
-                       <p className="text-responsive-2xl font-bold text-foreground">{stats.totalCustomers}</p>
+                      <p className="text-sm font-medium text-muted-foreground">Total Customers</p>
+                      <p className="text-2xl font-bold">{stats.totalCustomers}</p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className="card-glass">
+              <Card>
                 <CardContent className="p-4">
                   <div className="flex items-center">
-                    <div className="p-2 bg-secondary/10 rounded-lg">
-                      <PhoneIcon className="h-6 w-6 text-secondary" />
+                    <div className="p-2 bg-green-100 rounded-lg">
+                      <PhoneIcon className="h-6 w-6 text-green-600" />
                     </div>
                     <div className="ml-4">
-                                             <p className="text-responsive-sm font-medium text-muted-foreground">Active Customers</p>
-                       <p className="text-responsive-2xl font-bold text-foreground">{stats.activeCustomers}</p>
+                      <p className="text-sm font-medium text-muted-foreground">Active Customers</p>
+                      <p className="text-2xl font-bold">{stats.activeCustomers}</p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className="card-glass">
+              <Card>
                 <CardContent className="p-4">
                   <div className="flex items-center">
-                    <div className="p-2 bg-slate-100 rounded-lg">
-                      <EnvelopeIcon className="h-6 w-6 text-slate-600" />
+                    <div className="p-2 bg-blue-100 rounded-lg">
+                      <EnvelopeIcon className="h-6 w-6 text-blue-600" />
                     </div>
                     <div className="ml-4">
-                                             <p className="text-responsive-sm font-medium text-muted-foreground">New (30 days)</p>
-                       <p className="text-responsive-2xl font-bold text-foreground">{stats.newCustomers}</p>
+                      <p className="text-sm font-medium text-muted-foreground">New (30 days)</p>
+                      <p className="text-2xl font-bold">{stats.newCustomers}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -134,105 +158,70 @@ const CustomersPage: React.FC = () => {
             </div>
 
             {/* Search */}
-            <Card className="card-glass">
-              <CardContent className="p-4">
-                <div className="relative">
-                                       <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                  <Input
-                    type="text"
-                    placeholder="Search customers by name, phone, NRC, or email..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 input-glass"
-                  />
-                </div>
-              </CardContent>
-            </Card>
+            <div className="relative">
+              <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search customers by name, phone, or email..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
 
-            {/* Customers List */}
-            <div className="flex-1 overflow-y-auto">
-              {loading ? (
-                <div className="flex justify-center items-center h-64">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            {/* Customer List */}
+            <div className="flex-1 overflow-y-auto space-y-2">
+              {filteredCustomers.length === 0 ? (
+                <div className="text-center py-8">
+                  <UserGroupIcon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-muted-foreground">No customers found</p>
+                  <Button onClick={handleCreateCustomer} className="mt-2">
+                    Add your first customer
+                  </Button>
                 </div>
-              ) : error ? (
-                <Card>
-                  <CardContent className="p-4">
-                    <p className="text-destructive">Error loading customers: {getErrorMessage(error)}</p>
-                  </CardContent>
-                </Card>
-              ) : filteredCustomers.length === 0 ? (
-                <Card>
-                  <CardContent className="p-8 text-center">
-                                         <UserGroupIcon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                     <h3 className="text-lg font-medium text-foreground mb-2">No customers found</h3>
-                     <p className="text-muted-foreground mb-4">
-                      {searchTerm ? 'Try adjusting your search terms.' : 'Get started by adding your first customer.'}
-                    </p>
-                    {!searchTerm && (
-                      <Button onClick={handleCreateCustomer}>
-                        Add First Customer
-                      </Button>
-                    )}
-                  </CardContent>
-                </Card>
               ) : (
-                <div className="space-y-3">
-                  {filteredCustomers.map((customer) => (
-                    <div
-                      key={customer.id}
-                      className={`cursor-pointer transition-all duration-200 ${
-                        selectedCustomer?.id === customer.id
-                          ? 'ring-2 ring-blue-500 ring-offset-2'
-                          : 'hover:shadow-md'
-                      }`}
-                      onClick={() => handleViewCustomer(customer)}
-                    >
-                      <CustomerCard
-                        customer={customer}
-                        onView={() => handleViewCustomer(customer)}
-                        onEdit={() => handleEditCustomer(customer)}
-                      />
-                    </div>
-                  ))}
-                </div>
+                filteredCustomers.map((customer) => (
+                  <CustomerCard
+                    key={customer.id}
+                    customer={customer}
+                    onEdit={() => handleEditCustomer(customer)}
+                    onClick={() => handleViewCustomer(customer)}
+                    isSelected={selectedCustomer?.id === customer.id}
+                  />
+                ))
               )}
             </div>
           </div>
         </ResizablePanel>
 
-        {/* Resizable Handle */}
-        <ResizableHandle withHandle />
+        <ResizableHandle />
 
         {/* Right Pane - Customer Detail */}
-        <ResizablePanel defaultSize={60} minSize={40}>
-                     <div className="h-full bg-background">
+        <ResizablePanel defaultSize={60}>
+          <div className="h-full p-6">
             {selectedCustomer ? (
               <CustomerDetailView
                 customer={selectedCustomer}
                 onEdit={handleEditFromDetail}
               />
-                          ) : (
-                <div className="h-full flex items-center justify-center">
-                  <div className="text-center">
-                                         <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
-                       <UserGroupIcon className="h-8 w-8 text-muted-foreground" />
-                     </div>
-                     <h3 className="text-responsive-lg font-medium text-foreground mb-2">Select a customer</h3>
-                     <p className="text-responsive-sm text-muted-foreground">Choose a customer from the list to view their details</p>
-                  </div>
+            ) : (
+              <div className="h-full flex items-center justify-center">
+                <div className="text-center">
+                  <UserGroupIcon className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">Select a customer</h3>
+                  <p className="text-muted-foreground">Choose a customer from the list to view their details</p>
                 </div>
-              )}
+              </div>
+            )}
           </div>
         </ResizablePanel>
       </ResizablePanelGroup>
 
       {/* Customer Modal */}
       <CustomerModal
-        customer={selectedCustomer}
         isOpen={showCustomerModal}
-        isCreating={isCreating}
         onClose={() => setShowCustomerModal(false)}
+        customer={selectedCustomer}
+        isCreating={isCreating}
       />
     </div>
   );

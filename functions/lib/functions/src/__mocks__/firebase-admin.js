@@ -1,4 +1,3 @@
-"use strict";
 // functions/src/__mocks__/firebase-admin.ts
 const firestore = {
     collection: jest.fn().mockReturnThis(),

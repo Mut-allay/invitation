@@ -1,8 +1,46 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.submitToZRA = exports.createPayment = exports.getPayments = exports.deleteInvoice = exports.updateInvoice = exports.createInvoice = exports.getInvoice = exports.getInvoices = void 0;
 const https_1 = require("firebase-functions/v2/https");
-const firebase_admin_1 = require("./firebase-admin");
+const admin = __importStar(require("firebase-admin"));
+// Initialize Firebase Admin if not already initialized
+if (admin.apps.length === 0) {
+    admin.initializeApp();
+}
+const db = admin.firestore();
 // Get invoices for a tenant
 exports.getInvoices = (0, https_1.onCall)(async (request) => {
     if (!request.auth) {
@@ -14,7 +52,7 @@ exports.getInvoices = (0, https_1.onCall)(async (request) => {
         throw new https_1.HttpsError('permission-denied', 'Access denied to this tenant');
     }
     try {
-        const invoicesRef = firebase_admin_1.db.collection('invoices');
+        const invoicesRef = db.collection('invoices');
         const snapshot = await invoicesRef.where('tenantId', '==', tenantId).get();
         const invoices = snapshot.docs.map(doc => {
             var _a, _b;
@@ -40,7 +78,7 @@ exports.getInvoice = (0, https_1.onCall)(async (request) => {
         throw new https_1.HttpsError('permission-denied', 'Access denied to this tenant');
     }
     try {
-        const invoiceRef = firebase_admin_1.db.collection('invoices').doc(invoiceId);
+        const invoiceRef = db.collection('invoices').doc(invoiceId);
         const invoiceDoc = await invoiceRef.get();
         if (!invoiceDoc.exists) {
             throw new https_1.HttpsError('not-found', 'Invoice not found');
@@ -69,7 +107,7 @@ exports.createInvoice = (0, https_1.onCall)(async (request) => {
     }
     try {
         const invoiceData = Object.assign(Object.assign({}, invoice), { tenantId, createdAt: new Date(), updatedAt: new Date() });
-        const invoiceRef = await firebase_admin_1.db.collection('invoices').add(invoiceData);
+        const invoiceRef = await db.collection('invoices').add(invoiceData);
         const newInvoiceDoc = await invoiceRef.get();
         return Object.assign(Object.assign({ id: invoiceRef.id }, newInvoiceDoc.data()), { createdAt: (_b = (_a = newInvoiceDoc.data()) === null || _a === void 0 ? void 0 : _a.createdAt) === null || _b === void 0 ? void 0 : _b.toDate(), updatedAt: (_d = (_c = newInvoiceDoc.data()) === null || _c === void 0 ? void 0 : _c.updatedAt) === null || _d === void 0 ? void 0 : _d.toDate() });
     }
@@ -89,7 +127,7 @@ exports.updateInvoice = (0, https_1.onCall)(async (request) => {
         throw new https_1.HttpsError('permission-denied', 'Access denied to this tenant');
     }
     try {
-        const invoiceRef = firebase_admin_1.db.collection('invoices').doc(invoiceId);
+        const invoiceRef = db.collection('invoices').doc(invoiceId);
         const invoiceDoc = await invoiceRef.get();
         if (!invoiceDoc.exists) {
             throw new https_1.HttpsError('not-found', 'Invoice not found');
@@ -118,7 +156,7 @@ exports.deleteInvoice = (0, https_1.onCall)(async (request) => {
         throw new https_1.HttpsError('permission-denied', 'Access denied to this tenant');
     }
     try {
-        const invoiceRef = firebase_admin_1.db.collection('invoices').doc(invoiceId);
+        const invoiceRef = db.collection('invoices').doc(invoiceId);
         const invoiceDoc = await invoiceRef.get();
         if (!invoiceDoc.exists) {
             throw new https_1.HttpsError('not-found', 'Invoice not found');
@@ -146,7 +184,7 @@ exports.getPayments = (0, https_1.onCall)(async (request) => {
         throw new https_1.HttpsError('permission-denied', 'Access denied to this tenant');
     }
     try {
-        const paymentsRef = firebase_admin_1.db.collection('payments');
+        const paymentsRef = db.collection('payments');
         const snapshot = await paymentsRef
             .where('tenantId', '==', tenantId)
             .where('invoiceId', '==', invoiceId)
@@ -174,13 +212,13 @@ exports.createPayment = (0, https_1.onCall)(async (request) => {
     }
     try {
         // Start a batch write
-        const batch = firebase_admin_1.db.batch();
+        const batch = db.batch();
         // Create the payment document
-        const paymentRef = firebase_admin_1.db.collection('payments').doc();
+        const paymentRef = db.collection('payments').doc();
         const paymentData = Object.assign(Object.assign({}, payment), { tenantId, status: 'completed', createdAt: new Date(), updatedAt: new Date() });
         batch.set(paymentRef, paymentData);
         // Update invoice status to paid
-        const invoiceRef = firebase_admin_1.db.collection('invoices').doc(payment.invoiceId);
+        const invoiceRef = db.collection('invoices').doc(payment.invoiceId);
         batch.update(invoiceRef, {
             status: 'paid',
             paidDate: new Date(),
@@ -207,7 +245,7 @@ exports.submitToZRA = (0, https_1.onCall)(async (request) => {
         throw new https_1.HttpsError('permission-denied', 'Access denied to this tenant');
     }
     try {
-        const invoiceRef = firebase_admin_1.db.collection('invoices').doc(invoiceId);
+        const invoiceRef = db.collection('invoices').doc(invoiceId);
         const invoiceDoc = await invoiceRef.get();
         if (!invoiceDoc.exists) {
             throw new https_1.HttpsError('not-found', 'Invoice not found');

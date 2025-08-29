@@ -6,8 +6,8 @@ const requests = new Map<string, { count: number, startTime: number }>();
 const limit = 100; // 100 requests
 const windowMs = 15 * 60 * 1000; // 15 minutes
 
-export const rateLimiter = (req: Request, res: Response, next: NextFunction) => {
-  const ip = req.ip;
+export const rateLimiter = (req: Request, res: Response, next: NextFunction): void => {
+  const ip = req.ip || req.connection.remoteAddress || 'unknown';
   const now = Date.now();
   const windowStart = now - windowMs;
 
@@ -25,7 +25,8 @@ export const rateLimiter = (req: Request, res: Response, next: NextFunction) => 
 
   if (ipData.count > limit) {
     logger.warn(`Rate limit exceeded for IP: ${ip}`);
-    return res.status(429).send('Too many requests');
+    res.status(429).send('Too many requests');
+    return;
   }
 
   next();

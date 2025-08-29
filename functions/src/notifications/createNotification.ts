@@ -1,5 +1,5 @@
 // functions/src/notifications/createNotification.ts
-import { firestore } from 'firebase-admin';
+import * as admin from 'firebase-admin';
 import { logger } from 'firebase-functions/v1';
 import { z } from 'zod';
 
@@ -20,13 +20,13 @@ export interface Notification {
   type: 'order_update' | 'settlement_ready' | 'low_stock';
   isRead: boolean;
   linkTo: string; // e.g., /orders/order-123
-  createdAt: firestore.Timestamp;
+  createdAt: admin.firestore.Timestamp;
 }
 
-export const createNotification = async (notification: Omit<Notification, 'id' | 'createdAt'>, now: firestore.Timestamp = firestore.Timestamp.now()): Promise<void> => {
+export const createNotification = async (notification: Omit<Notification, 'id' | 'createdAt'>, now: admin.firestore.Timestamp = admin.firestore.Timestamp.now()): Promise<void> => {
   const validatedNotification = NotificationSchema.parse(notification);
   try {
-    await firestore().collection('notifications').add({
+    await admin.firestore().collection('notifications').add({
       ...validatedNotification,
       createdAt: now,
     });

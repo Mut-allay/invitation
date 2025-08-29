@@ -25,8 +25,11 @@ const InventoryPage: React.FC = () => {
 
   const { inventory: apiInventory, loading, error } = useInventory();
 
+  // Ensure inventory is always an array to prevent undefined errors
+  const safeApiInventory = apiInventory || [];
+  
   // Use mock data if API returns empty
-  const inventory = apiInventory.length === 0 && !loading ? mockInventory : apiInventory;
+  const inventory = safeApiInventory.length === 0 && !loading ? mockInventory : safeApiInventory;
 
   const filteredInventory = inventory.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||

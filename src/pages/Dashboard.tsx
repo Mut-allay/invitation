@@ -16,7 +16,8 @@ import {
   ChevronRightIcon,
   MagnifyingGlassIcon,
   BellIcon,
-  Bars3Icon
+  Bars3Icon,
+  QuestionMarkCircleIcon
 } from '@heroicons/react/24/outline';
 
 // Lazy load page components
@@ -30,6 +31,7 @@ const BusinessIntelligencePage = lazy(() => import('./BusinessIntelligencePage')
 const WizardDemo = lazy(() => import('./WizardDemo'));
 const SettingsPage = lazy(() => import('./SettingsPage'));
 const ZambianMarketDemo = lazy(() => import('./ZambianMarketDemo'));
+const HelpPage = lazy(() => import('./HelpPage'));
 
 import CommandMenu from '../components/ui/CommandMenu';
 import ThemeToggle from '@/components/ui/theme-toggle';
@@ -62,6 +64,13 @@ const Dashboard: React.FC = () => {
         { name: 'Invoices', href: '/invoices', icon: DocumentTextIcon, description: 'Billing and payments' },
         { name: 'Analytics', href: '/analytics', icon: ChartBarIcon, description: 'Business intelligence' },
         { name: 'Settings', href: '/settings', icon: Cog6ToothIcon, description: 'System configuration' },
+      ]
+    },
+    {
+      group: 'support',
+      name: 'Support',
+      items: [
+        { name: 'Help', href: '/help', icon: QuestionMarkCircleIcon, description: 'Help and documentation' },
       ]
     },
     {
@@ -275,6 +284,7 @@ const Dashboard: React.FC = () => {
                     <Route path="/analytics" element={<BusinessIntelligencePage />} />
                     <Route path="/wizard" element={<WizardDemo />} />
                     <Route path="/zambian-demo" element={<ZambianMarketDemo />} />
+                    <Route path="/help" element={<HelpPage />} />
                     <Route path="/settings" element={<SettingsPage />} />
                   </Routes>
                 </Suspense>

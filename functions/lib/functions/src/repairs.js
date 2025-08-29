@@ -1,8 +1,46 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createJobCard = exports.getJobCards = exports.deleteRepair = exports.updateRepair = exports.createRepair = exports.getRepair = exports.getRepairs = void 0;
 const https_1 = require("firebase-functions/v2/https");
-const firebase_admin_1 = require("./firebase-admin");
+const admin = __importStar(require("firebase-admin"));
+// Initialize Firebase Admin if not already initialized
+if (admin.apps.length === 0) {
+    admin.initializeApp();
+}
+const db = admin.firestore();
 // Get repairs for a tenant
 exports.getRepairs = (0, https_1.onCall)(async (request) => {
     if (!request.auth) {
@@ -14,7 +52,7 @@ exports.getRepairs = (0, https_1.onCall)(async (request) => {
         throw new https_1.HttpsError('permission-denied', 'Access denied to this tenant');
     }
     try {
-        const repairsRef = firebase_admin_1.db.collection('repairs');
+        const repairsRef = db.collection('repairs');
         const snapshot = await repairsRef.where('tenantId', '==', tenantId).get();
         const repairs = snapshot.docs.map(doc => {
             var _a, _b, _c, _d, _e;
@@ -40,7 +78,7 @@ exports.getRepair = (0, https_1.onCall)(async (request) => {
         throw new https_1.HttpsError('permission-denied', 'Access denied to this tenant');
     }
     try {
-        const repairRef = firebase_admin_1.db.collection('repairs').doc(repairId);
+        const repairRef = db.collection('repairs').doc(repairId);
         const repairDoc = await repairRef.get();
         if (!repairDoc.exists) {
             throw new https_1.HttpsError('not-found', 'Repair not found');
@@ -68,7 +106,7 @@ exports.createRepair = (0, https_1.onCall)(async (request) => {
     }
     try {
         const repairData = Object.assign(Object.assign({}, repair), { tenantId, status: 'pending', totalCost: 0, laborCost: 0, partsCost: 0, createdAt: new Date(), updatedAt: new Date() });
-        const repairRef = await firebase_admin_1.db.collection('repairs').add(repairData);
+        const repairRef = await db.collection('repairs').add(repairData);
         return Object.assign({ id: repairRef.id }, repairData);
     }
     catch (error) {
@@ -87,7 +125,7 @@ exports.updateRepair = (0, https_1.onCall)(async (request) => {
         throw new https_1.HttpsError('permission-denied', 'Access denied to this tenant');
     }
     try {
-        const repairRef = firebase_admin_1.db.collection('repairs').doc(repairId);
+        const repairRef = db.collection('repairs').doc(repairId);
         const repairDoc = await repairRef.get();
         if (!repairDoc.exists) {
             throw new https_1.HttpsError('not-found', 'Repair not found');
@@ -121,7 +159,7 @@ exports.deleteRepair = (0, https_1.onCall)(async (request) => {
         throw new https_1.HttpsError('permission-denied', 'Access denied to this tenant');
     }
     try {
-        const repairRef = firebase_admin_1.db.collection('repairs').doc(repairId);
+        const repairRef = db.collection('repairs').doc(repairId);
         const repairDoc = await repairRef.get();
         if (!repairDoc.exists) {
             throw new https_1.HttpsError('not-found', 'Repair not found');
@@ -149,7 +187,7 @@ exports.getJobCards = (0, https_1.onCall)(async (request) => {
         throw new https_1.HttpsError('permission-denied', 'Access denied to this tenant');
     }
     try {
-        const jobCardsRef = firebase_admin_1.db.collection('repairs').doc(repairId).collection('jobCards');
+        const jobCardsRef = db.collection('repairs').doc(repairId).collection('jobCards');
         const snapshot = await jobCardsRef.get();
         const jobCards = snapshot.docs.map(doc => {
             var _a, _b;
@@ -175,9 +213,9 @@ exports.createJobCard = (0, https_1.onCall)(async (request) => {
     }
     try {
         const jobCardData = Object.assign(Object.assign({}, jobCard), { repairId, status: 'pending', totalLabor: jobCard.estimatedHours * jobCard.rate, createdAt: new Date(), updatedAt: new Date() });
-        const jobCardRef = await firebase_admin_1.db.collection('repairs').doc(repairId).collection('jobCards').add(jobCardData);
+        const jobCardRef = await db.collection('repairs').doc(repairId).collection('jobCards').add(jobCardData);
         // Update repair status to in_progress if it was pending
-        const repairRef = firebase_admin_1.db.collection('repairs').doc(repairId);
+        const repairRef = db.collection('repairs').doc(repairId);
         await repairRef.update({
             status: 'in_progress',
             updatedAt: new Date(),

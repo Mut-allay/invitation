@@ -2,7 +2,6 @@
   "projects": {
     "default": "garaji-flow-test",
     "test": "garaji-flow-test",
-    "dev": "garaji-flow-dev",
     "staging": "garaji-flow-staging",
     "prod": "garaji-flow-prod"
   }

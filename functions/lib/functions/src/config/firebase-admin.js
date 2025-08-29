@@ -41,8 +41,8 @@ try {
 }
 catch (_a) {
     admin.initializeApp({
-        projectId: process.env.FIREBASE_PROJECT_ID,
-        storageBucket: process.env.FIREBASE_STORAGE_BUCKET
+        projectId: process.env.FIREBASE_PROJECT_ID || 'garaji-flow-dev',
+        storageBucket: process.env.FIREBASE_STORAGE_BUCKET || 'garaji-flow-dev.appspot.com'
     });
 }
 // Export shared instances
@@ -53,4 +53,5 @@ exports.auth = admin.auth();
 exports.db.settings({ ignoreUndefinedProperties: true });
 // Export storage bucket conditionally
 exports.bucket = process.env.FIREBASE_STORAGE_BUCKET ? exports.storage.bucket() : null;
+exports.default = admin;
 //# sourceMappingURL=firebase-admin.js.map
