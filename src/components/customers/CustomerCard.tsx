@@ -68,33 +68,12 @@ export const CustomerCard: React.FC<CustomerCardProps> = ({ customer, onView, on
           </div>
         </div>
 
-        {/* NRC */}
-        <div>
-          <label className="text-xs font-medium text-gray-600">NRC Number</label>
-          <p className="text-sm text-gray-900 font-mono">{customer.nrc}</p>
-        </div>
-
-        {/* Vehicles Owned */}
-        <div>
-          <label className="text-xs font-medium text-gray-600">Vehicles Owned</label>
-          <div className="flex items-center space-x-2 mt-1">
-            <TruckIcon className="h-4 w-4 text-gray-400" />
-            <span className="text-sm text-gray-900">
-              {customer.vehiclesOwned.length} vehicle{customer.vehiclesOwned.length !== 1 ? 's' : ''}
-            </span>
-          </div>
-        </div>
-
         {/* Customer Status */}
         <div className="pt-2 border-t border-gray-100">
           <div className="flex justify-between items-center">
             <span className="text-xs text-gray-600">Status</span>
-            <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-              customer.vehiclesOwned.length > 0 
-                ? 'bg-green-100 text-green-800' 
-                : 'bg-gray-100 text-gray-800'
-            }`}>
-              {customer.vehiclesOwned.length > 0 ? 'Active' : 'Prospect'}
+            <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
+              Active
             </span>
           </div>
         </div>
