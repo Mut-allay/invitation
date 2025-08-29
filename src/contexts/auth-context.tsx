@@ -7,7 +7,7 @@ import {
   sendPasswordResetEmail,
   updateProfile as updateFirebaseProfile
 } from 'firebase/auth';
-import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, getDocs, query, collection, where } from 'firebase/firestore';
 import type { User } from 'firebase/auth';
 import { auth, db } from '../config/firebase';
 import { AuthContext } from './auth-context-definition';
@@ -84,7 +84,52 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
   }, []);
 
   const login = async (email: string, password: string) => {
-    await signInWithEmailAndPassword(auth, email, password);
+    try {
+      // First try Firebase Auth
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch (error: any) {
+      // If Firebase Auth fails, try custom authentication with Firestore users
+      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+        console.log('Firebase Auth failed, trying custom authentication...');
+        
+        // Query Firestore for user
+        const userQuery = await getDocs(query(collection(db, 'users'), where('email', '==', email)));
+        
+        if (userQuery.empty) {
+          throw new Error('User not found');
+        }
+        
+        const userDoc = userQuery.docs[0];
+        const userData = userDoc.data();
+        
+        // Check password (in production, this should be hashed)
+        if (userData.password !== password) {
+          throw new Error('Invalid password');
+        }
+        
+        // Create a mock Firebase user object
+        const mockUser = {
+          uid: userData.uid,
+          email: userData.email,
+          displayName: userData.displayName,
+          emailVerified: true,
+        } as any;
+        
+        // Set the user directly (bypass Firebase Auth)
+        setUser(mockUser);
+        setUserProfile(userData as UserProfile);
+        
+        // Update last login time
+        await updateDoc(doc(db, 'users', userData.uid), {
+          lastLoginAt: new Date()
+        });
+        
+        return; // Success
+      }
+      
+      // Re-throw other errors
+      throw error;
+    }
   };
 
   const logout = async () => {
