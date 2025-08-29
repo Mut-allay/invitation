@@ -35,7 +35,7 @@ export const VehicleModal: React.FC<VehicleModalProps> = ({ vehicle, isOpen, onC
             <h2 className="text-2xl font-bold text-gray-900">
               {vehicle.make} {vehicle.model}
             </h2>
-            <p className="text-gray-600">{vehicle.year} • {vehicle.regNumber}</p>
+            <p className="text-gray-600">{vehicle.year} • {vehicle.plateNumber}</p>
           </div>
           <button
             onClick={onClose}
@@ -95,7 +95,7 @@ export const VehicleModal: React.FC<VehicleModalProps> = ({ vehicle, isOpen, onC
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-600">Registration</label>
-                    <p className="text-gray-900">{vehicle.regNumber}</p>
+                    <p className="text-gray-900">{vehicle.plateNumber}</p>
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-600">VIN</label>

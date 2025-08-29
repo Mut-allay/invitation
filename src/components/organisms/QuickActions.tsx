@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   TruckIcon,
   WrenchScrewdriverIcon,
@@ -25,6 +26,8 @@ const QuickActions: React.FC<QuickActionsProps> = ({
   actions,
   className = '' 
 }) => {
+  const navigate = useNavigate();
+  
   const defaultActions: QuickAction[] = [
     {
       id: 'add-vehicle',
@@ -32,7 +35,7 @@ const QuickActions: React.FC<QuickActionsProps> = ({
       description: 'Register a new vehicle in inventory',
       icon: TruckIcon,
       color: 'text-blue-600 bg-blue-50 hover:bg-blue-100',
-      onClick: () => console.log('Add Vehicle clicked')
+      onClick: () => navigate('/sales')
     },
     {
       id: 'new-repair',
@@ -40,7 +43,7 @@ const QuickActions: React.FC<QuickActionsProps> = ({
       description: 'Log a new service job',
       icon: WrenchScrewdriverIcon,
       color: 'text-yellow-600 bg-yellow-50 hover:bg-yellow-100',
-      onClick: () => console.log('New Repair clicked')
+      onClick: () => navigate('/repairs')
     },
     {
       id: 'add-customer',
@@ -48,7 +51,7 @@ const QuickActions: React.FC<QuickActionsProps> = ({
       description: 'Create a new customer profile',
       icon: UserGroupIcon,
       color: 'text-purple-600 bg-purple-50 hover:bg-purple-100',
-      onClick: () => console.log('Add Customer clicked')
+      onClick: () => navigate('/customers')
     },
     {
       id: 'create-invoice',
@@ -56,7 +59,7 @@ const QuickActions: React.FC<QuickActionsProps> = ({
       description: 'Generate a new invoice',
       icon: DocumentTextIcon,
       color: 'text-green-600 bg-green-50 hover:bg-green-100',
-      onClick: () => console.log('Create Invoice clicked')
+      onClick: () => navigate('/invoices')
     }
   ];
 
