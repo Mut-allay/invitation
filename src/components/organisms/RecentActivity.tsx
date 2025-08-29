@@ -11,7 +11,7 @@ import {
 interface Sale {
   id: string;
   customerId: string;
-  salePrice: number;
+  amount: number; // Changed from salePrice to match actual data
   createdAt: string;
 }
 
@@ -142,7 +142,7 @@ const RecentActivity: React.FC<RecentActivityProps> = ({
                 <div className="flex items-center space-x-4">
                   <div className="text-right">
                     <p className="font-bold text-green-600 text-lg">
-                      K{sale.salePrice.toLocaleString()}
+                      K{sale.amount.toLocaleString()}
                     </p>
                     <p className="text-xs text-gray-500">Sale Amount</p>
                   </div>
