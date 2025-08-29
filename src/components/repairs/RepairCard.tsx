@@ -48,7 +48,7 @@ export const RepairCard: React.FC<RepairCardProps> = ({ repair, onView, onAddJob
             </p>
           </div>
           <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(repair.status)}`}>
-            {repair.status.charAt(0).toUpperCase() + repair.status.slice(1).replace('_', ' ')}
+                            {repair.status ? (repair.status.charAt(0)?.toUpperCase() || '') + (repair.status.slice(1) || '').replace('_', ' ') : 'Unknown'}
           </span>
         </div>
       </div>

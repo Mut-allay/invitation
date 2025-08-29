@@ -184,7 +184,7 @@ const RecentActivity: React.FC<RecentActivityProps> = ({
                     <span className="text-xs text-gray-400">•</span>
                     {getStatusIcon(repair.status)}
                     <span className={`px-3 py-1 text-xs font-medium rounded-full border ${getStatusColor(repair.status)}`}>
-                      {repair.status.charAt(0).toUpperCase() + repair.status.slice(1).replace('_', ' ')}
+                      {repair.status ? (repair.status.charAt(0)?.toUpperCase() || '') + (repair.status.slice(1) || '').replace('_', ' ') : 'Unknown'}
                     </span>
                   </div>
                   <p className="text-sm text-gray-700 mb-2 line-clamp-2 max-w-md">

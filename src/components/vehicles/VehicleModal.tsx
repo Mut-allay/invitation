@@ -73,7 +73,7 @@ export const VehicleModal: React.FC<VehicleModalProps> = ({ vehicle, isOpen, onC
               {/* Status */}
               <div>
                 <span className={`px-3 py-1 text-sm font-medium rounded-full ${getStatusColor(vehicle.status)}`}>
-                  {vehicle.status.charAt(0).toUpperCase() + vehicle.status.slice(1)}
+                  {vehicle.status ? (vehicle.status.charAt(0)?.toUpperCase() || '') + (vehicle.status.slice(1) || '') : 'Unknown'}
                 </span>
               </div>
 

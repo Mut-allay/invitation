@@ -84,14 +84,14 @@ const VehicleDetailView: React.FC<VehicleDetailViewProps> = ({ vehicle, onEdit, 
               <DocumentTextIcon className="h-5 w-5 text-gray-400" />
               <div>
                 <p className="text-sm font-medium text-gray-900">Registration Number</p>
-                <p className="text-sm text-gray-600">{vehicle.regNumber}</p>
+                <p className="text-sm text-gray-600">{vehicle.plateNumber}</p>
               </div>
             </div>
             <div className="flex items-center space-x-3">
               <CogIcon className="h-5 w-5 text-gray-400" />
               <div>
                 <p className="text-sm font-medium text-gray-900">VIN</p>
-                <p className="text-sm text-gray-600">{vehicle.vin}</p>
+                <p className="text-sm text-gray-600">{vehicle.vin || 'Not available'}</p>
               </div>
             </div>
             <div className="flex items-center space-x-3">
@@ -105,7 +105,7 @@ const VehicleDetailView: React.FC<VehicleDetailViewProps> = ({ vehicle, onEdit, 
               <MapPinIcon className="h-5 w-5 text-gray-400" />
               <div>
                 <p className="text-sm font-medium text-gray-900">Color</p>
-                <p className="text-sm text-gray-600">{vehicle.color}</p>
+                <p className="text-sm text-gray-600">{vehicle.color || 'Not specified'}</p>
               </div>
             </div>
           </div>

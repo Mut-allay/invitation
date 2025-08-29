@@ -81,7 +81,7 @@ export const InvoiceCard: React.FC<InvoiceCardProps> = ({ invoice, onView, onEdi
         <div className="flex items-center justify-between">
           <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(invoice.status)}`}>
             {getStatusIcon(invoice.status)}
-            <span className="ml-1">{invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}</span>
+                            <span className="ml-1">{invoice.status ? (invoice.status.charAt(0)?.toUpperCase() || '') + (invoice.status.slice(1) || '') : 'Unknown'}</span>
           </span>
           {isOverdue && (
             <span className="text-xs text-red-600 font-medium">OVERDUE</span>

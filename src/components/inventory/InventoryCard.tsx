@@ -79,7 +79,7 @@ export const InventoryCard: React.FC<InventoryCardProps> = ({ item, onView, onEd
         <div className="flex items-center justify-between">
           <span className={`px-2 py-1 text-xs font-medium rounded-full ${getTypeColor(item.type)}`}>
             {getTypeIcon(item.type)}
-            <span className="ml-1">{item.type.charAt(0).toUpperCase() + item.type.slice(1)}</span>
+            <span className="ml-1">{item.type ? (item.type.charAt(0)?.toUpperCase() || '') + (item.type.slice(1) || '') : 'Unknown'}</span>
           </span>
           <span className={`px-2 py-1 text-xs font-medium rounded-full ${stockStatus.color}`}>
             {stockStatus.text}

@@ -82,7 +82,10 @@ const SalesPage: React.FC = () => {
                 <h1 className="text-2xl font-bold text-foreground">Sales Management</h1>
                 <p className="text-muted-foreground">Manage vehicle sales and customer transactions</p>
               </div>
-              <Button className="flex items-center space-x-2">
+              <Button 
+                onClick={() => setShowVehicleModal(true)} 
+                className="flex items-center space-x-2"
+              >
                 <PlusIcon className="h-5 w-5" />
                 <span>Add Vehicle</span>
               </Button>
@@ -125,7 +128,7 @@ const SalesPage: React.FC = () => {
                     <option value="">All Status</option>
                     {statuses.map(status => (
                       <option key={status} value={status}>
-                        {status ? status.charAt(0).toUpperCase() + status.slice(1) : ''}
+                        {status ? (status.charAt(0)?.toUpperCase() || '') + (status.slice(1) || '') : ''}
                       </option>
                     ))}
                   </select>

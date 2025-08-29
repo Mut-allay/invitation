@@ -261,7 +261,7 @@ export const CustomerProfileManager: React.FC<CustomerProfileManagerProps> = ({
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">Customer Statistics</h3>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="text-center">
-                      <div className="text-2xl font-bold text-blue-600">{customer.vehiclesOwned.length}</div>
+                      <div className="text-2xl font-bold text-blue-600">{customer.vehiclesOwned?.length || 0}</div>
                       <div className="text-sm text-gray-600">Vehicles Owned</div>
                     </div>
                     <div className="text-center">
@@ -375,7 +375,7 @@ export const CustomerProfileManager: React.FC<CustomerProfileManagerProps> = ({
             <div className="space-y-6">
               <h3 className="text-lg font-semibold text-gray-900">Owned Vehicles</h3>
               
-              {customer.vehiclesOwned.length > 0 ? (
+              {customer.vehiclesOwned?.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {customer.vehiclesOwned.map((vehicleId) => {
                     // In a real app, you'd fetch vehicle details

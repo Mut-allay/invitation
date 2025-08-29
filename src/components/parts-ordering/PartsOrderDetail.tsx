@@ -25,7 +25,7 @@ export const PartsOrderDetail: React.FC<PartsOrderDetailProps> = ({
 
     return (
       <span className={`px-3 py-1 text-sm font-medium rounded-full ${statusStyles[status]}`}>
-        {status.charAt(0).toUpperCase() + status.slice(1)}
+                        {status ? (status.charAt(0)?.toUpperCase() || '') + (status.slice(1) || '') : 'Unknown'}
       </span>
     );
   };

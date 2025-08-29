@@ -177,7 +177,7 @@ const ZambianMarketDemo: React.FC = () => {
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
                   >
-                    {type.charAt(0).toUpperCase() + type.slice(1)}
+                    {type ? (type.charAt(0)?.toUpperCase() || '') + (type.slice(1) || '') : 'Unknown'}
                   </button>
                 ))}
               </div>

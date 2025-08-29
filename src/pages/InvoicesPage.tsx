@@ -342,7 +342,7 @@ const InvoicesPage: React.FC = () => {
             <option value="">All Status</option>
             {statuses.map(status => (
               <option key={status} value={status}>
-                {status.charAt(0).toUpperCase() + status.slice(1)}
+                {status ? (status.charAt(0)?.toUpperCase() || '') + (status.slice(1) || '') : 'Unknown'}
               </option>
             ))}
           </select>
