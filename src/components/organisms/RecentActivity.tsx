@@ -92,7 +92,7 @@ const RecentActivity: React.FC<RecentActivityProps> = ({
               </div>
               <span className="font-semibold">Recent Sales</span>
               <span className="bg-gray-200 text-gray-600 px-3 py-1 rounded-full text-xs font-medium">
-                {sales.length}
+                {sales?.length || 0}
               </span>
             </div>
           </button>
@@ -111,7 +111,7 @@ const RecentActivity: React.FC<RecentActivityProps> = ({
               </div>
               <span className="font-semibold">Recent Repairs</span>
               <span className="bg-gray-200 text-gray-600 px-3 py-1 rounded-full text-xs font-medium">
-                {repairs.length}
+                {repairs?.length || 0}
               </span>
             </div>
           </button>
@@ -160,7 +160,7 @@ const RecentActivity: React.FC<RecentActivityProps> = ({
               </div>
             ))}
             
-            {sales.length === 0 && (
+            {(sales?.length || 0) === 0 && (
               <div className="text-center py-12 text-gray-500">
                 <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <CurrencyDollarIcon className="h-8 w-8 text-gray-300" />
@@ -207,7 +207,7 @@ const RecentActivity: React.FC<RecentActivityProps> = ({
               </div>
             ))}
             
-            {repairs.length === 0 && (
+            {(repairs?.length || 0) === 0 && (
               <div className="text-center py-12 text-gray-500">
                 <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <WrenchScrewdriverIcon className="h-8 w-8 text-gray-300" />

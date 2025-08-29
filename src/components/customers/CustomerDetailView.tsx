@@ -81,7 +81,7 @@ const CustomerDetailView: React.FC<CustomerDetailViewProps> = ({ customer, onEdi
               <div>
                 <p className="text-responsive-sm font-medium text-slate-900">Member Since</p>
                 <p className="text-responsive-sm text-slate-600">
-                  {new Date(customer.createdAt).toLocaleDateString()}
+                  {customer.createdAt?.toDate ? customer.createdAt.toDate().toLocaleDateString() : new Date(customer.createdAt).toLocaleDateString()}
                 </p>
               </div>
             </div>
@@ -95,7 +95,7 @@ const CustomerDetailView: React.FC<CustomerDetailViewProps> = ({ customer, onEdi
           <CardTitle>Vehicles Owned</CardTitle>
         </CardHeader>
         <CardContent>
-          {customer.vehiclesOwned.length > 0 ? (
+          {customer.vehiclesOwned?.length > 0 ? (
             <div className="space-y-3">
               {customer.vehiclesOwned.map((vehicleId, index) => (
                 <div key={index} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">

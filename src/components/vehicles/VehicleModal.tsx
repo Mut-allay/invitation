@@ -181,13 +181,13 @@ export const VehicleModal: React.FC<VehicleModalProps> = ({ vehicle, isOpen, onC
                   <div className="flex items-center space-x-2">
                     <CalendarIcon className="h-4 w-4 text-gray-400" />
                     <span className="text-sm text-gray-600">
-                      Added: {vehicle.createdAt.toLocaleDateString()}
+                      Added: {vehicle.createdAt?.toDate ? vehicle.createdAt.toDate().toLocaleDateString() : new Date(vehicle.createdAt).toLocaleDateString()}
                     </span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <CalendarIcon className="h-4 w-4 text-gray-400" />
                     <span className="text-sm text-gray-600">
-                      Updated: {vehicle.updatedAt.toLocaleDateString()}
+                      Updated: {vehicle.updatedAt?.toDate ? vehicle.updatedAt.toDate().toLocaleDateString() : new Date(vehicle.updatedAt).toLocaleDateString()}
                     </span>
                   </div>
                 </div>

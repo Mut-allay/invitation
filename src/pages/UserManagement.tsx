@@ -158,7 +158,7 @@ const UserManagement: React.FC = () => {
                       <Badge variant="outline">{user.role}</Badge>
                     </div>
                     <p className="text-xs text-gray-500 mt-1">
-                      Last login: {user.lastLoginAt.toLocaleDateString()}
+                      Last login: {user.lastLoginAt?.toDate ? user.lastLoginAt.toDate().toLocaleDateString() : new Date(user.lastLoginAt).toLocaleDateString()}
                     </p>
                   </div>
                 </div>
