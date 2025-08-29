@@ -395,7 +395,7 @@ const InvoicesPage: React.FC = () => {
               <div className="space-y-3 mb-4">
                 <div className="flex justify-between items-center">
                   <span className="text-responsive-sm text-muted-foreground">Amount:</span>
-                  <span className="text-responsive-lg font-bold text-foreground">K{invoice.totalAmount.toLocaleString()}</span>
+                  <span className="text-responsive-lg font-bold text-foreground">K{(invoice.totalAmount || 0).toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-responsive-sm text-muted-foreground">Issue Date:</span>

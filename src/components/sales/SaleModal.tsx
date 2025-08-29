@@ -11,7 +11,7 @@ interface SaleModalProps {
 
 export const SaleModal: React.FC<SaleModalProps> = ({ vehicle, isOpen, onClose }) => {
   const [selectedCustomerId, setSelectedCustomerId] = useState('');
-  const [salePrice, setSalePrice] = useState(vehicle.sellingPrice);
+  const [salePrice, setSalePrice] = useState(0); // Default to 0 since vehicle doesn't have sellingPrice
   const [deposit, setDeposit] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'bank_transfer' | 'mobile_money'>('cash');
   const [notes, setNotes] = useState('');
@@ -52,7 +52,7 @@ export const SaleModal: React.FC<SaleModalProps> = ({ vehicle, isOpen, onClose }
       onClose();
       // Reset form
       setSelectedCustomerId('');
-      setSalePrice(vehicle.sellingPrice);
+      setSalePrice(0);
       setDeposit(0);
       setPaymentMethod('cash');
       setNotes('');
@@ -76,7 +76,7 @@ export const SaleModal: React.FC<SaleModalProps> = ({ vehicle, isOpen, onClose }
         <div className="flex justify-between items-center p-6 border-b border-gray-200">
           <div>
             <h2 className="text-2xl font-bold text-gray-900">Process Sale</h2>
-            <p className="text-gray-600">{vehicle.make} {vehicle.model} - {vehicle.regNumber}</p>
+            <p className="text-gray-600">{vehicle.make} {vehicle.model} - {vehicle.plateNumber}</p>
           </div>
           <button
             onClick={onClose}
@@ -96,8 +96,8 @@ export const SaleModal: React.FC<SaleModalProps> = ({ vehicle, isOpen, onClose }
                 <p className="text-gray-900">{vehicle.make} {vehicle.model} ({vehicle.year})</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-600">Registration</label>
-                <p className="text-gray-900">{vehicle.regNumber}</p>
+                <label className="text-sm font-medium text-gray-600">Plate Number</label>
+                <p className="text-gray-900">{vehicle.plateNumber}</p>
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-600">VIN</label>
@@ -216,15 +216,15 @@ export const SaleModal: React.FC<SaleModalProps> = ({ vehicle, isOpen, onClose }
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Sale Price:</span>
-                <span className="font-medium">K{salePrice.toLocaleString()}</span>
+                <span className="font-medium">K{(salePrice || 0).toLocaleString()}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Deposit:</span>
-                <span className="font-medium">K{deposit.toLocaleString()}</span>
+                <span className="font-medium">K{(deposit || 0).toLocaleString()}</span>
               </div>
               <div className="flex justify-between border-t border-gray-200 pt-2">
                 <span className="text-gray-900 font-semibold">Balance Due:</span>
-                <span className="text-green-600 font-bold">K{balance.toLocaleString()}</span>
+                <span className="text-green-600 font-bold">K{(balance || 0).toLocaleString()}</span>
               </div>
             </div>
           </div>

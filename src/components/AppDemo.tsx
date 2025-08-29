@@ -121,15 +121,15 @@ const AppDemo: React.FC = () => {
           <div className="space-y-2 mb-4">
             <div className="flex justify-between">
               <span className="text-gray-500">Sale Price:</span>
-              <span className="font-medium text-green-600">K{sale.salePrice.toLocaleString()}</span>
+              <span className="font-medium text-green-600">K{(sale.salePrice || 0).toLocaleString()}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-500">Down Payment:</span>
-              <span className="font-medium">K{(sale.salePrice * 0.2).toLocaleString()}</span>
+              <span className="font-medium">K{((sale.salePrice || 0) * 0.2).toLocaleString()}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-500">Monthly Payment:</span>
-              <span className="font-medium">K{(sale.salePrice / 12).toLocaleString()}</span>
+              <span className="font-medium">K{((sale.salePrice || 0) / 12).toLocaleString()}</span>
             </div>
           </div>
           <p className="text-sm text-gray-600">{sale.notes}</p>

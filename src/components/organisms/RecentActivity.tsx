@@ -142,7 +142,7 @@ const RecentActivity: React.FC<RecentActivityProps> = ({
                 <div className="flex items-center space-x-4">
                   <div className="text-right">
                     <p className="font-bold text-green-600 text-lg">
-                      K{sale.amount.toLocaleString()}
+                      K{(sale.amount || 0).toLocaleString()}
                     </p>
                     <p className="text-xs text-gray-500">Sale Amount</p>
                   </div>
