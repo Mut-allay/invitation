@@ -62,6 +62,7 @@ const DashboardHome: React.FC = () => {
     });
 
     const totalSales = filteredSales.reduce((sum, sale) => sum + (sale.amount || 0), 0);
+    const recentSales = filteredSales.length;
     const totalRepairs = safeRepairs.length;
     const completedRepairs = safeRepairs.filter(r => r.status === 'completed').length;
     const totalCustomers = safeCustomers.length;
@@ -85,7 +86,8 @@ const DashboardHome: React.FC = () => {
       lowStockItems,
       totalInvoices,
       totalInvoiceAmount,
-      paidInvoices
+      paidInvoices,
+      recentSales
     };
   };
 
@@ -213,12 +215,12 @@ const DashboardHome: React.FC = () => {
       <div className="fluid-grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
           title="Total Sales"
-          value={`K${metrics.totalSales.toLocaleString()}`}
+          value={`K${(metrics.totalSales || 0).toLocaleString()}`}
           icon={CurrencyDollarIcon}
           color="from-green-500 to-green-400"
           gradient="bg-gradient-to-br from-green-500 via-green-400 to-emerald-400"
           trend={{ value: 12, isPositive: true }}
-          description={`${metrics.recentSales} sales in selected period`}
+          description={`${metrics.recentSales || 0} sales in selected period`}
         />
         <StatCard
           title="Available Vehicles"
