@@ -51,8 +51,8 @@ const VehicleDetailView: React.FC<VehicleDetailViewProps> = ({ vehicle, onEdit, 
           <div>
             <h2 className="text-2xl font-bold text-gray-900">{vehicle.make} {vehicle.model}</h2>
             <p className="text-gray-600">Vehicle ID: {vehicle.id}</p>
-            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mt-2 ${getStatusColor(vehicle.status)}`}>
-              {vehicle.status.charAt(0).toUpperCase() + vehicle.status.slice(1)}
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mt-2 bg-gray-100 text-gray-800">
+              Available
             </span>
           </div>
         </div>
@@ -62,7 +62,7 @@ const VehicleDetailView: React.FC<VehicleDetailViewProps> = ({ vehicle, onEdit, 
               Edit
             </Button>
           )}
-          {vehicle.status === 'available' && onSale && (
+          {onSale && (
             <Button onClick={onSale}>
               Start Sale
             </Button>

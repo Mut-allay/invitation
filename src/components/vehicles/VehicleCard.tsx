@@ -29,17 +29,9 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, onView, onEdi
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
       {/* Vehicle Image */}
       <div className="aspect-w-16 aspect-h-9 bg-gray-200">
-        {vehicle.images && vehicle.images.length > 0 ? (
-          <img
-            src={vehicle.images[0]}
-            alt={`${vehicle.make} ${vehicle.model}`}
-            className="w-full h-48 object-cover"
-          />
-        ) : (
-          <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
-            <TruckIcon className="h-12 w-12 text-gray-400" />
-          </div>
-        )}
+        <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
+          <TruckIcon className="h-12 w-12 text-gray-400" />
+        </div>
       </div>
 
       {/* Vehicle Info */}
@@ -51,35 +43,19 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, onView, onEdi
             </h3>
             <p className="text-sm text-gray-600">{vehicle.year}</p>
           </div>
-          <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(vehicle.status)}`}>
-            {vehicle.status.charAt(0).toUpperCase() + vehicle.status.slice(1)}
+          <span className="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800">
+            Available
           </span>
         </div>
 
         <div className="space-y-2 mb-4">
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Registration:</span>
-            <span className="font-medium">{vehicle.regNumber}</span>
+            <span className="text-gray-600">Plate Number:</span>
+            <span className="font-medium">{vehicle.plateNumber}</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600">VIN:</span>
-            <span className="font-medium font-mono">{vehicle.vin}</span>
-          </div>
-          {vehicle.mileage && (
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Mileage:</span>
-              <span className="font-medium">{vehicle.mileage.toLocaleString()} km</span>
-            </div>
-          )}
-        </div>
-
-        {/* Price */}
-        <div className="border-t border-gray-200 pt-3 mb-4">
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-gray-600">Selling Price:</span>
-            <span className="text-lg font-bold text-green-600">
-              K{vehicle.sellingPrice.toLocaleString()}
-            </span>
+            <span className="text-gray-600">Customer ID:</span>
+            <span className="font-medium font-mono">{vehicle.customerId || 'N/A'}</span>
           </div>
         </div>
 
@@ -103,15 +79,13 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, onView, onEdi
               Edit
             </button>
           )}
-          {vehicle.status === 'available' && (
-            <button
-              onClick={onSale}
-              className="flex-1 bg-blue-600 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors flex items-center justify-center"
-            >
-              <CurrencyDollarIcon className="h-4 w-4 mr-1" />
-              Sell
-            </button>
-          )}
+          <button
+            onClick={onSale}
+            className="flex-1 bg-green-100 text-green-700 px-3 py-2 rounded-lg text-sm font-medium hover:bg-green-200 transition-colors flex items-center justify-center"
+          >
+            <CurrencyDollarIcon className="h-4 w-4 mr-1" />
+            Sale
+          </button>
         </div>
       </div>
     </div>
