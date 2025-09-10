@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>You're Invited! Bridal Shower</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f8f8f8;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+        .container {
+            max-width: 600px;
+            width: 100%;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            text-align: center;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .invitation-image-wrapper {
+            width: 100%;
+            position: relative;
+        }
+        .invitation-image-wrapper img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        .payment-section {
+            padding: 20px;
+            background-color: #fefefe;
+            border-top: 1px solid #eee;
+        }
+        .payment-section h3 {
+            color: #555;
+            margin-bottom: 15px;
+        }
+        .payment-logos {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+        .payment-logos img {
+            width: 80px;
+            height: auto;
+            cursor: pointer;
+            transition: transform 0.2s ease-in-out;
+        }
+        .payment-logos img:hover {
+            transform: scale(1.05);
+        }
+        .note {
+            font-size: 0.9em;
+            color: #777;
+            margin-top: 20px;
+        }
+    </style>
+
+    <script src="https://pay.lenco.co/js/v1/inline.js"></script> 
+</head>
+<body>
+    <div class="container">
+        <div class="invitation-image-wrapper">
+            <img src="https://i.ibb.co/chYfxC7c/My-Invitation.jpg" alt="Bridal Shower Invitation">
+        </div>
+
+        <div class="payment-section">
+            <h3>Click a logo below to contribute to the gift:</h3>
+            <div class="payment-logos">
+                <img src="https://i.ibb.co/QvQmCHWM/28-280910-595-x-842-25-logo-de-mtn-money.jpg" alt="MTN Mobile Money" onclick="payWithLenco('MTN')">
+                
+                <img src="https://i.ibb.co/Z61zprdr/Airtel-Money-Logo-Creative-Concept-PNG.png" alt="Airtel Money" onclick="payWithLenco('Airtel')">
+                
+                <img src="https://i.ibb.co/YFbHTBt8/Visa-Logo.png" alt="VISA Card" onclick="payWithLenco('Card')">
+            </div>
+            <p class="note">A contribution of K500.00 & above is suggested.</p>
+        </div>
+    </div>
+
+    <script>
+        // Your Lenco Public Key
+        const LENCO_PUBLIC_KEY = 'pub-c3ef45259cf6032e818722dc1ba67d7777a55e0d555d8994';
+
+        function payWithLenco(channelType) {
+            let channels = [];
+            if (channelType === 'MTN' || channelType === 'Airtel') {
+                channels = ['mobile-money'];
+            } else if (channelType === 'Card') {
+                channels = ['card'];
+            } else {
+                alert('Invalid payment channel selected.');
+                return;
+            }
+
+            LencoPay.getPaid({
+                key: LENCO_PUBLIC_KEY,
+                reference: 'bridal-gift-' + Date.now(),
+                email: 'guest@example.com',
+                amount: 500,
+                currency: "ZMW",
+                channels: channels,
+                customer: {
+                    // firstName: "Guest",
+                    // lastName: "Name",
+                    // phone: "0971111111",
+                },
+                onSuccess: function (response) {
+                    alert('Thank you for your generous gift! Reference: ' + response.reference);
+                },
+                onClose: function () {
+                    alert('Payment process was closed. You can try again anytime!');
+                },
+                onConfirmationPending: function () {
+                    alert('Your contribution is pending confirmation. Thank you!');
+                },
+            });
+        }
+    </script>
+</body>
+</html>
