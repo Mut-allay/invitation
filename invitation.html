@@ -76,6 +76,12 @@
 
         <div class="payment-section">
             <h3>Click a logo below to contribute to the gift:</h3>
+            <div style="margin-bottom: 20px;">
+                <label for="amount" style="display: block; font-size: 1em; color: #555; margin-bottom: 5px;">
+                    Enter Your Contribution Amount (in ZMW):
+                </label>
+                <input type="number" id="amount" value="500" min="1" step="any" style="padding: 10px; font-size: 1.2em; text-align: center; border: 1px solid #ccc; border-radius: 5px; width: 150px;">
+            </div>
             <div class="payment-logos">
                 <img src="https://i.ibb.co/QvQmCHWM/28-280910-595-x-842-25-logo-de-mtn-money.jpg" alt="MTN Mobile Money" onclick="payWithLenco('MTN')">
                 
@@ -92,6 +98,15 @@
         const LENCO_PUBLIC_KEY = 'pub-c3ef45259cf6032e818722dc1ba67d7777a55e0d555d8994';
 
         function payWithLenco(channelType) {
+            // Get the value from the amount input field
+            const contributionAmount = document.getElementById('amount').value;
+
+            // Validate the amount
+            if (!contributionAmount || contributionAmount <= 0) {
+                alert('Please enter a valid amount to continue.');
+                return;
+            }
+
             let channels = [];
             if (channelType === 'MTN' || channelType === 'Airtel') {
                 channels = ['mobile-money'];
@@ -106,7 +121,7 @@
                 key: LENCO_PUBLIC_KEY,
                 reference: 'bridal-gift-' + Date.now(),
                 email: 'guest@example.com',
-                amount: 500,
+                amount: contributionAmount, // Use the amount typed by the user
                 currency: "ZMW",
                 channels: channels,
                 customer: {
