@@ -20,8 +20,12 @@
 /* Responsive nav kicks in */
 @media screen and (max-width: 991px) {
     header {
-        width: 90%;
-        padding-left: 25px;
+        width: 95%;
+        padding: 10px 0 10px 10px;
+    }
+
+    header .logo img {
+        height: 60px;
     }
 
     .hero .hero-content {
@@ -48,6 +52,7 @@
 
     .navicon {
         visibility: visible;
+        top: 27px;
     }
 
     header .nav-wrapper {
